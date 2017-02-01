@@ -15,6 +15,8 @@ NOTE: This does NOT work at all, just testing out the concept at the moment.
 
 ### Why? ###
 
+Working with Enaml is nice. 
+
 The whole site will be rendered once. After that the model(s) simply update the nodes that change which should make it fast.
 
 
