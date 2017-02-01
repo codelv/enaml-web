@@ -1,0 +1,16 @@
+
+from web.widgets.api import Server, Site, FileResource
+
+
+enamldef DemoServer(Server):
+    protocol = "tcp"
+    port = 80
+    
+    Site:
+        host = 'localhost'
+        FileResource:
+            route = 'static/'
+            path = 'static/'
+        #Resource:
+        #    route = '/'
+            
