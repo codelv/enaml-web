@@ -1,0 +1,292 @@
+'''
+Created on Apr 17, 2017
+
+Based on https://nucleic.github.io/enaml/docs/examples/ex_advanced.html
+
+Generates a form based on the properties of the model given. 
+
+@author: jrm
+'''
+from atom.api import Atom, Bool, Enum, Event, Float, Int, Str, Unicode
+from enaml.core.api import DynamicTemplate
+from enaml.core.api import Looper
+from web.components.api import (P, Div, Form, Label, Input, Select, Option)
+
+#------------------------------------------------------------------------------
+# "Libaray" Definitions
+#------------------------------------------------------------------------------
+# The templates and enamldefs defined in this section are ones which can
+# be written once and then used as a library. They are more-or-less fully
+# generic and will work for a large swath of models.
+
+template FormControl(Attr, MemberType):
+    """ A template which generates a control for an AutoForm.
+
+    This default specialization displays read-only text for the value.
+
+    Parameters
+    ----------
+    Attr : str
+        The name of the attribute on 'model' being accessed.
+
+    MemberType : type
+        The type of the member being accessed.
+
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            Input:
+                name = str(Attr)
+                text << unicode(getattr(model, Attr))
+                type = 'text'
+                attrs = {'disabled':'1'}
+            Label:
+                text = label_text
+                attrs = {'for':Attr}
+
+template FormControl(Attr, MemberType: Int):
+    """ A form control template specialization for Int members.
+
+    This control uses a spin box to represent the value.
+
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            Input:
+                name = str(Attr)
+                type = 'text'
+                text <<  str(getattr(model, Attr))
+                text :: setattr(model,Attr,int(change['value']))
+            Label:
+                text = label_text
+                attrs = {'for':Attr}
+
+template FormControl(Attr, MemberType: Str):
+    """ A form control template specialization for Str members.
+
+    This control uses a Field to represent the value.
+
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            Input:
+                type = 'text'
+                name = str(Attr)
+                text := getattr(model, Attr)
+            Label:
+                text = label_text
+                attrs = {'for':Attr}
+
+template FormControl(Attr, MemberType: Unicode):
+    """ A form control template specialization for Unicode members.
+
+    This control uses a Field to represent the value.
+
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            Input:
+                name = str(Attr)
+                type = 'text'
+                text := getattr(model, Attr)
+            Label:
+                text = label_text
+                attrs = {'for':Attr}
+
+template FormControl(Attr, MemberType: Float):
+    """ A form control template specialization for Float members.
+
+    This control uses a FloatField to represent the value.
+
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            Input:
+                type = 'text'
+                name = str(Attr)
+                text <<  str(getattr(model, Attr))
+                text :: setattr(model,Attr,float(change['value']))
+            Label:
+                text = label_text
+                attrs = {'for':Attr}
+
+template FormControl(Attr, MemberType: Bool):
+    """ A form control template specialization for Bool members.
+
+    This control uses a CheckBox to represent the value.
+
+    """
+    const label_text = Attr.title().replace("_"," ")
+    P:
+        Input:
+            type = 'checkbox'
+            name = str(Attr)
+            id = str(Attr)
+            checked := getattr(model,Attr)
+        Label:
+            text = label_text
+            attrs = {'for':Attr}
+            #checked << 'checked' if getattr(model, Attr) else 'unchecked'
+            #checked ::  setattr(model, Attr,change['value'])
+
+
+template FormControl(Attr, MemberType: Event):
+    """ A form control template specialization for Event members.
+
+    This control uses a PushButton to represent the value.
+
+    """
+    const button_text = Attr[0].upper() + Attr[1:].lower()
+    A:
+        cls="waves-effect waves-light btn"
+        text = button_text
+        # TODO:   clicked :: getattr(model, Attr)()
+
+
+def enum_labels(model, attr):
+    """ Return the list of enum labels for the given model and attr.
+
+    """
+    items = getattr(type(model), attr).items
+    return sorted(items)
+
+
+template FormControl(Attr, MemberType: Enum):
+    """ A form control template specialization for Enum members.
+
+    This control uses an ObjectCombo to represent the value.
+
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            Select:
+                name = str(Attr)
+                value := getattr(model, Attr)
+                Looper:
+                    iterable << enum_labels(model, Attr)
+                    Option:
+                        text = str(loop_item)
+                        value = str(loop_item)
+            Label:
+                text = label_text
+                attrs = {'for':Attr}
+
+                
+template FormItem(Attr, MemberType):
+    """ A template which generates a pair of items for an AutoForm.
+
+    Parameters
+    ----------
+    Attr : str
+        The name of the attribute on 'model' being accessed.
+
+    MemberType : type
+        The type of the member being accessed.
+
+    """
+    FormControl(Attr, MemberType):
+        pass
+    
+def form_sort(member):
+        if member[1].metadata:
+            return member[1].metadata.get('order',999)
+        return 999
+
+def form_spec(obtype):
+    """ Generate a form specification for an atom type.
+
+    Parameters
+    ----------
+    obtype : type
+        The Atom subclass of interest.
+
+    Returns
+    -------
+    result : tuple
+        A tuple of 2-tuples of (attr, member_type) for all non-private
+        members of the class.
+
+    """
+    items = []
+    for name, member in sorted(obtype.members().iteritems(),key=form_sort):
+        if not name.startswith('_'):
+            items.append((name, type(member)))
+    #items.sort(key=form_sort)
+    return tuple(items)
+
+
+template ForEach(Spec, Item):
+    """ A templated loop which maps a template over a sequence.
+
+    Parameters
+    ----------
+    Spec : tuple
+        A tuple of tuples which are the values to map over the item.
+
+    Item : template
+        A template which accepts *values from inner tuples of the spec.
+
+    """
+    ForEach(Spec[:-1], Item):
+        pass
+    Item(*Spec[-1]):
+        pass
+
+
+template ForEach(Spec: (), Item):
+    """ The terminating condition for the templated loop.
+
+    """
+    pass
+
+
+template AutoFormBody(ModelType):
+    """ A template which builds the body for an AutoForm.
+
+    Parameters
+    ----------
+    ModelType : type
+        The type of the model. This should be an Atom subclass.
+
+    """
+    const Spec = form_spec(ModelType)
+    ForEach(Spec, FormItem):
+        pass
+
+
+template AutoFormBody(ModelType: type(None)):
+    """ A template specialization for null models.
+
+    """
+    pass
+
+
+enamldef AutoForm(Form):
+    """ A Form which automatically generates its body from a model.
+
+    """
+    tag = 'form'
+    attr model: Atom
+    DynamicTemplate:
+        base = AutoFormBody
+        args = (type(model),)
+
+                    

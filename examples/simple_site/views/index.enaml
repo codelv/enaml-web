@@ -1,0 +1,45 @@
+from web.components.api import *
+from web.core.api import Block, Looper
+from base import Page
+from blocks import  Icon, IconSections, FullColRow, BannerParallax, SimpleParallax
+
+enamldef Index(Page): root:
+    Block:
+        block = root.content
+        BannerParallax:
+            color << site.theme_color
+            src = "/static/materialize/img/background1.jpg"
+            header.text = "Parallax Template"
+            caption.text = "Built using the enaml web template engine"
+            button.text = "Get started"
+            button.href = 'https://github.com/frmdstryr/enaml-web'
+        
+        IconSections:
+            sections = [
+                {
+                'icon':'flash_on',
+                 'title':'Speeds up development',
+                 'caption':'We did most of the heavy lifting for you to provide a default stylings that incorporate our custom components. Additionally, we refined animations and transitions to provide a smoother experience for developers.'
+                },
+                {
+                'icon':'group',
+                 'title':'User Experience Focused',
+                 'caption':'By utilizing elements and principles of Material Design, we were able to create a framework that incorporates components and animations that provide more feedback to users. Additionally, a single underlying responsive system across all platforms allow for a more unified user experience.'
+                },
+                {
+                'icon':'settings',
+                 'title':'Easy to work with',
+                 'caption':'We have provided detailed documentation as well as specific code examples to help new users get started. We are also always open to feedback and can answer any questions a user may have about Materialize.'
+                 },
+            ]
+        SimpleParallax:
+            src = "/static/materialize/img/background2.jpg"
+            description ='A modern responsive front-end framework based on Material Design'
+        
+        FullColRow:
+            header = 'Contact us'
+            description =  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque id nunc nec volutpat. Etiam pellentesque tristique arcu, non consequat magna fermentum ac. Cras ut ultricies eros. Maecenas eros justo, ullamcorper a sapien id, viverra ultrices eros. Morbi sem neque, posuere et pretium eget, bibendum sollicitudin lacus. Aliquam eleifend sollicitudin diam, eu mattis nisl maximus sed. Nulla imperdiet semper molestie. Morbi massa odio, condimentum sed ipsum ac, gravida ultrices erat. Nullam eget dignissim mauris, non tristique erat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;'
+        
+        SimpleParallax:
+            src = "/static/materialize/img/background3.jpg"
+            description = 'Doesn\'t matter when its always a good time'

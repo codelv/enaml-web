@@ -1,0 +1,10 @@
+from web.components.api import *
+
+
+enamldef Index(Html):
+    Head:
+        Title:
+            text = "Hello world"
+    Body:
+        H1:
+            text = "Hello world"

@@ -1,23 +1,89 @@
-# Enaml for Web #
+# Enaml Web Components #
 
-A web toolkit built with twisted as the server and material widgets using lxml. 
+Using enaml as a declarative  "templating engine" for building dynamic component based websites in python.
 
-NOTE: This does NOT work at all, just testing out the concept at the moment.
+_Note: this is still in alpha but is working_
 
-## Concept ##
+### Servers ###
 
-1. Define an Enaml view to layout a page with a model as you do in Qt apps 
-2. Implement [material components](https://getmdl.io/components/index.html) as Enaml widgets
-    a. Widgets are lxml nodes 
-3. A twisted resource links the request to the view (somehow)
-4. Somehow do server to client data binding and the opposite via websockets (why I chose Twisted)
+Currently supports the following webservers:
+
+1. Tornado
+2. Twisted
+3. Cyclone
+
+### Examples ###
+
+See the examples folder.
+
+#### Tutorial ####
+
+ A page is defined as an enaml view directly in python as shown below. Simply replace html tags with the enaml component (eg. the capitalized tag name). 
+
+```python
+from web.components.api import *
+
+enamldef Index(Html):
+    Head:
+        Title:
+            text = "Hello world"
+    Body:
+        H1:
+            text = "Hello world"
+
+```
+
+The enaml view then generates the an xml tree (using lxml) based on the models and variables passed to the template. Finally, the toolkit implementation renders the lxml and writes the response.  
 
 
-### Why? ###
+```python
 
-Working with Enaml is nice. 
+import enaml
+import cyclone.web
 
-The whole site will be rendered once. After that the model(s) simply update the nodes that change which should make it fast.
+class IndexHandler(cyclone.web.RequestHandler):
+    view = None # Set statically so it's only loaded once
+    def get(self):
+        if self.view is None:
+            with enaml.imports():
+                from index import Index
+            self.__class__.view = Index()
+        self.write(self.view.render()) 
+
+
+```
+
+Next simply pass the app for your server to the corresponding implemenation of the enaml application.
+
+```python
+
+import cyclone.web
+
+class Application(cyclone.web.Application,object):
+    def __init__(self):
+        super(Application, self).__init__([
+                (r'/',IndexHandler) 
+           ],
+            xheaders=False
+        )
+        
+if __name__ == "__main__":
+    from web.impl.cyclone_app import CycloneApplication
+    app = CycloneApplication(port=8888,app=Application())
+    app.start()
+
+```
+
+
+#### Speed ####
+
+The initial load of a page takes some time to build the lxml tree and template. However, subsequent loads only have to change the tree based on the different variables passed and are thus significantly faster often < 1ms.
+
+
+
+
+
+ 
 
 
 
