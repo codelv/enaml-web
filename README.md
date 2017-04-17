@@ -2,7 +2,7 @@
 
 Using enaml as a declarative  "templating engine" for building dynamic component based websites in python.
 
-_Note: this is still in alpha but is working_
+_Note: this is still in alpha currently it cannot bind data between the browser and server_
 
 ### Servers ###
 

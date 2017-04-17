@@ -12,7 +12,6 @@ class Link(Atom):
     url = Unicode()
     text = Unicode()
     menus = List()
-    
 
 class Message(Atom):
     #: Contact form message
@@ -21,7 +20,6 @@ class Message(Atom):
     message = Unicode().tag(order=3)
     options = Enum('Email','Text','Phone').tag(order=4)
     sign_up = Bool().tag(order=5)
-    
     
 class Page(Atom):
     #: Top of page
