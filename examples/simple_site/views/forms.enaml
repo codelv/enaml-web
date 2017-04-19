@@ -40,7 +40,7 @@ template FormControl(Attr, MemberType):
             cls = 'input-field col s12'
             Input:
                 name = str(Attr)
-                text << unicode(getattr(model, Attr))
+                value << unicode(getattr(model, Attr))
                 type = 'text'
                 attrs = {'disabled':'1'}
             Label:
@@ -61,8 +61,8 @@ template FormControl(Attr, MemberType: Int):
             Input:
                 name = str(Attr)
                 type = 'text'
-                text <<  str(getattr(model, Attr))
-                text :: setattr(model,Attr,int(change['value']))
+                value <<  str(getattr(model, Attr))
+                value :: setattr(model,Attr,int(change['value']))
             Label:
                 text = label_text
                 attrs = {'for':Attr}
@@ -81,7 +81,7 @@ template FormControl(Attr, MemberType: Str):
             Input:
                 type = 'text'
                 name = str(Attr)
-                text := getattr(model, Attr)
+                value := getattr(model, Attr)
             Label:
                 text = label_text
                 attrs = {'for':Attr}
@@ -100,7 +100,7 @@ template FormControl(Attr, MemberType: Unicode):
             Input:
                 name = str(Attr)
                 type = 'text'
-                text := getattr(model, Attr)
+                value := getattr(model, Attr)
             Label:
                 text = label_text
                 attrs = {'for':Attr}
@@ -119,8 +119,8 @@ template FormControl(Attr, MemberType: Float):
             Input:
                 type = 'text'
                 name = str(Attr)
-                text <<  str(getattr(model, Attr))
-                text :: setattr(model,Attr,float(change['value']))
+                value <<  str(getattr(model, Attr))
+                value :: setattr(model,Attr,float(change['value']))
             Label:
                 text = label_text
                 attrs = {'for':Attr}

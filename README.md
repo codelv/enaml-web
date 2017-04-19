@@ -16,6 +16,13 @@ Currently supports the following webservers:
 
 See the examples folder.
 
+
+### Features ###
+
+1. Automatic form generation and population based on an Atom object similar to the django admin.
+2. Potentially 5-10x speedup's vs other template engines (tornado's templates, jinja2, django templates, etc.) 
+
+
 #### Tutorial ####
 
  A page is defined as an enaml view directly in python as shown below. Simply replace html tags with the enaml component (eg. the capitalized tag name). 
@@ -75,9 +82,21 @@ if __name__ == "__main__":
 ```
 
 
-#### Speed ####
+#### Benchmarks ####
 
-The initial load of a page takes some time to build the lxml tree and template. However, subsequent loads only have to change the tree based on the different variables passed and are thus significantly faster often < 1ms.
+The speed depends on how templates are generated. 
+
+Running a single process on a Core i7-4510U:
+
+1. The twisted/tornado hello world server's  hit's about ~4-5k req/s .
+2. If the view is re-rendered on every request there's no significant difference between this and django templates. Looking at somewhere near 100 req/s per page  (uncached)
+3. If a static class view is used and only template attributes are updated, it's roughly 5-10x faster depending on how much of the tree changes, in the order of 500-1000 req/s (uncached) 
+4. If the template does not change at all I've seen full pages rendering at ~2k req/s 
+
+
+
+
+
 
 
 
