@@ -27,8 +27,8 @@ class Tag(ToolkitObject):
     #: Node text
     text = d_(Unicode())
     
-    #: Title attribute
-    #title = d_(Unicode())
+    #: Node tail text
+    tail = d_(Unicode())
     
     #: Alt attribute
     alt = d_(Unicode())    
@@ -57,7 +57,7 @@ class Tag(ToolkitObject):
 #     
 #     on_mouse_up = d_(Event())
     
-    @observe('id','tag','cls','style','text','alt','attrs')#,'on_click')
+    @observe('id','tag','cls','style','text','tail','alt','attrs')#,'on_click')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data 
          changes."""

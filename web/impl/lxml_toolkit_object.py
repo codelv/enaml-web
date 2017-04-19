@@ -35,10 +35,6 @@ class WebComponent(ProxyToolkitObject):
         """
         d = self.declaration
         attrs = {}
-        if d.cls:
-            attrs['class'] = d.cls  if isinstance(d.cls,basestring) else " ".join(d.cls)
-        if d.style:
-            attrs['style'] = d.style if isinstance(d.style,basestring) else  ";".join(["{}:{};".format(k,v) for k,v in d.style.items()])
              
         for name,member in d.members().items():
             if name in self.excluded:
@@ -51,7 +47,7 @@ class WebComponent(ProxyToolkitObject):
             if isinstance(member, Event):
                 #: TODO: Handle triggers??
                 #if not d.id: #: Force an ID
-                 #   d.id = u'obj-%d' % id(d)
+                #   d.id = u'obj-%d' % id(d)
                 #attrs[name.replace("_","")] = "Enaml.trigger('{}','{}')".format(d.id,name)
                 pass
             else:
@@ -60,8 +56,6 @@ class WebComponent(ProxyToolkitObject):
                 if v:
                     attrs[name] = unicode(v)
                 
-        attrs.update(d.attrs)
-        
         parent = self.parent_widget()
         if parent is None:
             node = Element('html',attrs)
@@ -82,10 +76,18 @@ class WebComponent(ProxyToolkitObject):
         if widget is not None:
             d = self.declaration
             if d.text:
-                widget.text = d.text
+                self.set_text(d.text)
+            if d.tail:
+                self.set_tail(d.tail)
+            if d.style:
+                self.set_style(d.style)
+            if d.cls:
+                self.set_cls(d.cls)
+            if d.attrs:
+                self.set_attrs(d.attrs)
             if d.id:
+                #  u'obj-%d' % id(d)
                 widget.set('id',d.id)
-            #widget.set('id',d.id or u'obj-%d' % id(d))
 
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.
@@ -175,10 +177,25 @@ class WebComponent(ProxyToolkitObject):
     #--------------------------------------------------------------------------
     # Change handlers
     #--------------------------------------------------------------------------
+    def set_text(self, text):
+        self.widget.text = text
+        
+    def set_tail(self, text):
+        self.widget.tail = text
+        
+    def set_tag(self, tag):
+        self.widget.tag = tag
+        
+    def set_attrs(self, attrs):
+        self.widget.attrib.update(attrs)
+        
+    def set_cls(self, cls):
+        self.widget.set('class',cls  if isinstance(cls,basestring) else " ".join(cls))
+        
+    def set_style(self, style):
+        self.widget.set('style',style if isinstance(style,basestring) else  ";".join(["{}:{};".format(k,v) for k,v in style.items()]))
+    
     def update_attribute(self,change):
-        if isinstance(change['value'],dict):
-            self.widget.attrib.update(change['value'])
-        else:
-            self.widget.set(change['name'],change['value'])
+        self.widget.set(change['name'],change['value'])
     
     

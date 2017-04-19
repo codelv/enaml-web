@@ -122,43 +122,6 @@ enamldef Page(Base): page:
 
 This is very helpful when creating reusuable components.
 
-#### Data models ####
-
-Forms can automatically be generated and populated using the  `AutoForm` component. Just define an Atom model such as
-
-```python
-
-from atom.api import Atom, Unicode, Bool, Enum
-
-class Message(Atom):
-    name = Unicode()
-    email = Unicode()
-    message = Unicode()
-    options = Enum("Email","Phone","Text")
-    sign_up = Bool(True)
-
-
-``` 
-
-Next use the `AutoForm` component and pass in either a new or populated instance of the model to render the form.
-
-```python
-
-from templates import Base 
-from web.components.api import *
-from web.core.api import Block
-
-
-enamldef AddMessageView(Base): page:
-    attr message
-    
-   Block:
-        block = page.content
-        AutoForm:
-            model << message
-   
-```
-
 #### Components ####
 
 Probably the best part, with enaml you can easily create reusable components and share them through the views as you would any python class.
@@ -197,8 +160,74 @@ Breadcrumbs:
     path << request.path
 
 ```
- 
 
+#### Data models ####
+
+Forms can automatically be generated and populated using the  `AutoForm` component. Just define an Atom model such as
+
+```python
+
+from atom.api import Atom, Unicode, Bool, Enum
+
+class Message(Atom):
+    name = Unicode()
+    email = Unicode()
+    message = Unicode()
+    options = Enum("Email","Phone","Text")
+    sign_up = Bool(True)
+
+
+``` 
+
+Next use the `AutoForm` component and pass in either a new or populated instance of the model to render the form.
+
+```python
+
+from templates import Base 
+from web.components.api import *
+from web.core.api import Block
+
+
+enamldef AddMessageView(Base): page:
+    attr message
+    
+   Block:
+        block = page.content
+        AutoForm:
+            model << message
+   
+```
+
+
+ 
+### Gotachas ###
+
+##### Text and tail nodes #####
+
+Lxml uses text and tail properties to set text before and after child nodes, which can be confusing. 
+
+For instance in html you can do
+
+```html
+
+<p>This is a sentence <a href="#">click here</a> then keep going</p>
+
+```
+
+To make this with enaml you need to do this:
+
+```python
+
+P:
+    text = "This is a sentence"
+    A:
+        href = "#"
+        text = "click here"
+        tail = "then keep going"
+
+``` 
+
+Notice how `tail` is set on the `A` NOT the `P`.  See [lxml etree documentation](http://lxml.de/tutorial.html#elements-contain-text) for more details. 
 
 ### Servers ###
 
