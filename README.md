@@ -230,7 +230,7 @@ Notice how `tail` is set on the `A` NOT the `P`.  See [lxml etree documentation]
 
 ##### Tag attribute #####
 
-In the current implementation the xml tag used is the lowercase off the class name. When you subclass a component you must explicity set the tag attribute to the desired tag name. For example:
+In the current implementation the xml tag used is the lowercase of the class name. When you subclass a component you must explicity set the tag attribute to the desired tag name. For example:
 
 ```python
 
