@@ -90,6 +90,7 @@ from web.core.api import Block
 enamldef Base(Html):
     attr user
     attr site
+    attr request
     alias content:
     Head:
         Title:
@@ -157,6 +158,46 @@ enamldef AddMessageView(Base): page:
             model << message
    
 ```
+
+#### Components ####
+
+Probably the best part, with enaml you can easily create reusable components and share them through the views as you would any python class.
+
+For instance, to create a [materalize breadcrumbs component](http://materializecss.com/breadcrumbs.html) that automatically follows the current request path, simply include the required css/scripts in your base template, define the component as shown below:
+
+```python
+
+from web.components.api import *
+from web.core.api import Looper
+
+enamldef Breadcrumbs(Nav): nav:
+    attr path # ex. pass in request.path
+    attr color = ""
+    tag = 'nav'
+    Div:
+        cls = 'nav-wrapper {}'.format(nav.color)
+        Div:
+            cls = 'container'
+            Div:
+                cls = 'col s12'
+                Looper:
+                    iterable << path.split("/")
+                    A:
+                        href = "/".join(path.split("/")[:loop_index+1])
+                        text = loop_item.title()
+
+```
+
+then use it it as follows
+
+```python
+
+# in your template add
+Breadcrumbs:
+    path << request.path
+
+```
+ 
 
 
 ### Servers ###
