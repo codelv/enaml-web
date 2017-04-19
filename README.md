@@ -91,7 +91,7 @@ enamldef Base(Html):
     attr user
     attr site
     attr request
-    alias content:
+    alias content
     Head:
         Title:
             text << site.title
@@ -190,8 +190,7 @@ from web.core.api import Block
 
 enamldef AddMessageView(Base): page:
     attr message
-    
-   Block:
+    Block:
         block = page.content
         AutoForm:
             model << message
@@ -228,6 +227,19 @@ P:
 ``` 
 
 Notice how `tail` is set on the `A` NOT the `P`.  See [lxml etree documentation](http://lxml.de/tutorial.html#elements-contain-text) for more details. 
+
+##### Tag attribute #####
+
+In the current implmentation the xml tag used is the lowercase off the class name. When you subclass a component you must explicity set the tag attribute to the desired tag name. For example:
+
+```python
+
+enamldef Icon(I):
+    tag = 'i' # Force tag to be 'i' instead of 'icon' since 'icon' is not a valid html element
+    cls = 'material-icons'
+
+```
+
 
 ### Servers ###
 
