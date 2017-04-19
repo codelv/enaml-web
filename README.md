@@ -81,8 +81,97 @@ if __name__ == "__main__":
 
 ```
 
+#### Templates ####
 
-#### Benchmarks ####
+You can define a base template, then overwrite parts using the `Block` component.
+
+
+In a file `templates.enaml` put:
+
+```python
+
+from web.components.api import *
+form web.core.api import Block
+
+enamldef Base(Html):
+    attr user
+    attr site
+    alias content:
+    Head:
+        Title:
+            text << site.title
+    Body:
+        Header:
+            text = "Header"
+        Block: content:
+            pass
+        Footer:
+            text = "Footer"
+        
+```
+
+Then you can _extend_ the template and override the block content
+
+```python
+from templates import Base 
+from web.components.api import *
+form web.core.api import Block
+
+enamldef Page(Base): page:
+    Block:
+        block = page.content
+        P:
+            text = "Content inserted between Header and Footer"
+            
+```
+
+This is very helpful when creating reusuable components.
+
+#### Data models ####
+
+Forms can automatically be generated and populated using the  `AutoForm` component. Just define an atom model such as
+
+```python
+
+from atom.api import Atom, Unicode, Bool, Enum
+
+class Message(Atom):
+    name = Unicode()
+    email = Unicode()
+    message = Unicode()
+    options = Enum("Email","Phone","Text")
+    notify = Bool(True)
+
+
+``` 
+
+Next use the `AutoForm` component and pass in either a new or populated instance of the model to render the form.
+
+```python
+
+from templates import Base 
+from web.components.api import *
+form web.core.api import Block
+
+
+enamldef AddMessageView(Base): page:
+    attr message
+    
+   Block:
+        block = page.content
+        AutoForm:
+            model << message
+   
+```
+
+
+![Rendered Form](https://imagebin.ca/v/3Je5OwatJAGz)
+
+
+
+
+
+### Benchmarks ###
 
 The speed depends on how templates are generated. 
 
