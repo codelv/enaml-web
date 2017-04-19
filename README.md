@@ -165,7 +165,7 @@ enamldef AddMessageView(Base): page:
 ```
 
 
-![Rendered Form](https://imagebin.ca/v/3Je5OwatJAGz)
+![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
 
 
 
