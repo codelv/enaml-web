@@ -4,7 +4,7 @@ Created on Apr 12, 2017
 @author: jrm
 '''
 
-from atom.api import Typed, Tuple
+from atom.api import Typed, Tuple, Event
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
@@ -41,9 +41,23 @@ class WebComponent(ProxyToolkitObject):
             attrs['style'] = d.style if isinstance(d.style,basestring) else  ";".join(["{}:{};".format(k,v) for k,v in d.style.items()])
              
         for name,member in d.members().items():
-            if member.metadata and member.metadata.get('d_member') and member.metadata.get('d_final'):
+            if name in self.excluded:
+                continue
+            elif not member.metadata:
+                continue
+            elif not (member.metadata.get('d_member') and member.metadata.get('d_final')):
+                continue
+            
+            if isinstance(member, Event):
+                #: TODO: Handle triggers??
+                #if not d.id: #: Force an ID
+                 #   d.id = u'obj-%d' % id(d)
+                #attrs[name.replace("_","")] = "Enaml.trigger('{}','{}')".format(d.id,name)
+                pass
+            else:
+                #: TODO: Handle updates?? 
                 v = getattr(d,name)
-                if (name not in self.excluded) and v:
+                if v:
                     attrs[name] = unicode(v)
                 
         attrs.update(d.attrs)
@@ -66,11 +80,6 @@ class WebComponent(ProxyToolkitObject):
         """
         widget = self.widget
         if widget is not None:
-            # Each Qt object gets a name. If one is not provided by the
-            # widget author, one is generated. This is required so that
-            # Qt stylesheet cascading can be prevented (Enaml's styling
-            # engine applies the cascade itself). Names provided by the
-            # widget author are assumed to be unique.
             d = self.declaration
             if d.text:
                 widget.text = d.text
@@ -162,3 +171,14 @@ class WebComponent(ProxyToolkitObject):
             w = child.widget
             if w is not None:
                 yield w
+                
+    #--------------------------------------------------------------------------
+    # Change handlers
+    #--------------------------------------------------------------------------
+    def update_attribute(self,change):
+        if isinstance(change['value'],dict):
+            self.widget.attrib.update(change['value'])
+        else:
+            self.widget.set(change['name'],change['value'])
+    
+    
