@@ -140,7 +140,7 @@ class Message(Atom):
     email = Unicode()
     message = Unicode()
     options = Enum("Email","Phone","Text")
-    notify = Bool(True)
+    sign_up = Bool(True)
 
 
 ``` 
