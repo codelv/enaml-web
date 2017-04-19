@@ -255,7 +255,7 @@ The speed depends on how templates are generated.
 
 Running a single process on a Core i7-4510U:
 
-1. The twisted/tornado "hello world" server (without any template)  hit's about ~4-5k req/s .
+1. The twisted/tornado "hello world" server (writing a string without any template)  hit's about ~4-5k req/s .
 2. If the view is re-rendered on every request there's no significant difference between this and django templates. Looking at somewhere near 100 req/s per page  (uncached)
 3. If a static class view is used and only template attributes are updated, it's roughly 5-10x faster depending on how much of the tree changes, in the order of 500-1000 req/s (uncached) 
 4. If the template does not change at all I've seen full pages rendering at ~2k req/s 
