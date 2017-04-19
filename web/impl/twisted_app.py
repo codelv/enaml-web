@@ -28,7 +28,8 @@ class TwistedApplication(LxmlApplication):
         """ Start the application's main event loop.
 
         """
-        log.startLogging(self.log)
+        if self.log:
+            log.startLogging(self.log)
         self.endpoint.listen(self.site)
         reactor.run()
     

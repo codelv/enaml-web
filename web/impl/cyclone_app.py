@@ -15,6 +15,7 @@ class CycloneApplication(TwistedApplication):
         """ Start the application's main event loop.
 
         """
-        log.startLogging(self.log)
+        if self.log:
+            log.startLogging(self.log)
         reactor.listenTCP(self.port,self.app,interface=self.interface)
         reactor.run()
