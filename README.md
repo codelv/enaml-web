@@ -4,26 +4,20 @@ Using enaml as a declarative  "templating engine" for building dynamic component
 
 _Note: this is still in alpha currently it cannot bind data between the browser and server_
 
-### Servers ###
 
-Currently supports the following webservers:
-
-1. Tornado
-2. Twisted
-3. Cyclone
-
-### Examples ###
-
-See the examples folder.
+![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
 
 
 ### Features ###
 
 1. Automatic form generation and population based on an Atom object similar to the django admin.
-2. Potentially 5-10x speedup's vs other template engines (tornado's templates, jinja2, django templates, etc.) 
+2. Potentially 5-10x speedup's vs other template engines (tornado's templates, jinja2, django templates, etc.)
 
 
-#### Tutorial ####
+### Usage ###
+
+
+####  Setup ####
 
  A page is defined as an enaml view directly in python as shown below. Simply replace html tags with the enaml component (eg. the capitalized tag name). 
 
@@ -129,7 +123,7 @@ This is very helpful when creating reusuable components.
 
 #### Data models ####
 
-Forms can automatically be generated and populated using the  `AutoForm` component. Just define an atom model such as
+Forms can automatically be generated and populated using the  `AutoForm` component. Just define an Atom model such as
 
 ```python
 
@@ -165,11 +159,13 @@ enamldef AddMessageView(Base): page:
 ```
 
 
-![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
+### Servers ###
 
+Currently supports the following webservers:
 
-
-
+1. Tornado
+2. Twisted
+3. Cyclone
 
 ### Benchmarks ###
 
