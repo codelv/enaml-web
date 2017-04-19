@@ -91,7 +91,7 @@ In a file `templates.enaml` put:
 ```python
 
 from web.components.api import *
-form web.core.api import Block
+from web.core.api import Block
 
 enamldef Base(Html):
     attr user
@@ -115,7 +115,7 @@ Then you can _extend_ the template and override the block content
 ```python
 from templates import Base 
 from web.components.api import *
-form web.core.api import Block
+from web.core.api import Block
 
 enamldef Page(Base): page:
     Block:
@@ -151,7 +151,7 @@ Next use the `AutoForm` component and pass in either a new or populated instance
 
 from templates import Base 
 from web.components.api import *
-form web.core.api import Block
+from web.core.api import Block
 
 
 enamldef AddMessageView(Base): page:
