@@ -124,7 +124,9 @@ class WebComponent(ProxyToolkitObject):
         """
         widget = self.widget
         if widget is not None:
-            widget.getparent().remove(widget)
+            parent = widget.getparent()
+            if parent is not None:
+                parent.remove(widget)
             del self.widget
         super(WebComponent, self).destroy()
 
