@@ -1,6 +1,6 @@
 # Enaml Web Components #
 
-Build websites using server side web components generated with [enaml](https://github.com/nucleic/enaml) and your favorite webserver. 
+Build websites with server side web components constructed using [enaml](https://github.com/nucleic/enaml) views and rendered with [lxml](http://lxml.de/).   
 
 _Note: this is still in alpha currently it cannot bind data between the browser and server_
 
