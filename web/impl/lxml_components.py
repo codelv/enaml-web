@@ -5,13 +5,16 @@ Created on Apr 12, 2017
 '''
 import inspect
 from web.components import html
-from web.impl.lxml_toolkit_object import WebComponent
 
-FACTORIES = {}
+def generic_factory():
+    from .lxml_toolkit_object import WebComponent
+    return WebComponent 
 
-for name, obj in inspect.getmembers(html):
-    if inspect.isclass(obj):
-        FACTORIES[name] = lambda:WebComponent
+FACTORIES = {
+    name:generic_factory 
+        for name,obj in inspect.getmembers(html) 
+            if inspect.isclass(obj)
+}
 
 
 
