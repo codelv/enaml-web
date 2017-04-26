@@ -7,10 +7,31 @@ Generates a form based on the properties of the model given.
 
 @author: jrm
 '''
-from atom.api import Atom, Bool, Enum, Event, Float, Int, Str, Unicode
+from atom.api import Atom, Member, Value, Bool, Enum, Event, Float, Int, Str, Unicode, List, Instance
 from enaml.core.api import DynamicTemplate
 from enaml.core.api import Looper
-from web.components.api import (P, Div, Form, Label, Input, Select, Option)
+from web.components.api import (P, Button, Div, Form, Label, Input, Select, Option, Ul, Li, A)
+
+def DynamicModel(obj,label="value"):
+    """ Create a model """
+    if isinstance(obj,Member):
+        #: No value is set try to get the default
+        return obj.validate_mode[1]() # Umm... should use default?
+    if isinstance(obj, Atom):
+        return obj
+    members = {}
+    typemap = {
+        int:Int,
+        float:Float,
+        unicode:Unicode,
+        str:Str,
+    }
+    if isinstance(obj,Value):
+        members[label] = obj
+    elif type(obj) in typemap:
+        members[label] = typemap[type(obj)](default=obj)
+    Model = type('Model',(Atom,),members)
+    return Model()
 
 #------------------------------------------------------------------------------
 # "Libaray" Definitions
@@ -152,10 +173,16 @@ template FormControl(Attr, MemberType: Event):
 
     """
     const button_text = Attr[0].upper() + Attr[1:].lower()
-    A:
-        cls="waves-effect waves-light btn"
-        text = button_text
-        # TODO:   clicked :: getattr(model, Attr)()
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            Button:
+                text = button_text
+                cls="waves-effect waves-light btn"
+                type='submit'
+                    
+                # TODO:   clicked :: getattr(model, Attr)()
 
 
 def enum_labels(model, attr):
@@ -185,10 +212,70 @@ template FormControl(Attr, MemberType: Enum):
                     Option:
                         text = str(loop_item)
                         value = str(loop_item)
+                        
             Label:
                 text = label_text
                 attrs = {'for':Attr}
 
+template FormControl(Attr, MemberType: List):
+    """ A form control template specialization for Int members.
+  
+    This control uses a spin box to represent the value.
+  
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'col s12'
+            Label:
+                text = '{} List'.format(label_text)
+                attrs = {'for':Attr}
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'col s12'
+            Ul:
+                cls = 'tabs'
+                Looper:
+                    iterable = getattr(model,Attr)
+                    Li:
+                        cls = 'tab'
+                        A:
+                            href = '#{}_{}'.format(Attr, loop_index)
+                            text = '{} {}'.format(label_text, loop_index+1)
+        Looper:
+            iterable = getattr(model,Attr)
+            Div:
+                id = '{}_{}'.format(Attr,loop_index)
+                cls = 'col s12'
+                attr obj = loop_item or model.get_member(Attr)
+                AutoForm:
+                    model = DynamicModel(obj,'{}_{}'.format(Attr,loop_index+1))
+    
+
+template FormControl(Attr, MemberType: Instance):
+    """ A form control template specialization for Int members.
+  
+    This control uses a spin box to represent the value.
+  
+    """
+    const label_text = Attr.title().replace("_"," ")
+    Div:
+        cls = 'row'
+        Div:
+            cls = 'input-field col s12'
+            
+            Label:
+                text = label_text
+                attrs = {'for':Attr}
+    Div:
+        cls = 'row'
+        attr obj = getattr(model,Attr) or model.get_member(Attr)
+        AutoForm:
+            #inline = True
+            model = DynamicModel(obj)
+            
                 
 template FormItem(Attr, MemberType):
     """ A template which generates a pair of items for an AutoForm.
@@ -288,5 +375,4 @@ enamldef AutoForm(Form):
     DynamicTemplate:
         base = AutoFormBody
         args = (type(model),)
-
                     
