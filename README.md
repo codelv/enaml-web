@@ -1,6 +1,6 @@
 # Enaml Web Components #
 
-Using enaml as a declarative  "templating engine" for building dynamic component based websites in python.
+Build websites using server side web components generated with [enaml](https://github.com/nucleic/enaml) and your favorite webserver.  A true MVC way to do websites.
 
 _Note: this is still in alpha currently it cannot bind data between the browser and server_
 
@@ -11,7 +11,9 @@ _Note: this is still in alpha currently it cannot bind data between the browser 
 ### Features ###
 
 1. Automatic form generation and population based on an Atom object similar to the django admin.
-2. Potentially 5-10x speedup's vs other template engines (tornado's templates, jinja2, django templates, etc.)
+2. Potentially 5-10x speedup's vs other template engines (django templates, etc.)
+3. Easily build extendable and reusable model based web components by linking a css framework like Bootstrap, Materialize, etc.. 
+ 
 
 
 ### Usage ###
@@ -77,7 +79,7 @@ if __name__ == "__main__":
 
 #### Templates ####
 
-You can define a base template, then overwrite parts using the `Block` component.
+You can define a base template, then overwrite parts using the `Block` node.
 
 
 In a file `templates.enaml` put:
@@ -134,7 +136,7 @@ from web.components.api import *
 from web.core.api import Looper
 
 enamldef Breadcrumbs(Nav): nav:
-    attr path # ex. pass in request.path
+    attr path # ex. pass in a tornado request.path
     attr color = ""
     attr breadcrumbs << path[1:-1].split("/")
     tag = 'nav'
@@ -180,7 +182,7 @@ class Message(Atom):
 
 ``` 
 
-Next use the `AutoForm` component and pass in either a new or populated instance of the model to render the form.
+Next use the `AutoForm` node and pass in either a new or populated instance of the model to render the form.
 
 ```python
 
