@@ -1,6 +1,6 @@
 # Enaml Web Components #
 
-Build websites using server side web components generated with [enaml](https://github.com/nucleic/enaml) and your favorite webserver.  A true MVC way to do websites.
+Build websites using server side web components generated with [enaml](https://github.com/nucleic/enaml) and your favorite webserver. 
 
 _Note: this is still in alpha currently it cannot bind data between the browser and server_
 
