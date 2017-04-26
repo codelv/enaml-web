@@ -197,7 +197,7 @@ class WebComponent(ProxyToolkitObject):
     def set_style(self, style):
         self.widget.set('style',style if isinstance(style,basestring) else  ";".join(["{}:{};".format(k,v) for k,v in style.items()]))
     
-    def update_attribute(self,change):
-        self.widget.set(change['name'],change['value'])
+    def set_attribute(self,change):
+        self.widget.set(change['name'],'{}'.format(change['value']))
     
     

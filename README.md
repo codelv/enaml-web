@@ -136,6 +136,7 @@ from web.core.api import Looper
 enamldef Breadcrumbs(Nav): nav:
     attr path # ex. pass in request.path
     attr color = ""
+    attr breadcrumbs << path[1:-1].split("/")
     tag = 'nav'
     Div:
         cls = 'nav-wrapper {}'.format(nav.color)
@@ -144,11 +145,11 @@ enamldef Breadcrumbs(Nav): nav:
             Div:
                 cls = 'col s12'
                 Looper:
-                    iterable << path.split("/")
+                    iterable << breadcrumbs
                     A:
-                        href = "/".join(path.split("/")[:loop_index+1])
+                        href = "/{}/".format("/".join(breadcrumbs[:loop_index+1]))
+                        cls = "breadcrumb"
                         text = loop_item.title()
-
 ```
 
 then use it it as follows

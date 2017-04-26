@@ -67,17 +67,17 @@ class Tag(ToolkitObject):
             if handler is not None:
                 handler(change['value'])
             else:
-                self.proxy.update_attribute(change)
+                self.proxy.set_attribute(change)
     
-    
-        
-class Html(Tag):
     def render(self, parent=None):
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
             self.activate_proxy()
         return self.proxy.render()
+        
+class Html(Tag):
+    pass
     
 class Head(Tag):
     pass    
@@ -373,6 +373,12 @@ class Select(Tag):
     
 class Option(Tag):
     value = d_(Unicode())
+    selected = d_(Bool())
+    
+    @observe('value','selected')
+    def _update_proxy(self, change):
+        super(Option, self)._update_proxy(change)
+    
 
 class Input(Tag):
     name = d_(Unicode())
