@@ -3,24 +3,26 @@ Created on Apr 12, 2017
 
 @author: jrm
 '''
-
-from atom.api import Typed, Tuple, Event
-
+import weakref
+from atom.api import Typed,  Constant,  Event
 from enaml.widgets.toolkit_object import ProxyToolkitObject
-
-import lxml.html
+from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
 
+CACHE = weakref.WeakValueDictionary()
 
 class WebComponent(ProxyToolkitObject):
     """ An lxml implementation of an Enaml ProxyToolkitObject.
 
     """
+    __slots__=('__weakref__',)
+    
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
     
     #: Attributes to exclude from passing to the element
-    excluded = Tuple(default=('tag','attrs','cls','class','style','activated','initialized','text')) 
+    #: These are either used internally or manually set
+    excluded = Constant(default=('tag','attrs','cls','class','style','activated','initialized','text','tail')) 
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -35,7 +37,8 @@ class WebComponent(ProxyToolkitObject):
         """
         d = self.declaration
         attrs = {}
-             
+        
+        #: Set any attributes that may be defined
         for name,member in d.members().items():
             if name in self.excluded:
                 continue
@@ -51,18 +54,17 @@ class WebComponent(ProxyToolkitObject):
                 #attrs[name.replace("_","")] = "Enaml.trigger('{}','{}')".format(d.id,name)
                 pass
             else:
-                #: TODO: Handle updates?? 
                 v = getattr(d,name)
                 if v:
                     attrs[name] = unicode(v)
                 
         parent = self.parent_widget()
         if parent is None:
-            node = Element('html',attrs)
+            self.widget = Element('html',attrs)
         else:
-            tag = d.tag or d.__class__.__name__.lower()
-            node = SubElement(parent,tag,attrs)
-        self.widget = node
+            self.widget = SubElement(parent,d.tag,attrs)
+        
+            
 
     def init_widget(self):
         """ Initialize the state of the toolkit widget.
@@ -86,14 +88,29 @@ class WebComponent(ProxyToolkitObject):
             if d.attrs:
                 self.set_attrs(d.attrs)
             if d.id:
-                #  u'obj-%d' % id(d)
                 widget.set('id',d.id)
+            
+            #: Save ref id
+            ref = u'{}'.format(id(d))
+            CACHE[ref] = self
+            widget.set('ref',ref)
+            
 
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.
 
         This method is called during the bottom-up pass. This method
         should initialize the layout of the widget. The child widgets
+        will be fully initialized and layed out when this is called.
+
+        """
+        pass
+    
+    def init_events(self):
+        """ Initialize the event handlers of the toolkit widget.
+
+        This method is called during the bottom-up pass. This method
+        should initialize the event handlers for the widget. The child widgets
         will be fully initialized and layed out when this is called.
 
         """
@@ -114,6 +131,7 @@ class WebComponent(ProxyToolkitObject):
 
         """
         self.init_layout()
+        self.init_events()
 
     def destroy(self):
         """ A reimplemented destructor.
@@ -146,7 +164,15 @@ class WebComponent(ProxyToolkitObject):
     #--------------------------------------------------------------------------
     def render(self):
         """ Render the widget tree into a string """
-        return lxml.html.tostring(self.widget,pretty_print=True)
+        return tostring(self.widget,pretty_print=True)
+    
+    def find(self, query):
+        """ Get the node(s) matching the query"""
+        nodes = self.widget.xpath(query)
+        if nodes:
+            print nodes
+            refs = [node.attrib.get('ref') for node in nodes if node.attrib.get('ref')]
+            return [CACHE[ref] for ref in refs if ref in CACHE]
 
     def parent_widget(self):
         """ Get the parent toolkit widget for this object.
@@ -189,6 +215,7 @@ class WebComponent(ProxyToolkitObject):
         self.widget.tag = tag
         
     def set_attrs(self, attrs):
+        """ Set any attributes not explicitly defined"""
         self.widget.attrib.update(attrs)
         
     def set_cls(self, cls):
@@ -198,6 +225,12 @@ class WebComponent(ProxyToolkitObject):
         self.widget.set('style',style if isinstance(style,basestring) else  ";".join(["{}:{};".format(k,v) for k,v in style.items()]))
     
     def set_attribute(self,change):
+        """ Default handler for those not explicitly defined"""
         self.widget.set(change['name'],'{}'.format(change['value']))
+        
+    #--------------------------------------------------------------------------
+    # Event triggers
+    #--------------------------------------------------------------------------
+    
     
     

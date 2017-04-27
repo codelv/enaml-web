@@ -1,6 +1,6 @@
 # Enaml Web Components #
 
-Build websites with server side web components constructed using [enaml](https://github.com/nucleic/enaml) views and rendered with [lxml](http://lxml.de/).   
+Build websites with server side web components constructed using [enaml](https://github.com/nucleic/enaml) views and [lxml](http://lxml.de/) elements.   
 
 _Note: this is still in alpha currently it cannot bind data between the browser and server_
 
@@ -13,8 +13,9 @@ _Note: this is still in alpha currently it cannot bind data between the browser 
 1. Automatic form generation and population based on an Atom object similar to the django admin.
 2. Potentially 5-10x speedup's vs other template engines (django templates, etc.)
 3. Easily build extendable and reusable model based web components by linking a css framework like Bootstrap, Materialize, etc.. 
- 
-
+4. Web components are rendered server side which translates to fast client side rendering 
+5. SEO friendly
+6. Use whatever JS you like
 
 ### Usage ###
 
@@ -243,6 +244,11 @@ enamldef Icon(I):
 
 ```
 
+### How it works ###
+
+1.Each enaml declaration generates an lxml etree element populated with attributes and children specific to the component declaration.  
+2. Enaml's powerful observer engine handles updating attributes and node structure when models change.  
+3. The lxml tree is then simply rendered to a string to be used in the request handler.
 
 ### Servers ###
 

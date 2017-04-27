@@ -8,7 +8,6 @@ from atom.api import (
 )
 
 from enaml.core.declarative import d_
-
 from enaml.widgets.toolkit_object import ToolkitObject
 
 class Tag(ToolkitObject):
@@ -56,8 +55,11 @@ class Tag(ToolkitObject):
 #     on_mouse_out = d_(Event())
 #     
 #     on_mouse_up = d_(Event())
+
+    def _default_tag(self):
+        return self.__class__.__name__.lower()
     
-    @observe('id','tag','cls','style','text','tail','alt','attrs')#,'on_click')
+    @observe('id','tag','cls','style','text','tail','alt','attrs','on_click')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data 
          changes."""
@@ -68,8 +70,16 @@ class Tag(ToolkitObject):
                 handler(change['value'])
             else:
                 self.proxy.set_attribute(change)
+                
+    def find(self, query, first=False): 
+        """ Find nodes matching the given xpath query """
+        nodes =  self.proxy.find(query)
+        if first:
+            return nodes[0].declaration if nodes else None
+        return [n.declaration for n in nodes] if nodes else []
     
-    def render(self, parent=None):
+    def render(self):
+        """ Render to a string"""
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
@@ -382,9 +392,9 @@ class Option(Tag):
 
 class Input(Tag):
     name = d_(Unicode())
-    type = d_(Enum("","radio","checkbox","text","hidden","submit"))
+    type = d_(Enum("","radio","checkbox","text","hidden","submit","password"))
     disabled = d_(Bool())
-    checked = d_(Bool())
+    checked = d_(Unicode())
     value = d_(Value())
     
     @observe('name','type','disabled','checked','value')
