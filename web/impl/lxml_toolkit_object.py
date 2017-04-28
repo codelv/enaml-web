@@ -224,9 +224,9 @@ class WebComponent(ProxyToolkitObject):
     def set_style(self, style):
         self.widget.set('style',style if isinstance(style,basestring) else  ";".join(["{}:{};".format(k,v) for k,v in style.items()]))
     
-    def set_attribute(self,change):
+    def set_attribute(self,name,value):
         """ Default handler for those not explicitly defined"""
-        self.widget.set(change['name'],'{}'.format(change['value']))
+        self.widget.set(name,'{}'.format(value))
         
     #--------------------------------------------------------------------------
     # Event triggers

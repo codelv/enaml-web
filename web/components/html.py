@@ -32,11 +32,14 @@ class Tag(ToolkitObject):
     #: Alt attribute
     alt = d_(Unicode())    
     
-    #: Custom attributes not explicityl defined
+    #: Custom attributes not explicitly defined
     attrs = d_(Dict())
     
-    #:  
+    #:  Event from JS
     on_click = d_(Event())
+    
+    #: Websocket
+    websocket = d_(Instance(object))
     
 #     on_context_menu = d_(Event())
 #     
@@ -59,17 +62,39 @@ class Tag(ToolkitObject):
     def _default_tag(self):
         return self.__class__.__name__.lower()
     
-    @observe('id','tag','cls','style','text','tail','alt','attrs','on_click')
+    @observe('id','tag','cls','style','text','tail','alt','attrs')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data 
          changes."""
         #: Try default handler
         if change['type'] == 'update' and self.proxy_is_active:
+            self._update_client(change)
             handler = getattr(self.proxy, 'set_' + change['name'],None)
             if handler is not None:
                 handler(change['value'])
             else:
-                self.proxy.set_attribute(change)
+                self.proxy.set_attribute(change['name'],change['value'])
+    
+    @observe('websocket')
+    def _update_websocket(self,change):
+        """ When the websocket is set, update all children
+            to have the same websocket.
+        """
+        for c in self.children:
+            if isinstance(c,Tag):
+                c.websocket = self.websocket
+    
+    def _update_client(self, change):
+        """  If a change occurs when we have a websocket connection active
+            notify the websocket client of the change. """
+        if self.websocket is not None:
+            #: TODO: this breaks the declaration / impl pattern
+            self.websocket.sendMessage({
+                'ref':u'{}'.format(id(self)),
+                'type':change['type'],
+                'name':change['name'],
+                'value':change['value']
+            })
                 
     def find(self, query, first=False): 
         """ Find nodes matching the given xpath query """
