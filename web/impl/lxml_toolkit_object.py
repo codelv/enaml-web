@@ -22,7 +22,7 @@ class WebComponent(ProxyToolkitObject):
     
     #: Attributes to exclude from passing to the element
     #: These are either used internally or manually set
-    excluded = Constant(default=('tag','attrs','cls','class','style','activated','initialized','text','tail')) 
+    excluded = Constant(default=('tag','attrs','cls','class','style','activated','initialized','text','tail','websocket')) 
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -170,7 +170,6 @@ class WebComponent(ProxyToolkitObject):
         """ Get the node(s) matching the query"""
         nodes = self.widget.xpath(query)
         if nodes:
-            print nodes
             refs = [node.attrib.get('ref') for node in nodes if node.attrib.get('ref')]
             return [CACHE[ref] for ref in refs if ref in CACHE]
 

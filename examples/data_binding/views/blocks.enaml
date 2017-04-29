@@ -1,0 +1,67 @@
+"""
+Blocks and components shared 
+throughout the site
+
+"""
+from web.components.api import *
+from web.core.api import Looper, Block, Conditional
+
+enamldef Icon(I):
+    tag = 'i'
+    cls = 'material-icons'
+    
+enamldef OneColRow(Div):
+    alias header: h.text
+    alias description: d.text
+    alias content
+    tag = 'div'
+    cls = 'container'
+    Div:
+        cls = 'section'
+        Div:
+            cls = 'row'
+            Div:
+                cls = 'col s12'
+                Block: content:
+                    H4: h:
+                        pass
+                    P: d:
+                        cls = 'left-align light'
+                        pass
+                    
+enamldef TwoColRow(Div):
+    alias col1
+    alias col2
+    tag = 'div'
+    cls = 'container'
+    Div:
+        cls = 'section'
+        Div:
+            cls = 'row'
+            Div:
+                cls = 'col l6 s12'
+                Block: col1:
+                    pass
+            Div:
+                cls = 'col l6 s12'
+                Block: col2:
+                    pass
+                
+            
+enamldef Card(Div): card:
+    alias title
+    alias content
+    alias actions
+    tag = 'div'
+    cls = 'card'
+    Div:
+        cls = 'card-content'
+        Span: title:
+            cls='card-title'
+        Block: content:
+            pass
+    Div:
+        cls = 'card-action'
+        Block: actions:
+            pass
+
