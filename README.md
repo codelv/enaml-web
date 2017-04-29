@@ -2,7 +2,7 @@
 
 Build websites with server side web components constructed using [enaml](https://github.com/nucleic/enaml) views and [lxml](http://lxml.de/) elements.   
 
-_Note: this is still in alpha currently it cannot bind data between the browser and server_
+_Note: this is still in alpha_ ~~currently it cannot bind data between the browser and server~~ Client server data binding added (WIP) 
 
 
 ![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
@@ -14,8 +14,9 @@ _Note: this is still in alpha currently it cannot bind data between the browser 
 2. Potentially 5-10x speedup's vs other template engines (django templates, etc.)
 3. Easily build extendable and reusable model based web components by linking a css framework like Bootstrap, Materialize, etc.. 
 4. Web components are rendered server side which translates to fast client side rendering 
-5. SEO friendly
+5. SEO friendly, everything is loaded like HTTP 1.0.
 6. Use whatever JS you like
+7. Client server data binding using websockets (optional)
 
 ### Usage ###
 
@@ -200,6 +201,17 @@ enamldef AddMessageView(Base): page:
             model << message
    
 ```
+### Data binding ###
+
+_Note: Ths is a WIP and will definitely change _
+
+Any `Tag` instance now supports updating attributes with the bound values when the models change on the _server_  via websockets.  You can also have the client trigger events on the serve and have the server trigger JS events on the client.  
+
+Implementation details soon to follow. . as many things are changing. For now see the data_binding example.
+
+To use:
+1. Include enaml.js in your page
+2. Use a websocket handle and send events 
 
 
  
