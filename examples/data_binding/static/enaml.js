@@ -14,6 +14,22 @@
                 e.preventDefault();
                 Enaml.sendEvent({'ref':$(this).attr('ref'),'type':'event','name':'on_click'});
             });
+            $(":checkbox").on('change',function(){ // Should i just do everthing?
+              Enaml.sendEvent({
+                'ref':$(this).attr('ref'),
+                'type':'update',
+                'name':'checked',
+                'value':($(this).prop('checked'))?'checked':'',
+              });
+            });
+            $("select").on('change',function(){ // Should i just do everthing?
+                Enaml.sendEvent({
+                  'ref':$(this).attr('ref'),
+                  'type':'update',
+                  'name':'value',
+                  'value':$(this).val(),
+                });
+              });
             $('input').on('input',function(){ // Should i just do everthing?
                 Enaml.sendEvent({
                     'ref':$(this).attr('ref'),
@@ -38,23 +54,28 @@
         Enaml.prototype.onMessage = function(event) {
             console.log(event);
             var change = JSON.parse(event.data);
+            var $tag = $('[ref="'+change.ref+'"]');
             if (change.type==="refresh") {
                 this.unobserve();
-                $('[ref="'+change.ref+'"]').html(change.value);
+                $tag.html(change.value);
                 this.observe();
             } else if (change.type==="trigger") {
-                $('[ref="'+change.ref+'"]').trigger(change.value);
+                $tag.trigger(change.value);
             } else if (change.type==="update") {
                 if (change.name==="text") {
-                    $('[ref="'+change.ref+'"]').contents().get(0).nodeValue = change.value;
+                    $tag.contents().get(0).nodeValue = change.value;
+               // TODO: handle tail
                 } else if (change.name==="attrs") {
                     $.map(change.value,function(v,k){
-                        $('[ref="'+change.ref+'"]').attr(k,v);
+                        $tag.prop(k,v);
                     });
                 } else {
-                    $('[ref="'+change.ref+'"]').attr(change.name,change.value);
+                    $tag.prop(change.name,change.value);
                 }
-                
+                // Special hack for materialize...
+                if ($tag.prop('tagName')==='SELECT') {
+                    $tag.material_select();
+                }
             }
         };
         

@@ -4,7 +4,7 @@ Created on Apr 12, 2017
 @author: jrm
 '''
 from atom.api import (
-    Event, Enum, Value, Unicode, Dict, Instance, Bool, observe
+    Event, Enum, ContainerList, Value, Unicode, Dict, Instance, Bool, ForwardInstance, observe
 )
 
 from enaml.core.declarative import d_
@@ -38,9 +38,6 @@ class Tag(ToolkitObject):
     #:  Event from JS
     on_click = d_(Event())
     
-    #: Websocket
-    websocket = d_(Instance(object))
-    
 #     on_context_menu = d_(Event())
 #     
 #     on_dbl_click = d_(Event())
@@ -68,35 +65,37 @@ class Tag(ToolkitObject):
          changes."""
         #: Try default handler
         if change['type'] == 'update' and self.proxy_is_active:
-            self._update_client(change)
+            self._update_clients(change)
             handler = getattr(self.proxy, 'set_' + change['name'],None)
             if handler is not None:
                 handler(change['value'])
             else:
                 self.proxy.set_attribute(change['name'],change['value'])
-    
-    @observe('websocket')
-    def _update_websocket(self,change):
+
+    @observe('websockets')
+    def _update_websockets(self,change):
         """ When the websocket is set, update all children
             to have the same websocket.
         """
-        for c in self.children:
-            if isinstance(c,Tag):
-                c.websocket = self.websocket
+        if change['value'] and self.parent is not None:
+            raise RuntimeError("Cannot set websocket on non parent node")
     
-    def _update_client(self, change):
+    def _update_clients(self, change):
         """  If a change occurs when we have a websocket connection active
             notify the websocket client of the change. """
-        if self.websocket is not None:
-            #: TODO: this breaks the declaration / impl pattern
-            self.websocket.sendMessage({
+        root = self.root_object()
+        if isinstance(root,Html) and root.websockets:
+            msg = {
                 'ref':u'{}'.format(id(self)),
                 'type':change['type'],
                 'name':change['name'],
                 'value':change['value']
-            })
+            }
+            #: TODO: this breaks the declaration / impl pattern
+            for ws in root.websockets:
+                ws.sendMessage(msg)
                 
-    def find(self, query, first=False): 
+    def xpath(self, query, first=False): 
         """ Find nodes matching the given xpath query """
         nodes =  self.proxy.find(query)
         if first:
@@ -112,7 +111,10 @@ class Tag(ToolkitObject):
         return self.proxy.render()
         
 class Html(Tag):
-    pass
+    
+    #: Websocket clients observing changes
+    #: Only to on the root of the tree
+    websockets = d_(ContainerList())
     
 class Head(Tag):
     pass    

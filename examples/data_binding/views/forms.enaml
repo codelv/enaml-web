@@ -182,7 +182,7 @@ template FormControl(Attr, MemberType: Bool):
                     name = str(Attr)
                     id = str(Attr)
                     checked << 'checked' if getattr(model,Attr) else ''
-                    checked :: setattr(model,Attr,change['value'])
+                    checked :: setattr(model,Attr,change['value']=='checked')
                 Span:
                     cls = "lever"
         Div:
@@ -230,7 +230,7 @@ template FormControl(Attr, MemberType: Enum):
             cls = 'row'
             Div:
                 cls = 'input-field col s12'
-                Select:
+                Select: select:
                     name = str(Attr)
                     value := getattr(model, Attr)
                     Looper:
@@ -238,6 +238,7 @@ template FormControl(Attr, MemberType: Enum):
                         Option:
                             text = str(loop_item)
                             value = str(loop_item)
+                            selected << loop_item == getattr(model, Attr)
                 Label:
                     text = label_text
                     attrs = {'for':Attr}

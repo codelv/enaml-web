@@ -8,7 +8,6 @@ from atom.api import Typed,  Constant,  Event
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
-
 CACHE = weakref.WeakValueDictionary()
 
 class WebComponent(ProxyToolkitObject):
@@ -35,34 +34,11 @@ class WebComponent(ProxyToolkitObject):
         toolkit widget and assign it to the 'widget' attribute.
 
         """
-        d = self.declaration
-        attrs = {}
-        
-        #: Set any attributes that may be defined
-        for name,member in d.members().items():
-            if name in self.excluded:
-                continue
-            elif not member.metadata:
-                continue
-            elif not (member.metadata.get('d_member') and member.metadata.get('d_final')):
-                continue
-            
-            if isinstance(member, Event):
-                #: TODO: Handle triggers??
-                #if not d.id: #: Force an ID
-                #   d.id = u'obj-%d' % id(d)
-                #attrs[name.replace("_","")] = "Enaml.trigger('{}','{}')".format(d.id,name)
-                pass
-            else:
-                v = getattr(d,name)
-                if v:
-                    attrs[name] = unicode(v)
-                
         parent = self.parent_widget()
         if parent is None:
-            self.widget = Element('html',attrs)
+            self.widget = Element('html')
         else:
-            self.widget = SubElement(parent,d.tag,attrs)
+            self.widget = SubElement(parent,self.declaration.tag)
         
             
 
@@ -77,6 +53,12 @@ class WebComponent(ProxyToolkitObject):
         widget = self.widget
         if widget is not None:
             d = self.declaration
+            
+            #: Save ref id
+            ref = u'{}'.format(id(d))
+            CACHE[ref] = self
+            widget.set('ref',ref)
+            
             if d.text:
                 self.set_text(d.text)
             if d.tail:
@@ -90,12 +72,20 @@ class WebComponent(ProxyToolkitObject):
             if d.id:
                 widget.set('id',d.id)
             
-            #: Save ref id
-            ref = u'{}'.format(id(d))
-            CACHE[ref] = self
-            widget.set('ref',ref)
-            
-
+            #: Set any attributes that may be defined
+            for name,member in d.members().items():
+                if not member.metadata:
+                    continue
+                elif not (member.metadata.get('d_member') and member.metadata.get('d_final')):
+                    continue
+                elif name in self.excluded:
+                    continue
+                elif isinstance(member,Event):
+                    continue
+                value = getattr(d,name)
+                if value:
+                    self.set_attribute(name, value)
+                
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.
 
@@ -225,6 +215,12 @@ class WebComponent(ProxyToolkitObject):
     
     def set_attribute(self,name,value):
         """ Default handler for those not explicitly defined"""
+        if isinstance(value,bool):
+            if value: 
+                self.widget.set(name,name)
+            else:
+                del self.widget.attrib[name]
+            return
         self.widget.set(name,'{}'.format(value))
         
     #--------------------------------------------------------------------------

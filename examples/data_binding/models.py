@@ -3,13 +3,18 @@ Created on Apr 28, 2017
 
 @author: jrm
 '''
-from atom.api import Atom, ContainerList, Unicode, Int, Enum, Bool
+from atom.api import Atom, ContainerList, Unicode, Int, Enum, Bool, observe
 
 class Employee(Atom):
     name = Unicode()
     age = Int()
     gender = Enum("","male","female")
     current = Bool()
+    
+    @observe('name','age','gender','current')    
+    def _log_change(self,change):
+        pass
+        #print change
     
 class Company(Atom):
     employees = ContainerList(Employee,default=[

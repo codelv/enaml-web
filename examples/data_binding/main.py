@@ -54,13 +54,13 @@ class DemoHandler(cyclone.websocket.WebSocketHandler):
             #: When we get a websocket connection 
             #: set the websocket property of the view so
             #: it can notify the client of changes
-            self.view.websocket = self
+            self.view.websockets.append(self)
         
     def messageReceived(self, message):
         """ When enaml.js sends a message """
         #: Decode message
         change = cyclone.escape.json_decode(message)
-        
+        #print change
         #: Get the owner ID
         ref = change.get('ref')
         if not ref:
@@ -68,7 +68,7 @@ class DemoHandler(cyclone.websocket.WebSocketHandler):
         
         #: Get the server side representation of the node
         #: If found will return the View declaration node
-        node = self.view.find('//*[@ref="{}"]'.format(ref),first=True)
+        node = self.view.xpath('//*[@ref="{}"]'.format(ref),first=True)
         if node is None:
             return
         
@@ -86,7 +86,7 @@ class DemoHandler(cyclone.websocket.WebSocketHandler):
         
     def connectionLost(self, reason):
         if self.is_websocket():
-            self.view.websocket = None
+            self.view.websockets.remove(self)
 
 
 class Application(cyclone.web.Application,object):
