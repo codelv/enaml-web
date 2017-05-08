@@ -61,9 +61,20 @@
                 this.observe();
             } else if (change.type==="trigger") {
                 $tag.trigger(change.value);
+            } else if (change.type==="added") {
+                console.log("Adding...");
+                $tag.append(change.value);
+                console.log(change.value);
+            } else if (change.type==="removed") {
+                $tag.find('[ref="'+change.value+'"]').remove();
             } else if (change.type==="update") {
                 if (change.name==="text") {
-                    $tag.contents().get(0).nodeValue = change.value;
+                    var node = $tag.contents().get(0);
+                    if (!node) {
+                        node = document.createTextNode("");
+                        $tag.append(node);
+                    }
+                    node.nodeValue = change.value;
                // TODO: handle tail
                 } else if (change.name==="attrs") {
                     $.map(change.value,function(v,k){

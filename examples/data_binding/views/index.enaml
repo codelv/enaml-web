@@ -65,7 +65,9 @@ enamldef EmployeeTable(Card): card:
             attrs = {'data-onclick':'1'} # Currently required to handle clicks
             on_click :: 
                 print "clicked"
-                company.employees.append(Employee())
+                employees = company.employees[:]
+                employees.append(Employee())
+                company.employees = employees
                 card.selected = len(company.employees)-1
                 
     

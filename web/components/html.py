@@ -94,7 +94,30 @@ class Tag(ToolkitObject):
             #: TODO: this breaks the declaration / impl pattern
             for ws in root.websockets:
                 ws.sendMessage(msg)
-                
+            
+    def child_added(self, child):
+        super(Tag, self).child_added(child)
+        if isinstance(child, Tag) and self.proxy_is_active:
+            change = {
+                'type':'added',
+                'name':'children',
+                #'before':self.ch #: TODO: Handle placement?
+                'value':child.render()
+            }
+            print change
+            self._update_clients(change)
+    
+    def child_removed(self, child):
+        super(Tag, self).child_removed(child)
+        if isinstance(child, Tag) and self.proxy_is_active:
+            change = {
+                'type':'removed',
+                'name':'children',
+                'value':u'{}'.format(id(child)),
+            }
+            print change
+            self._update_clients(change)
+                    
     def xpath(self, query, first=False): 
         """ Find nodes matching the given xpath query """
         nodes =  self.proxy.find(query)
