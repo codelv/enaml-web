@@ -2,7 +2,7 @@ from web.components.api import *
 from web.core.api import Block, Looper, Conditional
 from views.base import Page
 from views.forms import AutoForm
-from views.blocks import OneColRow, TwoColRow, Card, Icon
+from views.blocks import OneColRow, TwoColRow, Card, Icon, Checkbox
 from models import Company, Employee
 
 enamldef EmployeeTable(Card): card:
@@ -30,8 +30,7 @@ enamldef EmployeeTable(Card): card:
                 THead:
                     Tr:
                         Th:
-                            Input:
-                                type = 'checkbox'
+                            text = "#"
                         Looper:
                             iterable << columns
                             Th:
@@ -45,8 +44,11 @@ enamldef EmployeeTable(Card): card:
                         Tr:
                             attr item << loop_item
                             Td:
-                                Input:
-                                    type = 'checkbox'
+                                Checkbox:
+                                    checked << card.selected == loop_index
+                                    attrs = {'data-onclick':'1'} # Currently required to handle clicks
+                                    on_click ::
+                                        card.selected = loop_index
                             Looper:
                                 iterable << columns
                                 Td:

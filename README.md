@@ -5,6 +5,10 @@ Build websites with server side web components constructed using [enaml](https:/
 _Note: this is still in alpha_ ~~currently it cannot bind data between the browser and server~~ Client server data binding added (WIP) 
 
 
+Binding:
+![Data binding](https://github.com/frmdstryr/enaml-web/blob/master/docs/data-binding.gif?raw=true)
+
+Form:
 ![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
 
 

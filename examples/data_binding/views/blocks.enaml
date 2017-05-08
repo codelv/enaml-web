@@ -10,6 +10,20 @@ enamldef Icon(I):
     tag = 'i'
     cls = 'material-icons'
     
+enamldef Checkbox(P): checkbox:
+    attr field = ""
+    attr checked
+    tag = 'p'
+    Input: 
+        type = 'checkbox'
+        name << str(field)
+        id << str(field)
+        checked << 'checked' if checkbox.checked else ''
+        checked :: checkbox.checked = change['value']=="checked"
+    Label:
+        text << str(field).title()
+        attrs << {'for':str(field)}
+
 enamldef OneColRow(Div):
     alias header: h.text
     alias description: d.text
