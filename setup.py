@@ -15,6 +15,6 @@ setup(
     license = "MIT",
     long_description=open('README.md').read(),
     requires=['enaml',],
-    install_requires=['distribute', 'enaml >= 0.9.8'],
+    install_requires=['distribute', 'enaml >= 0.9.8','lxml>=3.4.0'],
     packages=find_packages(),
 )
