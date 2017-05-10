@@ -126,7 +126,8 @@ enamldef Page(Html):
             rel="stylesheet"
             href="/static/materialize/css/style.css"
         Meta:
-            attrs = dict(name="viewport",width="device-width, initial-scale=1.0")
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
     Body:
         PageHeader:
             nav_title << site.title
