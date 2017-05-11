@@ -120,6 +120,8 @@ class Tag(ToolkitObject):
                     
     def xpath(self, query, first=False): 
         """ Find nodes matching the given xpath query """
+        if not self.proxy:
+            return
         nodes =  self.proxy.find(query)
         if first:
             return nodes[0].declaration if nodes else None
@@ -461,8 +463,23 @@ class Textarea(Tag):
         super(Textarea, self)._update_proxy(change)
     
 class Button(Tag):
-    type=d_(Unicode())
+    type = d_(Unicode())
     
     @observe('type')
     def _update_proxy(self, change):
         super(Button, self)._update_proxy(change)
+
+class Video(Tag):
+    controls = d_(Bool())
+    
+    @observe('controls')
+    def _update_proxy(self, change):
+        super(Video, self)._update_proxy(change)
+
+class Source(Tag):
+    src = d_(Unicode())
+    type = d_(Unicode())
+    
+    @observe('src','type')
+    def _update_proxy(self, change):
+        super(Source, self)._update_proxy(change)
