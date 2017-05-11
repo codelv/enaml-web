@@ -92,7 +92,7 @@
         
         Enaml.prototype.connect = function() {
             var Enaml = this;
-            var url = "ws://localhost:8888"+window.location.pathname;
+            var url = "ws://"+window.location.host+window.location.pathname;
             console.log("Connecting to "+url);
             this.ws = new WebSocket(url);
             this.ws.onopen = function(e){
