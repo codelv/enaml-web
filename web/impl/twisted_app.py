@@ -10,6 +10,7 @@ from twisted.web import server
 from twisted.python import log
 from web.impl.lxml_app import LxmlApplication
 
+
 class TwistedApplication(LxmlApplication):
     #: Twisted site to run
     site = Instance(server.Site)
@@ -21,8 +22,10 @@ class TwistedApplication(LxmlApplication):
     log = Instance(object,factory=lambda:sys.stdout)
     
     def _default_endpoint(self):
-        """ By default return a TCP4ServerEndpoint on the given port and interface if none is passed"""
-        return  endpoints.TCP4ServerEndpoint(reactor, self.port, interface=self.interface)
+        """ By default return a TCP4ServerEndpoint
+            on the given port and interface if none is passed
+        """
+        return endpoints.TCP4ServerEndpoint(reactor, self.port, interface=self.interface)
         
     def start(self):
         """ Start the application's main event loop.
@@ -37,8 +40,8 @@ class TwistedApplication(LxmlApplication):
         """ Stop the application's main event loop.
 
         """
-        reactor.shutdown()
-    
+        reactor.stop()
+
     def deferred_call(self, callback, *args, **kwargs):
         """ Invoke a callable on the next cycle of the main event loop
         thread.
@@ -53,7 +56,7 @@ class TwistedApplication(LxmlApplication):
             the callback.
 
         """
-        reactor.callWhenRunning(callback,*args,**kwargs)
+        reactor.callFromThread(callback, *args, **kwargs)
     
     def timed_call(self, ms, callback, *args, **kwargs):
         """ Invoke a callable on the main event loop thread at a
@@ -73,7 +76,7 @@ class TwistedApplication(LxmlApplication):
             the callback.
 
         """
-        reactor.callLater(ms/1000.0,callback,*args,**kwargs)
+        reactor.callLater(ms/1000.0, callback, *args, **kwargs)
     
     def is_main_thread(self):
         """ Indicates whether the caller is on the main gui thread.

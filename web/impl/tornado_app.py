@@ -30,7 +30,7 @@ class TornadoApplication(LxmlApplication):
 
         """
         self.ioloop.stop()
-    
+
     def deferred_call(self, callback, *args, **kwargs):
         """ Invoke a callable on the next cycle of the main event loop
         thread.

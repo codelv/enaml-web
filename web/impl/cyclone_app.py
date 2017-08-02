@@ -7,6 +7,7 @@ import cyclone.web
 from atom.api import Instance
 from web.impl.twisted_app import TwistedApplication, log, reactor
 
+
 class CycloneApplication(TwistedApplication):
     #: Pass in cyclone web application
     app = Instance(cyclone.web.Application)
@@ -17,5 +18,5 @@ class CycloneApplication(TwistedApplication):
         """
         if self.log:
             log.startLogging(self.log)
-        reactor.listenTCP(self.port,self.app,interface=self.interface)
+        reactor.listenTCP(self.port, self.app, interface=self.interface)
         reactor.run()
