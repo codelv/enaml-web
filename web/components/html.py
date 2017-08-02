@@ -1,16 +1,30 @@
 '''
-Created on Apr 12, 2017
+Copyright (c) 2017, Jairus Martin.
+
+Distributed under the terms of the MIT License.
+
+The full license is in the file COPYING.txt, distributed with this software.
+
+Created on Apr 2, 2017
 
 @author: jrm
 '''
 from atom.api import (
-    Event, Enum, ContainerList, Value, Unicode, Dict, Instance, Bool, ForwardInstance, observe
+    Event, Enum, ContainerList, Value, Unicode, Dict, Instance, Bool, ForwardTyped, Typed, observe
 )
 
 from enaml.core.declarative import d_
-from enaml.widgets.toolkit_object import ToolkitObject
+from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
+
+
+class ProxyTag(ProxyToolkitObject):
+    declaration = ForwardTyped(lambda: Tag)
+
 
 class Tag(ToolkitObject):
+    #: Reference to the proxy object
+    proxy = Typed(ProxyTag)
+
     #: Object ID
     id = d_(Unicode())
     
@@ -18,10 +32,10 @@ class Tag(ToolkitObject):
     tag = d_(Unicode())
     
     #: CSS classes
-    cls = d_(Instance((list,basestring)))
+    cls = d_(Instance((list, basestring)))
     
     #: CSS styles
-    style = d_(Instance((dict,basestring)))
+    style = d_(Instance((dict, basestring)))
     
     #: Node text
     text = d_(Unicode())
@@ -86,10 +100,10 @@ class Tag(ToolkitObject):
         root = self.root_object()
         if isinstance(root,Html) and root.websockets:
             msg = {
-                'ref':u'{}'.format(id(self)),
-                'type':change['type'],
-                'name':change['name'],
-                'value':change['value']
+                'ref': u'{}'.format(id(self)),
+                'type': change['type'],
+                'name': change['name'],
+                'value': change['value']
             }
             #: TODO: this breaks the declaration / impl pattern
             for ws in root.websockets:
@@ -111,9 +125,9 @@ class Tag(ToolkitObject):
         super(Tag, self).child_removed(child)
         if isinstance(child, Tag) and self.proxy_is_active:
             change = {
-                'type':'removed',
-                'name':'children',
-                'value':u'{}'.format(id(child)),
+                'type': 'removed',
+                'name': 'children',
+                'value': u'{}'.format(id(child)),
             }
             print change
             self._update_clients(change)
@@ -122,7 +136,7 @@ class Tag(ToolkitObject):
         """ Find nodes matching the given xpath query """
         if not self.proxy:
             return
-        nodes =  self.proxy.find(query)
+        nodes = self.proxy.find(query)
         if first:
             return nodes[0].declaration if nodes else None
         return [n.declaration for n in nodes] if nodes else []
@@ -134,9 +148,9 @@ class Tag(ToolkitObject):
         if not self.proxy_is_active:
             self.activate_proxy()
         return self.proxy.render()
-        
+
+
 class Html(Tag):
-    
     #: Websocket clients observing changes
     #: Only to on the root of the tree
     websockets = d_(ContainerList())
@@ -180,8 +194,8 @@ class Br(Tag):
 class Pre(Tag):
     pass
 
-class Code(Tag):
-    pass
+#class Code(Tag):
+#    pass
 
 class Kbd(Tag):
     pass

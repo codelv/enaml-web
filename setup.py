@@ -16,6 +16,6 @@ setup(
     long_description=open('README.md').read(),
     requires=['enaml'],
     install_requires=['distribute', 'enaml >= 0.9.8', 'lxml>=3.4.0'],
-    optional_requires=['watchdog'],
+    optional_requires=['watchdog', 'Pygments', 'Markdown'],
     packages=find_packages(),
 )

@@ -1,27 +1,36 @@
 '''
+Copyright (c) 2017, Jairus Martin.
+
+Distributed under the terms of the MIT License.
+
+The full license is in the file COPYING.txt, distributed with this software.
+
 Created on Apr 12, 2017
 
 @author: jrm
 '''
 import weakref
 from atom.api import Typed,  Constant,  Event
-from enaml.widgets.toolkit_object import ProxyToolkitObject
+from web.components.html import ProxyTag
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
 CACHE = weakref.WeakValueDictionary()
 
-class WebComponent(ProxyToolkitObject):
+
+class WebComponent(ProxyTag):
     """ An lxml implementation of an Enaml ProxyToolkitObject.
 
     """
-    __slots__=('__weakref__',)
+    __slots__ = ('__weakref__',)
     
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
     
     #: Attributes to exclude from passing to the element
     #: These are either used internally or manually set
-    excluded = Constant(default=('tag','attrs','cls','class','style','activated','initialized','text','tail','websocket')) 
+    excluded = Constant(default=('tag', 'attrs', 'cls', 'class',
+                                 'style', 'activated', 'initialized',
+                                 'text', 'tail', 'websocket'))
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -38,10 +47,8 @@ class WebComponent(ProxyToolkitObject):
         if parent is None:
             self.widget = Element('html')
         else:
-            self.widget = SubElement(parent,self.declaration.tag)
+            self.widget = SubElement(parent, self.declaration.tag)
         
-            
-
     def init_widget(self):
         """ Initialize the state of the toolkit widget.
 
@@ -57,7 +64,7 @@ class WebComponent(ProxyToolkitObject):
             #: Save ref id
             ref = u'{}'.format(id(d))
             CACHE[ref] = self
-            widget.set('ref',ref)
+            widget.set('ref', ref)
             
             if d.text:
                 self.set_text(d.text)
@@ -70,10 +77,10 @@ class WebComponent(ProxyToolkitObject):
             if d.attrs:
                 self.set_attrs(d.attrs)
             if d.id:
-                widget.set('id',d.id)
+                widget.set('id', d.id)
             
             #: Set any attributes that may be defined
-            for name,member in d.members().items():
+            for name, member in d.members().items():
                 if not member.metadata:
                     continue
                 elif not (member.metadata.get('d_member') and member.metadata.get('d_final')):
@@ -154,7 +161,7 @@ class WebComponent(ProxyToolkitObject):
     #--------------------------------------------------------------------------
     def render(self):
         """ Render the widget tree into a string """
-        return tostring(self.widget,pretty_print=True)
+        return tostring(self.widget, pretty_print=True)
     
     def find(self, query):
         """ Get the node(s) matching the query"""
@@ -208,24 +215,22 @@ class WebComponent(ProxyToolkitObject):
         self.widget.attrib.update(attrs)
         
     def set_cls(self, cls):
-        self.widget.set('class',cls  if isinstance(cls,basestring) else " ".join(cls))
+        self.widget.set('class', cls if isinstance(cls, basestring) else " ".join(cls))
         
     def set_style(self, style):
-        self.widget.set('style',style if isinstance(style,basestring) else  ";".join(["{}:{};".format(k,v) for k,v in style.items()]))
+        self.widget.set('style', style if isinstance(style,basestring)
+                        else ";".join(["{}:{};".format(k, v) for k, v in style.items()]))
     
-    def set_attribute(self,name,value):
+    def set_attribute(self, name, value):
         """ Default handler for those not explicitly defined"""
-        if isinstance(value,bool):
+        if isinstance(value, bool):
             if value: 
-                self.widget.set(name,name)
+                self.widget.set(name, name)
             else:
                 del self.widget.attrib[name]
             return
-        self.widget.set(name,'{}'.format(value))
+        self.widget.set(name, '{}'.format(value))
         
     #--------------------------------------------------------------------------
     # Event triggers
     #--------------------------------------------------------------------------
-    
-    
-    
