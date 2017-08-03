@@ -25,14 +25,7 @@ class RawComponent(WebComponent, ProxyRawNode):
             self.set_source(d.source)
 
     def set_source(self, source):
-        """ """
-        print("set source {}".format(source))
+        """ Set the source by parsing the source and inserting it into the component. """
         root = etree.HTML(source)
-        print("parsed {}".format(root))
         self.widget.clear()
-        print("clear")
         self.widget.append(root)
-        print("append")
-        ##: Add it as a sub element
-        #self.widget.write(root)
-
