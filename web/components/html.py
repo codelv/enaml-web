@@ -458,7 +458,7 @@ class Option(Tag):
 
 class Input(Tag):
     name = d_(Unicode())
-    type = d_(Enum("","radio","checkbox","text","hidden","submit","password"))
+    type = d_(Enum("", "radio", "checkbox", "text", "hidden", "submit", "password", "email"))
     disabled = d_(Bool())
     checked = d_(Unicode())
     value = d_(Value())
