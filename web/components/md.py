@@ -41,10 +41,10 @@ class Markdown(Raw):
     """ A block for rendering Markdown source. """
 
     #: Extensions to use when rendering
-    extensions = d_(List(basestring))
+    extensions = d_(List(basestring, default=["markdown.extensions.codehilite"]))
 
     #: Configuration for them
-    extension_configs = d_(Dict(default={
+    extension_configs = d_(Dict(basestring, dict, default={
         'markdown.extensions.codehilite': {'css_class':'highlight'},
     }))
 
