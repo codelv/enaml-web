@@ -10,7 +10,7 @@ Created on Aug 2, 2017
 @author: jrm
 '''
 from atom.api import (
-    Typed, ForwardTyped, Enum, Int, Bool, observe
+    Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
 )
 
 from enaml.core.declarative import d_
@@ -30,9 +30,23 @@ class ProxyMarkdown(ProxyRawNode):
     def set_tab_length(self, length):
         raise NotImplementedError
 
+    def set_extensions(self, extensions):
+        raise NotImplementedError
+
+    def set_extensions_config(self, config):
+        raise NotImplementedError
+
 
 class Markdown(Raw):
     """ A block for rendering Markdown source. """
+
+    #: Extensions to use when rendering
+    extensions = d_(List(basestring))
+
+    #: Configuration for them
+    extension_configs = d_(Dict(default={
+        'markdown.extensions.codehilite': {'css_class':'highlight'},
+    }))
 
     #: Reference to the proxy
     proxy = Typed(ProxyMarkdown)
@@ -46,7 +60,7 @@ class Markdown(Raw):
     #: Tab size
     tab_length = d_(Int(4))
 
-    @observe('safe_mode', 'output_format', 'tab_length')
+    @observe('extensions', 'extension_configs', 'safe_mode', 'output_format', 'tab_length')
     def _update_proxy(self, change):
         """ The superclass implementation is sufficient. """
         super(Markdown, self)._update_proxy(change)
