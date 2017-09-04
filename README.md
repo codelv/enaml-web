@@ -2,14 +2,11 @@
 
 Build websites with server side web components constructed using [enaml](https://github.com/nucleic/enaml) views and [lxml](http://lxml.de/) elements.   
 
-_Note: this is still in alpha_ ~~currently it cannot bind data between the browser and server~~ Client server data binding added (WIP) 
+### Websites using this
 
+- [www.codelv.com](https://www.codelv.com/) - Built entirely using enaml-web (and cyclone)
 
-Binding:
-![Data binding](https://github.com/frmdstryr/enaml-web/blob/master/docs/data-binding.gif?raw=true)
-
-Form:
-![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
+If you made one, let me know!
 
 
 ### Features ###
@@ -21,6 +18,16 @@ Form:
 5. SEO friendly, everything is loaded like HTTP 1.0.
 6. Use whatever JS you like
 7. Client server data binding using websockets (optional)
+8. Render markdown (with code highlighting) with python-markdown
+9. Code highlighting with pygments
+10. Auto reloading when you make a change in dev mode (like django's)
+
+
+Binding:
+![Data binding](https://github.com/frmdstryr/enaml-web/blob/master/docs/data-binding.gif?raw=true)
+
+Form:
+![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
 
 ### Usage ###
 
