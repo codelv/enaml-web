@@ -9,6 +9,7 @@ Created on Apr 17, 2017
 
 @author: jrm
 '''
+from past.builtins import basestring
 import sys
 import atexit
 import subprocess

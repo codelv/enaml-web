@@ -9,6 +9,7 @@ Created on Apr 12, 2017
 
 @author: jrm
 '''
+from past.builtins import basestring
 import weakref
 from atom.api import Typed,  Constant,  Event
 from web.components.html import ProxyTag
