@@ -109,7 +109,10 @@ class Tag(ToolkitObject):
             }
             #: TODO: this breaks the declaration / impl pattern
             for ws in root.websockets:
-                ws.sendMessage(msg)
+                if hasattr(ws,'sendMessage'):
+                    ws.sendMessage(msg)
+                else:
+                    ws.write_message(msg)
             
     def child_added(self, child):
         super(Tag, self).child_added(child)
