@@ -9,6 +9,7 @@ Created on Aug 2, 2017
 
 @author: jrm
 '''
+from past.builtins import basestring
 from atom.api import (
     Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
 )

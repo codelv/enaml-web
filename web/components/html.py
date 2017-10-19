@@ -9,6 +9,8 @@ Created on Apr 2, 2017
 
 @author: jrm
 '''
+from __future__ import print_function
+from past.builtins import basestring
 from atom.api import (
     Event, Enum, ContainerList, Value, Unicode, Dict, Instance, Bool, ForwardTyped, Typed, observe
 )
@@ -118,7 +120,7 @@ class Tag(ToolkitObject):
                 #'before':self.ch #: TODO: Handle placement?
                 'value':child.render()
             }
-            print change
+            print(change)
             self._update_clients(change)
     
     def child_removed(self, child):
@@ -129,7 +131,7 @@ class Tag(ToolkitObject):
                 'name': 'children',
                 'value': u'{}'.format(id(child)),
             }
-            print change
+            print(change)
             self._update_clients(change)
                     
     def xpath(self, query, first=False): 
