@@ -37,12 +37,3 @@ FACTORIES.update({
     'Code': code_factory,
     'Markdown': markdown_factory,
 })
-
-
-
-
-
-
-    
-    
-    
