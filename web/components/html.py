@@ -22,6 +22,12 @@ from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 class ProxyTag(ProxyToolkitObject):
     declaration = ForwardTyped(lambda: Tag)
 
+    def _write_to_websocket(self, websocket, message):
+        """ Write the given data to the given websocket using the underlying
+            toolkit server implementation.
+        """
+        raise NotImplementedError
+
 
 class Tag(ToolkitObject):
     #: Reference to the proxy object
@@ -100,16 +106,15 @@ class Tag(ToolkitObject):
         """  If a change occurs when we have a websocket connection active
             notify the websocket client of the change. """
         root = self.root_object()
-        if isinstance(root,Html) and root.websockets:
+        if isinstance(root, Html) and root.websockets:
             msg = {
                 'ref': u'{}'.format(id(self)),
                 'type': change['type'],
                 'name': change['name'],
                 'value': change['value']
             }
-            #: TODO: this breaks the declaration / impl pattern
             for ws in root.websockets:
-                ws.sendMessage(msg)
+                self.proxy._write_to_websocket(ws, msg)
             
     def child_added(self, child):
         super(Tag, self).child_added(child)

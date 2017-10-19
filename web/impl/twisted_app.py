@@ -105,3 +105,16 @@ class TwistedApplication(LxmlApplication):
 
         """
         raise NotImplementedError
+
+    def write_to_websocket(self, websocket, message):
+        """ Send message data to a twisted websocket.
+
+        Parameters
+        -----------
+        websocket :
+            A websocket object for the given toolkit
+        message : str or bytes
+            Data to send to the websocket
+
+        """
+        websocket.sendMessage(message)

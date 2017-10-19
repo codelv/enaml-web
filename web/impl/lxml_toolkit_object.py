@@ -15,6 +15,7 @@ from atom.api import Typed,  Constant,  Event
 from web.components.html import ProxyTag
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
+from lxml_app import LxmlApplication
 CACHE = weakref.WeakValueDictionary()
 
 
@@ -235,3 +236,6 @@ class WebComponent(ProxyTag):
     #--------------------------------------------------------------------------
     # Event triggers
     #--------------------------------------------------------------------------
+    def _write_to_websocket(self, websocket, message):
+        """ Defer to the current application instance """
+        LxmlApplication.instance().write_to_websocket(websocket, message)

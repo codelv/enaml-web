@@ -94,3 +94,17 @@ class TornadoApplication(LxmlApplication):
 
         """
         raise NotImplementedError
+
+    def write_to_websocket(self, websocket, message):
+        """ Send message data to the websocket. Subclasses must implement this
+        for data binding.
+
+        Parameters
+        -----------
+        websocket :
+            A websocket object for the given toolkit
+        message : str or bytes
+            Data to send to the websocket
+
+        """
+        websocket.write_message(message)
