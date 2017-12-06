@@ -39,15 +39,16 @@ class Block(Declarative):
 
         """
         super(Block, self).initialize()
-        
-        if self.block:  #: This block is setting the content of another block
+
+        block = self.block
+        if block:  #: This block is setting the content of another block
             #: Remove the existing blocks children
             if self.mode == 'replace':
                 #: Clear the blocks children
-                for c in self.block.children:
+                for c in block.children:
                     c.destroy()
             #: Add this blocks children to the other block
-            self.block.insert_children(None, self.children)
+            block.insert_children(None, self.children)
             
         else:  #: This block is inserting it's children into it's parent
             self.parent.insert_children(self, self.children)
@@ -60,29 +61,36 @@ class Block(Declarative):
         objects will be destroyed if the 'destroy_old' flag is True.
 
         """
-        if self.is_initialized:
-            if change['type'] == 'update':
-                old_block = change['oldvalue']
-                old_block.parent.remove_children(old_block, self.children)
-                new_block = change['value']
-                new_block.parent.insert_children(new_block, self.children)
+        if self.is_initialized and change['type'] == 'update':
+            old_block = change['oldvalue']
+            old_block.parent.remove_children(old_block, self.children)
+            new_block = change['value']
+            new_block.parent.insert_children(new_block, self.children)
                 
-    def _observe__children(self, change):            
-        if not self.is_initialized:
+    def _observe__children(self, change):
+        """ When the children of the block change. Update the referenced
+        block.
+        
+        """
+        if not self.is_initialized or change['type'] != 'update':
             return
-        if change['type'] == 'update':
-            if self.block:
-                if self.mode == 'replace':
-                    self.block.children = change['value']
-                else:
-                    for c in change['oldvalue']:
-                        self.block.children.remove(c)
-                        c.destroy()
-                    before = (self.block.children[-1]
-                              if self.block.children else None)
-                    self.block.insert_children(before, change['value'])
+
+        block = self.block
+        if block:
+            #: This block is inserting into another block
+            if self.mode == 'replace':
+                block.children = change['value']
             else:
                 for c in change['oldvalue']:
-                    if c not in change['value']:
-                        c.destroy()
-                self.parent.insert_children(self, change['value'])
+                    block.children.remove(c)
+                    c.destroy()
+                before = (block.children[-1]
+                          if block.children else None)
+                block.insert_children(before, change['value'])
+        else:
+            #: This block is a placeholder
+            new_children = change['value']
+            for c in change['oldvalue']:
+                if c not in new_children:
+                    c.destroy()
+            self.parent.insert_children(self, change['value'])

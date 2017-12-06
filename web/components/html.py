@@ -120,12 +120,11 @@ class Tag(ToolkitObject):
         super(Tag, self).child_added(child)
         if isinstance(child, Tag) and self.proxy_is_active:
             change = {
-                'type':'added',
-                'name':'children',
+                'type': 'added',
+                'name': 'children',
                 #'before':self.ch #: TODO: Handle placement?
-                'value':child.render()
+                'value': child.render()
             }
-            print(change)
             self._update_clients(change)
     
     def child_removed(self, child):
@@ -136,7 +135,6 @@ class Tag(ToolkitObject):
                 'name': 'children',
                 'value': u'{}'.format(id(child)),
             }
-            print(change)
             self._update_clients(change)
                     
     def xpath(self, query, first=False): 
