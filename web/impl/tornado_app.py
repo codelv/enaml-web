@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
@@ -8,11 +8,12 @@ The full license is in the file COPYING.txt, distributed with this software.
 Created on Apr 12, 2017
 
 @author: jrm
-'''
+"""
 import tornado.ioloop
 import tornado.web
 from atom.api import Instance
 from web.impl.lxml_app import LxmlApplication
+
 
 class TornadoApplication(LxmlApplication):
     #: Tornado app to run
@@ -51,7 +52,7 @@ class TornadoApplication(LxmlApplication):
             the callback.
 
         """
-        self.ioloop.add_callback(callback,*args,**kwargs)
+        self.ioloop.add_callback(callback, *args, **kwargs)
     
     def timed_call(self, ms, callback, *args, **kwargs):
         """ Invoke a callable on the main event loop thread at a
@@ -71,7 +72,7 @@ class TornadoApplication(LxmlApplication):
             the callback.
 
         """
-        self.ioloop.call_later(ms/1000.0,callback,*args,**kwargs)
+        self.ioloop.call_later(ms/1000.0, callback, *args, **kwargs)
     
     def is_main_thread(self):
         """ Indicates whether the caller is on the main gui thread.

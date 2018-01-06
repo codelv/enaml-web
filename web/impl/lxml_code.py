@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
@@ -8,7 +8,7 @@ The full license is in the file COPYING.txt, distributed with this software.
 Created on Aug 2, 2017
 
 @author: jrm
-'''
+"""
 import pygments
 from pygments import lexers, formatters
 from .lxml_raw import RawComponent
@@ -30,7 +30,8 @@ class CodeComponent(RawComponent, ProxyCode):
         formatter = formatters.get_formatter_by_name(d.output_format)
         if not formatter:
             raise ValueError("Could not determine the formatter for {}. "
-                             "Please define it explicitly.".format(d.output_format))
+                             "Please define it explicitly.".format(
+                             d.output_format))
         source = pygments.highlight(code,
                                     lexer=Lexer(),
                                     formatter=formatter)

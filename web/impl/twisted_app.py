@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
@@ -8,7 +8,7 @@ The full license is in the file COPYING.txt, distributed with this software.
 Created on Apr 12, 2017
 
 @author: jrm
-'''
+"""
 import sys
 from atom.api import Instance
 from twisted.internet import reactor, endpoints
@@ -25,13 +25,14 @@ class TwistedApplication(LxmlApplication):
     endpoint = Instance(endpoints._TCPServerEndpoint)
     
     #: Log location
-    log = Instance(object,factory=lambda:sys.stdout)
+    log = Instance(object, factory=lambda: sys.stdout)
     
     def _default_endpoint(self):
         """ By default return a TCP4ServerEndpoint
             on the given port and interface if none is passed
         """
-        return endpoints.TCP4ServerEndpoint(reactor, self.port, interface=self.interface)
+        return endpoints.TCP4ServerEndpoint(reactor, self.port,
+                                            interface=self.interface)
         
     def start(self):
         """ Start the application's main event loop.

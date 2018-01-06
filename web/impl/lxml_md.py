@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
@@ -8,7 +8,7 @@ The full license is in the file COPYING.txt, distributed with this software.
 Created on Aug 2, 2017
 
 @author: jrm
-'''
+"""
 import markdown
 from .lxml_raw import RawComponent
 from web.components.md import ProxyMarkdown
@@ -35,7 +35,8 @@ class MarkdownComponent(RawComponent, ProxyMarkdown):
             extension_configs=d.extension_configs
         )
         #: Parse source to html
-        super(MarkdownComponent, self).set_source("<div>{}</div>".format(source))
+        super(MarkdownComponent, self).set_source(
+            "<div>{}</div>".format(source))
 
     def set_source(self, source):
         self._refresh_source()

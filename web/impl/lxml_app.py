@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
@@ -8,7 +8,7 @@ The full license is in the file COPYING.txt, distributed with this software.
 Created on Apr 17, 2017
 
 @author: jrm
-'''
+"""
 import sys
 import atexit
 import subprocess
@@ -51,11 +51,11 @@ class LxmlApplication(Application):
         """ By default, reload automatically when in debug mode. """
         return self.debug
     
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         """ Initialize a WebApplication.
 
         """
-        super(LxmlApplication, self).__init__(*args,**kwargs)
+        super(LxmlApplication, self).__init__(*args, **kwargs)
         self.resolver = ProxyResolver(factories=lxml_components.FACTORIES)
 
         if self.debug and self.auto_reload:
@@ -77,7 +77,7 @@ class LxmlApplication(Application):
 
             def on_any_event(self, event):
                 for p in app.auto_reload_patterns:
-                    if fnmatch(event.src_path,p):
+                    if fnmatch(event.src_path, p):
                         print("Detected changes in {}, scheduling reload..."
                               .format(event.src_path))
                         app.deferred_call(self.queue_reload)
@@ -110,7 +110,10 @@ class LxmlApplication(Application):
             self.auto_reloader.wait()
 
     def reload(self):
-        """ Reload the app when a source file changes. Currently restarts the process. """
+        """ Reload the app when a source file changes. 
+        Currently restarts the process. 
+        
+        """
         if not self.debug or not self.auto_reload:
             return  #: Just in case
         #: Stop reloader
@@ -128,9 +131,9 @@ class LxmlApplication(Application):
         #: Stop
         self.stop()
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Websocket API
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def write_to_websocket(self, websocket, message):
         """ Send message data to the websocket. Subclasses must implement this
         for data binding.

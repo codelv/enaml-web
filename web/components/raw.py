@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
@@ -8,7 +8,7 @@ The full license is in the file COPYING.txt, distributed with this software.
 Created on Aug 2, 2017
 
 @author: jrm
-'''
+"""
 from atom.api import Unicode, Typed, ForwardTyped, set_default, observe
 from enaml.core.declarative import d_
 from .html import Tag, ProxyTag

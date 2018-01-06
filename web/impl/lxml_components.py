@@ -1,4 +1,4 @@
-'''
+"""
 Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
@@ -8,7 +8,7 @@ The full license is in the file COPYING.txt, distributed with this software.
 Created on Apr 12, 2017
 
 @author: jrm
-'''
+"""
 import inspect
 from web.components import html
 
@@ -29,7 +29,8 @@ def markdown_factory():
 
 #: Create generic html factories
 FACTORIES = {
-    name: generic_factory for name, obj in inspect.getmembers(html) if inspect.isclass(obj)
+    name: generic_factory for name, obj in inspect.getmembers(html)
+    if inspect.isclass(obj)
 }
 
 #: Create special widgets
