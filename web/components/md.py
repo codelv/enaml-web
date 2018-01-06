@@ -41,7 +41,7 @@ class Markdown(Raw):
     """ A block for rendering Markdown source. """
 
     #: Extensions to use when rendering
-    extensions = d_(List(basestring, default=[
+    extensions = d_(List(default=[
         "markdown.extensions.codehilite",
         "markdown.extensions.fenced_code",
     ]))
