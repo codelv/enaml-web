@@ -9,7 +9,6 @@ Created on Apr 17, 2017
 
 @author: jrm
 '''
-from past.builtins import basestring
 import sys
 import atexit
 import subprocess
@@ -37,10 +36,10 @@ class LxmlApplication(Application):
     auto_reload = Bool()
 
     #: Reload when a source file within these directories changes
-    auto_reload_dirs = List(basestring, default=['.'])
+    auto_reload_dirs = List(default=['.'])
 
     #: Reload when a file matching one of these patterns changes
-    auto_reload_patterns = List(basestring, default=['*.py', '*.enaml'])
+    auto_reload_patterns = List(default=['*.py', '*.enaml'])
 
     #: Generic reloader object
     auto_reloader = Value()
