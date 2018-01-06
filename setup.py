@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='enaml-web',
-    version='0.1.2',
+    version='0.2.0',
     author='frmdstryr',
     author_email='frmdstryr@gmail.com',
     url='https://gitlab.com/frmdstryr/enaml-web',
