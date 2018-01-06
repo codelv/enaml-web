@@ -10,6 +10,7 @@ Created on Apr 2, 2017
 @author: jrm
 """
 from __future__ import print_function
+from past.builtins import basestring
 from atom.api import (
     Event, Enum, ContainerList, Value, Unicode, Dict, Instance, Bool,
     ForwardTyped, Typed, observe
