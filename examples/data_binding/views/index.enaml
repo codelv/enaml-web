@@ -47,7 +47,7 @@ enamldef EmployeeTable(Card): card:
                                 Checkbox:
                                     checked << card.selected == loop_index
                                     attrs = {'data-onclick':'1'} # Currently required to handle clicks
-                                    on_click ::
+                                    clicked ::
                                         card.selected = loop_index
                             Looper:
                                 iterable << columns
@@ -63,7 +63,7 @@ enamldef EmployeeTable(Card): card:
         A:
             text = "Add"
             attrs = {'data-onclick':'1'} # Currently required to handle clicks
-            on_click :: 
+            clicked ::
                 print "clicked"
                 employees = company.employees[:]
                 employees.append(Employee())

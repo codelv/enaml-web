@@ -17,7 +17,7 @@ class DemoHandler(tornado.websocket.WebSocketHandler):
     view = None # Holds the View,  
     
     def is_websocket(self):
-        return self.request.headers.get("Upgrade","").lower() == "websocket"
+        return self.request.headers.get("Upgrade", "").lower() == "websocket"
     
     def initialize(self):
         """ Load the view on first load could also load based on session, group, etc.. 
@@ -66,19 +66,19 @@ class DemoHandler(tornado.websocket.WebSocketHandler):
         
         #: Get the server side representation of the node
         #: If found will return the View declaration node
-        node = self.view.xpath('//*[@ref="{}"]'.format(ref),first=True)
+        node = self.view.xpath('//*[@ref="{}"]'.format(ref), first=True)
         if node is None:
             return
         
         #: Handle the event
         if change.get('type') and change.get('name'):
-            if change['type']=='event':
+            if change['type'] == 'event':
                 #: Trigger the event
-                trigger = getattr(node,change['name'])
+                trigger = getattr(node, change['name'])
                 trigger()
-            if change['type']=='update':
+            if change['type'] == 'update':
                 #: Trigger the update
-                setattr(node,change['name'],change['value'])
+                setattr(node, change['name'], change['value'])
         
         #: TODO: Apply change??
         
@@ -90,12 +90,12 @@ class DemoHandler(tornado.websocket.WebSocketHandler):
 class Application(tornado.web.Application,object):
     def __init__(self):
         super(Application, self).__init__([
-                (r'/',DemoHandler) ,
-                (r"/static/(.*)",StaticFileHandler,{'path':'static/'}) ,
+                (r'/', DemoHandler) ,
+                (r"/static/(.*)", StaticFileHandler, {'path': 'static/'}),
            ],
         )
         
 if __name__ == "__main__":
     from web.impl.tornado_app import TornadoApplication
-    app = TornadoApplication(port=8888,app=Application(),interface="0.0.0.0")
+    app = TornadoApplication(port=8888, app=Application(), interface="0.0.0.0")
     app.start()

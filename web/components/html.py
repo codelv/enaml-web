@@ -59,26 +59,8 @@ class Tag(ToolkitObject):
     attrs = d_(Dict())
     
     #:  Event from JS
-    on_click = d_(Event())
+    clicked = d_(Event())
     
-#     on_context_menu = d_(Event())
-#     
-#     on_dbl_click = d_(Event())
-#     
-#     on_mouse_down = d_(Event())
-#     
-#     on_mouse_enter = d_(Event())
-#     
-#     on_mouse_leave = d_(Event())
-#     
-#     on_mouse_move = d_(Event())
-#     
-#     on_mouse_over = d_(Event())
-#     
-#     on_mouse_out = d_(Event())
-#     
-#     on_mouse_up = d_(Event())
-
     def _default_tag(self):
         return self.__class__.__name__.lower()
     
@@ -162,6 +144,12 @@ class Html(Tag):
     #: Websocket clients observing changes
     #: Only to on the root of the tree
     websockets = d_(ContainerList())
+
+    #: Request object
+    request = d_(Value(), writable=False)
+
+    #: Handler object
+    handler = d_(Value())
 
 
 class Head(Tag):
@@ -501,7 +489,7 @@ class Details(Tag):
 
 class Form(Tag):
     action = d_(Unicode())
-    method = d_(Enum("", "get", "post"))
+    method = d_(Enum("post", "get"))
     
     @observe('action', 'method')
     def _update_proxy(self, change):
@@ -523,7 +511,10 @@ class Label(Tag):
 class Select(Tag):
     name = d_(Unicode())
     value = d_(Unicode())
-    
+
+    def _default_name(self):
+        return u'{}'.format(id(self))
+
     @observe('name', 'value')
     def _update_proxy(self, change):
         super(Select, self)._update_proxy(change)
@@ -540,11 +531,13 @@ class Option(Tag):
 
 class Input(Tag):
     name = d_(Unicode())
-    type = d_(Enum("", "radio", "checkbox", "text", "hidden", "submit",
-                   "password", "email"))
+    type = d_(Unicode())
     disabled = d_(Bool())
     checked = d_(Unicode())
     value = d_(Value())
+
+    def _default_name(self):
+        return u'{}'.format(id(self))
     
     @observe('name', 'type', 'disabled', 'checked', 'value')
     def _update_proxy(self, change):
@@ -555,6 +548,9 @@ class Textarea(Tag):
     name = d_(Unicode())
     rows = d_(Unicode())
     cols = d_(Unicode())
+
+    def _default_name(self):
+        return u'{}'.format(id(self))
     
     @observe('name', 'rows', 'cols')
     def _update_proxy(self, change):
@@ -562,7 +558,11 @@ class Textarea(Tag):
 
 
 class Button(Tag):
+    name = d_(Unicode())
     type = d_(Unicode())
+
+    def _default_name(self):
+        return u'{}'.format(id(self))
     
     @observe('type')
     def _update_proxy(self, change):

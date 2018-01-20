@@ -34,9 +34,9 @@ class WebComponent(ProxyTag):
                                  'style', 'activated', 'initialized',
                                  'text', 'tail', 'websocket'))
 
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Initialization API
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def create_widget(self):
         """ Create the toolkit widget for the proxy object.
 
@@ -85,13 +85,14 @@ class WebComponent(ProxyTag):
             for name, member in d.members().items():
                 if not member.metadata:
                     continue
-                elif not (member.metadata.get('d_member') and member.metadata.get('d_final')):
+                elif not (member.metadata.get('d_member') and
+                          member.metadata.get('d_final')):
                     continue
                 elif name in self.excluded:
                     continue
-                elif isinstance(member,Event):
+                elif isinstance(member, Event):
                     continue
-                value = getattr(d,name)
+                value = getattr(d, name)
                 if value:
                     self.set_attribute(name, value)
                 
@@ -115,9 +116,9 @@ class WebComponent(ProxyTag):
         """
         pass
 
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # ProxyToolkitObject API
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def activate_top_down(self):
         """ Activate the proxy for the top-down pass.
 
@@ -147,6 +148,22 @@ class WebComponent(ProxyTag):
             del self.widget
         super(WebComponent, self).destroy()
 
+    def child_added(self, child):
+        """ Handle the child added event from the declaration.
+
+        This handler will insert the child toolkit widget in the correct. 
+        position. Subclasses which need more control should reimplement this 
+        method.
+
+        """
+        super(WebComponent, self).child_added(child)
+        if child.widget is not None:
+            #: Use insert to put in the correct spot
+            for i, c in enumerate(self.children()):
+                if c == child:
+                    self.widget.insert(i, child.widget)
+                    break
+
     def child_removed(self, child):
         """ Handle the child removed event from the declaration.
 
@@ -156,11 +173,14 @@ class WebComponent(ProxyTag):
         """
         super(WebComponent, self).child_removed(child)
         if child.widget is not None:
-            self.widget.remove(child.widget)
+            for i, c in enumerate(self.children()):
+                if c == child:
+                    del self.widget[i]
+                    break
 
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Public API
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def render(self):
         """ Render the widget tree into a string """
         return tostring(self.widget, pretty_print=True)
@@ -169,7 +189,8 @@ class WebComponent(ProxyTag):
         """ Get the node(s) matching the query"""
         nodes = self.widget.xpath(query)
         if nodes:
-            refs = [node.attrib.get('ref') for node in nodes if node.attrib.get('ref')]
+            refs = [node.attrib.get('ref') for node in nodes
+                    if node.attrib.get('ref')]
             return [CACHE[ref] for ref in refs if ref in CACHE]
 
     def parent_widget(self):
@@ -200,9 +221,9 @@ class WebComponent(ProxyTag):
             if w is not None:
                 yield w
                 
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Change handlers
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def set_text(self, text):
         self.widget.text = text
         
@@ -217,11 +238,13 @@ class WebComponent(ProxyTag):
         self.widget.attrib.update(attrs)
         
     def set_cls(self, cls):
-        self.widget.set('class', cls if isinstance(cls, basestring) else " ".join(cls))
+        self.widget.set('class',
+                        cls if isinstance(cls, basestring) else " ".join(cls))
         
     def set_style(self, style):
         self.widget.set('style', style if isinstance(style,basestring)
-                        else ";".join(["{}:{};".format(k, v) for k, v in style.items()]))
+                        else ";".join(["{}:{};".format(k, v)
+                                       for k, v in style.items()]))
     
     def set_attribute(self, name, value):
         """ Default handler for those not explicitly defined"""
@@ -233,9 +256,9 @@ class WebComponent(ProxyTag):
             return
         self.widget.set(name, '{}'.format(value))
         
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Event triggers
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def _write_to_websocket(self, websocket, message):
         """ Defer to the current application instance """
         LxmlApplication.instance().write_to_websocket(websocket, message)

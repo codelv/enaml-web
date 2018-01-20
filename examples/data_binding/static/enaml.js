@@ -12,7 +12,7 @@
             var Enaml = this;
             $('[data-onclick="1"]').on('click',function(e){ // Should i just do everthing?
                 e.preventDefault();
-                Enaml.sendEvent({'ref':$(this).attr('ref'),'type':'event','name':'on_click'});
+                Enaml.sendEvent({'ref':$(this).attr('ref'),'type':'event','name':'clicked'});
             });
             $(":checkbox").on('change',function(){ // Should i just do everthing?
               Enaml.sendEvent({
