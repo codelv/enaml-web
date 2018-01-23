@@ -357,7 +357,12 @@ class Tr(Tag):
 
 
 class Td(Tag):
-    pass
+    colspan = d_(Unicode())
+    rowspan = d_(Unicode())
+
+    @observe('colspan', 'rowspan')
+    def _update_proxy(self, change):
+        super(Td, self)._update_proxy(change)
 
 
 class Th(Tag):

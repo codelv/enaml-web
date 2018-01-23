@@ -11,6 +11,7 @@ Created on Apr 17, 2017
 """
 import sys
 import atexit
+import threading
 import subprocess
 from fnmatch import fnmatch
 from atom.api import List, Bool, Int, Unicode, Value
@@ -57,7 +58,6 @@ class LxmlApplication(Application):
         """
         super(LxmlApplication, self).__init__(*args, **kwargs)
         self.resolver = ProxyResolver(factories=lxml_components.FACTORIES)
-
         if self.debug and self.auto_reload:
             self.init_reloader()
 
@@ -130,6 +130,17 @@ class LxmlApplication(Application):
 
         #: Stop
         self.stop()
+
+    def is_main_thread(self):
+        """ Indicates whether the caller is on the main gui thread.
+        
+        Returns
+        -------
+        result : bool
+            True if called from the main gui thread. False otherwise.
+        
+        """
+        return threading.current_thread().name == 'MainThread'
 
     # -------------------------------------------------------------------------
     # Websocket API

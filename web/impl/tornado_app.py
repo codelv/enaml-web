@@ -74,28 +74,6 @@ class TornadoApplication(LxmlApplication):
         """
         self.ioloop.call_later(ms/1000.0, callback, *args, **kwargs)
     
-    def is_main_thread(self):
-        """ Indicates whether the caller is on the main gui thread.
-
-        Returns
-        -------
-        result : bool
-            True if called from the main gui thread. False otherwise.
-
-        """
-        raise NotImplementedError
-    
-    def create_mime_data(self):
-        """ Create a new mime data object to be filled by the user.
-
-        Returns
-        -------
-        result : MimeData
-            A concrete implementation of the MimeData class.
-
-        """
-        raise NotImplementedError
-
     def write_to_websocket(self, websocket, message):
         """ Send message data to the websocket. Subclasses must implement this
         for data binding.
