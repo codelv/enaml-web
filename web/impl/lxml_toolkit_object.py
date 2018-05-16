@@ -64,7 +64,7 @@ class WebComponent(ProxyTag):
             d = self.declaration
             
             #: Save ref id
-            ref = u'{}'.format(id(d))
+            ref = u'{}'.format(d.ref)
             CACHE[ref] = self
             widget.set('ref', ref)
             

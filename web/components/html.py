@@ -12,7 +12,7 @@ Created on Apr 2, 2017
 from __future__ import print_function
 from past.builtins import basestring
 from atom.api import (
-    Event, Enum, ContainerList, Value, Unicode, Dict, Instance, Bool,
+    Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance, Bool,
     ForwardTyped, Typed, observe
 )
 
@@ -36,6 +36,9 @@ class Tag(ToolkitObject):
 
     #: Object ID
     id = d_(Unicode())
+
+    #: Object ID
+    ref = d_(Unicode())
     
     #: Tag name (leave blank for class name)
     tag = d_(Unicode())
@@ -63,6 +66,9 @@ class Tag(ToolkitObject):
     
     def _default_tag(self):
         return self.__class__.__name__.lower()
+
+    def _default_ref(self):
+        return u"{}".format(id(self))
     
     @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs')
     def _update_proxy(self, change):
@@ -93,7 +99,7 @@ class Tag(ToolkitObject):
         root = self.root_object()
         if isinstance(root, Html) and root.websockets:
             msg = {
-                'ref': u'{}'.format(id(self)),
+                'ref': u'{}'.format(self.ref),
                 'type': change['type'],
                 'name': change['name'],
                 'value': change['value']
@@ -118,17 +124,19 @@ class Tag(ToolkitObject):
             change = {
                 'type': 'removed',
                 'name': 'children',
-                'value': u'{}'.format(id(child)),
+                'value': u'{}'.format(self.ref),
             }
             self._update_clients(change)
                     
-    def xpath(self, query, first=False): 
+    def xpath(self, query, first=False, last=False):
         """ Find nodes matching the given xpath query """
         if not self.proxy:
             return
         nodes = self.proxy.find(query)
         if first:
             return nodes[0].declaration if nodes else None
+        elif last:
+            return nodes[-1].declaration if nodes else None
         return [n.declaration for n in nodes] if nodes else []
     
     def render(self):
@@ -518,7 +526,7 @@ class Select(Tag):
     value = d_(Unicode())
 
     def _default_name(self):
-        return u'{}'.format(id(self))
+        return u'{}'.format(self.ref)
 
     @observe('name', 'value')
     def _update_proxy(self, change):
@@ -542,7 +550,7 @@ class Input(Tag):
     value = d_(Value())
 
     def _default_name(self):
-        return u'{}'.format(id(self))
+        return u'{}'.format(self.ref)
     
     @observe('name', 'type', 'disabled', 'checked', 'value')
     def _update_proxy(self, change):
@@ -555,7 +563,7 @@ class Textarea(Tag):
     cols = d_(Unicode())
 
     def _default_name(self):
-        return u'{}'.format(id(self))
+        return u'{}'.format(self.ref)
     
     @observe('name', 'rows', 'cols')
     def _update_proxy(self, change):
@@ -567,7 +575,7 @@ class Button(Tag):
     type = d_(Unicode())
 
     def _default_name(self):
-        return u'{}'.format(id(self))
+        return u'{}'.format(self.ref)
     
     @observe('type')
     def _update_proxy(self, change):

@@ -10,11 +10,19 @@ Created on Apr 12, 2017
 @author: jrm
 """
 import sys
+import json
 from atom.api import Instance
 from twisted.internet import reactor, endpoints
 from twisted.web import server
 from twisted.python import log
 from web.impl.lxml_app import LxmlApplication
+
+
+class UtfEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, bytes):
+            return obj.decode('utf-8')
+        return super(UtfEncoder, self).default(obj)
 
 
 class TwistedApplication(LxmlApplication):
@@ -92,8 +100,10 @@ class TwistedApplication(LxmlApplication):
         -----------
         websocket :
             A websocket object for the given toolkit
-        message : str or bytes
+        message : dict, str or bytes
             Data to send to the websocket
 
         """
+        if isinstance(message, dict):
+            message = json.dumps(message, cls=UtfEncoder).encode('utf-8')
         websocket.sendMessage(message)
