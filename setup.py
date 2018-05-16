@@ -16,12 +16,11 @@ DESCRIPTION = 'Web component toolkit for Enaml'
 URL = 'https://gitlab.com/frmdstryr/enaml-web'
 EMAIL = 'frmdstryr@gmail.com'
 AUTHOR = 'frmdstryr'
-REQUIRES_PYTHON = '>=3.6.0'
+REQUIRES_PYTHON = '>=3.0'
 VERSION = '0.3.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'distribute',
     'enaml >= 0.9.8',
     'lxml>=3.4.0',
     'future'
@@ -120,7 +119,6 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy'
     ],
     # $ setup.py publish support.
     cmdclass={
