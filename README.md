@@ -12,15 +12,17 @@ If you made one, let me know!
 ### Features ###
 
 1. Automatic form generation and population based on an Atom object similar to the django admin.
-2. Potentially 5-10x speedup's vs other template engines (django templates, etc.)
-3. Easily build extendable and reusable model based web components by linking a css framework like Bootstrap, Materialize, etc.. 
-4. Web components are rendered server side which translates to fast client side rendering 
-5. SEO friendly, everything is loaded like HTTP 1.0.
-6. Use whatever JS you like
-7. Client server data binding using websockets (optional)
-8. Render markdown (with code highlighting) with python-markdown
-9. Code highlighting with pygments
-10. Auto reloading when you make a change in dev mode (like django's)
+2. Inherently secure. Inputs, attributes, and tags are built into an xml DOM and thus always escaped.
+3. Python removes the need for closing tags so you never forget them.
+4. Potentially 5-10x speedup's vs other template engines (django templates, etc.)
+5. Easily build extendable and reusable model based web components by linking a css framework like Bootstrap, Materialize, etc.. 
+6. Web components are rendered server side which translates to fast client side rendering 
+7. SEO friendly, everything is loaded like HTTP 1.0.
+8. Use whatever JS you like
+9. Client server data binding using websockets (optional)
+10. Render markdown (with code highlighting) with python-markdown
+11. Code highlighting with pygments
+12. Auto reloading when you make a change in dev mode (like django's)
 
 
 Binding:
@@ -55,9 +57,9 @@ The enaml view then generates the an xml tree (using lxml) based on the models a
 ```python
 
 import enaml
-import cyclone.web
+import tornado.web
 
-class IndexHandler(cyclone.web.RequestHandler):
+class IndexHandler(tornado.web.RequestHandler):
     view = None # Set statically so it's only loaded once
     def get(self):
         if self.view is None:
@@ -73,9 +75,9 @@ Next simply pass the app for your server to the corresponding implemenation of t
 
 ```python
 
-import cyclone.web
+import tornado.web
 
-class Application(cyclone.web.Application,object):
+class Application(tornado.web.Application,object):
     def __init__(self):
         super(Application, self).__init__([
                 (r'/',IndexHandler) 
@@ -84,8 +86,8 @@ class Application(cyclone.web.Application,object):
         )
         
 if __name__ == "__main__":
-    from web.impl.cyclone_app import CycloneApplication
-    app = CycloneApplication(port=8888,app=Application())
+    from web.impl.tornado_app import TornadoApplication
+    app = TornadoApplication(port=8888, app=Application())
     app.start()
 
 ```
