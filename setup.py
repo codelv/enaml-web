@@ -13,10 +13,10 @@ from setuptools import find_packages, setup, Command
 # Package meta-data.
 NAME = 'enaml-web'
 DESCRIPTION = 'Web component toolkit for Enaml'
-URL = 'https://gitlab.com/frmdstryr/enaml-web'
+URL = 'https://github.com/codelv/enaml-web'
 EMAIL = 'frmdstryr@gmail.com'
 AUTHOR = 'frmdstryr'
-REQUIRES_PYTHON = '>=3.0'
+REQUIRES_PYTHON = '>=2.7'
 VERSION = '0.3.1'
 
 # What packages are required for this module to be executed?
