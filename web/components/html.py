@@ -139,8 +139,10 @@ class Tag(ToolkitObject):
             return nodes[-1].declaration if nodes else None
         return [n.declaration for n in nodes] if nodes else []
     
-    def render(self):
+    def render(self, **kwargs):
         """ Render to a string"""
+        for k, v in kwargs.items():
+            setattr(self, k, v)
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
@@ -573,7 +575,8 @@ class Textarea(Tag):
 class Button(Tag):
     name = d_(Unicode())
     type = d_(Unicode())
-
+    value = d_(Unicode('1'))
+    
     def _default_name(self):
         return u'{}'.format(self.ref)
     

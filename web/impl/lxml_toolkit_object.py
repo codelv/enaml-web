@@ -183,7 +183,7 @@ class WebComponent(ProxyTag):
     # -------------------------------------------------------------------------
     def render(self):
         """ Render the widget tree into a string """
-        return tostring(self.widget, pretty_print=True)
+        return tostring(self.widget, pretty_print=True, method='html')
     
     def find(self, query):
         """ Get the node(s) matching the query"""

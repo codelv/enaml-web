@@ -15,9 +15,9 @@ NAME = 'enaml-web'
 DESCRIPTION = 'Web component toolkit for Enaml'
 URL = 'https://github.com/codelv/enaml-web'
 EMAIL = 'frmdstryr@gmail.com'
-AUTHOR = 'frmdstryr'
+AUTHOR = 'CodeLV'
 REQUIRES_PYTHON = '>=2.7'
-VERSION = '0.3.1'
+VERSION = '0.3.5'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -116,6 +116,8 @@ setup(
         # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',

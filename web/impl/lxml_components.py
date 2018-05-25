@@ -27,6 +27,12 @@ def markdown_factory():
     from .lxml_md import MarkdownComponent
     return MarkdownComponent
 
+
+def raw_factory():
+    from .lxml_raw import RawComponent
+    return RawComponent
+
+
 #: Create generic html factories
 FACTORIES = {
     name: generic_factory for name, obj in inspect.getmembers(html)
@@ -37,4 +43,5 @@ FACTORIES = {
 FACTORIES.update({
     'Code': code_factory,
     'Markdown': markdown_factory,
+    'Raw': raw_factory,
 })
