@@ -1,0 +1,30 @@
+from web.components.api import *
+from web.core.api import *
+
+enamldef HelloWorld(Html):
+    Head:
+        Title:
+            text = "Hello world"
+    Body:
+        text = "Hello world"
+
+
+enamldef Simple(Html):
+    attrs = {'lang': 'en'}
+    attr navigation
+    attr content
+    Head:
+        Title:
+            text = "My Webpage"
+    Body:
+        Ul:
+            id = "navigation"
+            Looper:
+                iterable << navigation
+                Li:
+                    A:
+                        href = loop_item['href']
+                        text = loop_item['caption']
+        H1:
+            text = "My Webpage"
+            tail = str(content)

@@ -10,7 +10,6 @@ Created on Apr 2, 2017
 @author: jrm
 """
 from __future__ import print_function
-from past.builtins import basestring
 from atom.api import (
     Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance, Bool,
     ForwardTyped, Typed, observe
@@ -44,10 +43,10 @@ class Tag(ToolkitObject):
     tag = d_(Unicode())
     
     #: CSS classes
-    cls = d_(Instance((list, basestring)))
+    cls = d_(Instance((list, object)))
     
     #: CSS styles
-    style = d_(Instance((dict, basestring)))
+    style = d_(Instance((dict, object)))
     
     #: Node text
     text = d_(Unicode())
@@ -154,12 +153,6 @@ class Html(Tag):
     #: Websocket clients observing changes
     #: Only to on the root of the tree
     websockets = d_(ContainerList())
-
-    #: Request object
-    request = d_(Value(), writable=False)
-
-    #: Handler object
-    handler = d_(Value())
 
 
 class Head(Tag):

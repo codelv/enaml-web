@@ -14,7 +14,7 @@ If you made one, let me know!
 1. Automatic form generation and population based on an Atom object similar to the django admin.
 2. Inherently secure. Inputs, attributes, and tags are built into an xml DOM and thus always escaped.
 3. Python removes the need for closing tags so you never forget them.
-4. Potentially 5-10x speedup's vs other template engines (django templates, etc.)
+4. Reuse template tags from django/jinja2, etc... directly from code
 5. Easily build extendable and reusable model based web components by linking a css framework like Bootstrap, Materialize, etc.. 
 6. Web components are rendered server side which translates to fast client side rendering 
 7. SEO friendly, everything is loaded like HTTP 1.0.
@@ -227,7 +227,35 @@ To use:
 2. Use a websocket handle and send events 
 
 
+#### Raw node ####
+
+The`Raw` node parses text into dom nodes (using lxml's html parser). This means you can use 
+enaml-web along side of existing template engines like jinja2 and any systems that use 
+them (ex django). 
+
+Also, since enaml is just python, you can use other "template tags" from other libraries  directly 
+by calling the function the tag maps to. For instance wagtail's richtext tag:
+
+
+```python
+
+from web.components.api import *
+from web.core.api import *
+from wagtail.core.templatetags.wagtailcore_tags import richtext
+from myapp.views.base import Page
+
+enamldef BlogPage(Page):
+    body.cls = 'template-blogpage'
+    Block:
+        block = parent.content
+        Raw:
+            source << richtext(page.body)
+
+```
+
+This let's you use web wysiwyg editors to insert content into the etree.
  
+
 ### Gotachas ###
 
 ##### Text and tail nodes #####
@@ -282,17 +310,13 @@ Currently supports the following webservers:
 1. Tornado
 2. Twisted
 3. Cyclone
+4. Sanic
+5. aiohttp
 
-### Benchmarks ###
+But you can uses it as a templating engine for any server (ex django, flask, etc..) or just 
+use it as a static site generator.
 
-The speed depends on how templates are generated. 
 
-Running a single process on a Core i7-4510U:
-
-1. The twisted/tornado "hello world" server (writing a string without any template)  hit's about ~4-5k req/s .
-2. If the view is re-rendered on every request there's no significant difference between this and django templates. Looking at somewhere near 100 req/s per page  (uncached)
-3. If a static class view is used and only template attributes are updated, it's roughly 5-10x faster depending on how much of the tree changes, in the order of 500-1000 req/s (uncached) 
-4. If the template does not change at all I've seen full pages rendering at ~2k req/s 
 
 
 

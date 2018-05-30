@@ -9,7 +9,6 @@ Created on Apr 12, 2017
 
 @author: jrm
 """
-from past.builtins import basestring
 import weakref
 from atom.api import Typed,  Constant,  Event
 from web.components.html import ProxyTag
@@ -184,7 +183,7 @@ class WebComponent(ProxyTag):
     def render(self):
         """ Render the widget tree into a string """
         return tostring(self.widget, pretty_print=True, method='html')
-    
+
     def find(self, query):
         """ Get the node(s) matching the query"""
         nodes = self.widget.xpath(query)
@@ -239,13 +238,15 @@ class WebComponent(ProxyTag):
         
     def set_cls(self, cls):
         self.widget.set('class',
-                        cls if isinstance(cls, basestring) else " ".join(cls))
+                        " ".join(cls) if isinstance(cls, list) else str(cls))
         
     def set_style(self, style):
-        self.widget.set('style', style if isinstance(style,basestring)
-                        else ";".join(["{}:{};".format(k, v)
-                                       for k, v in style.items()]))
-    
+        self.widget.set('style',
+                        ";".join("{}:{};".format(k, v)
+                                 for k, v in style.items())
+                        if isinstance(style, dict)
+                        else str(style))
+
     def set_attribute(self, name, value):
         """ Default handler for those not explicitly defined"""
         if isinstance(value, bool):
