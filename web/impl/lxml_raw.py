@@ -19,10 +19,12 @@ class RawComponent(WebComponent, ProxyRawNode):
 
     def init_widget(self):
         """ Initialize the widget with the source. """
-        super(RawComponent, self).init_widget()
         d = self.declaration
         if d.source:
             self.set_source(d.source)
+        else:
+            super(RawComponent, self).init_widget()
+
 
     def set_source(self, source):
         """ Set the source by parsing the source and inserting it into the 
@@ -31,3 +33,6 @@ class RawComponent(WebComponent, ProxyRawNode):
         root = etree.HTML(source)
         self.widget.clear()
         self.widget.append(root)
+
+        # Clear removes everything so it must be reinitialized
+        super(RawComponent, self).init_widget()
