@@ -7,12 +7,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='enaml-web',
-    version='0.3.7',
+    version='0.3.8',
     author='CodeLV',
     author_email='frmdstryr@gmail.com',
     url='https://github.com/codelv/enaml-web',
     description='Web component toolkit for Enaml',
-    license = "MIT",
+    license="MIT",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     requires=['enaml'],

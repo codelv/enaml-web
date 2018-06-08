@@ -182,7 +182,8 @@ class WebComponent(ProxyTag):
     # -------------------------------------------------------------------------
     def render(self):
         """ Render the widget tree into a string """
-        return tostring(self.widget, pretty_print=True, method='html')
+        return tostring(self.widget, pretty_print=True,
+                        encoding='utf-8', method='html')
 
     def find(self, query):
         """ Get the node(s) matching the query"""
@@ -250,7 +251,7 @@ class WebComponent(ProxyTag):
     def set_attribute(self, name, value):
         """ Default handler for those not explicitly defined"""
         if isinstance(value, bool):
-            if value: 
+            if value:
                 self.widget.set(name, name)
             else:
                 del self.widget.attrib[name]

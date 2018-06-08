@@ -55,10 +55,13 @@ class Tag(ToolkitObject):
     tail = d_(Unicode())
     
     #: Alt attribute
-    alt = d_(Unicode())    
+    alt = d_(Unicode())
     
     #: Custom attributes not explicitly defined
     attrs = d_(Dict())
+    
+    #: Event from JS
+    onclick = d_(Unicode())
     
     #:  Event from JS
     clicked = d_(Event())
@@ -69,7 +72,8 @@ class Tag(ToolkitObject):
     def _default_ref(self):
         return u"{}".format(id(self))
     
-    @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs')
+    @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs', 
+             'onclick')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data 
         changes.
@@ -541,7 +545,7 @@ class Input(Tag):
     name = d_(Unicode())
     type = d_(Unicode())
     disabled = d_(Bool())
-    checked = d_(Unicode())
+    checked = d_(Bool())
     value = d_(Value())
 
     def _default_name(self):
