@@ -14,8 +14,13 @@ from atom.api import Typed,  Constant,  Event
 from web.components.html import ProxyTag
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
-from .lxml_app import LxmlApplication
+from web.apps.web_app import WebApplication
+
+
 CACHE = weakref.WeakValueDictionary()
+DEFAULT_EXCLUDES = ['tag', 'attrs', 'cls', 'class',
+                    'style', 'activated', 'initialized',
+                    'text', 'tail', 'websocket']
 
 
 class WebComponent(ProxyTag):
@@ -29,9 +34,7 @@ class WebComponent(ProxyTag):
     
     #: Attributes to exclude from passing to the element
     #: These are either used internally or manually set
-    excluded = Constant(default=('tag', 'attrs', 'cls', 'class',
-                                 'style', 'activated', 'initialized',
-                                 'text', 'tail', 'websocket'))
+    excluded = Constant(default=DEFAULT_EXCLUDES)
 
     # -------------------------------------------------------------------------
     # Initialization API
@@ -44,11 +47,7 @@ class WebComponent(ProxyTag):
         toolkit widget and assign it to the 'widget' attribute.
 
         """
-        parent = self.parent_widget()
-        if parent is None:
-            self.widget = Element('html')
-        else:
-            self.widget = SubElement(parent, self.declaration.tag)
+        self.widget = SubElement(self.parent_widget(), self.declaration.tag)
         
     def init_widget(self):
         """ Initialize the state of the toolkit widget.
@@ -63,9 +62,10 @@ class WebComponent(ProxyTag):
             d = self.declaration
             
             #: Save ref id
-            ref = u'{}'.format(d.ref)
-            CACHE[ref] = self
-            widget.set('ref', ref)
+            ref = d.ref
+            if ref:
+                CACHE[ref] = self
+                widget.set('ref', ref)
             
             if d.text:
                 self.set_text(d.text)
@@ -157,7 +157,7 @@ class WebComponent(ProxyTag):
         """
         super(WebComponent, self).child_added(child)
         if child.widget is not None:
-            #: Use insert to put in the correct spot
+            # Use insert to put in the correct spot
             for i, c in enumerate(self.children()):
                 if c == child:
                     self.widget.insert(i, child.widget)
@@ -185,13 +185,15 @@ class WebComponent(ProxyTag):
         return tostring(self.widget, pretty_print=True,
                         encoding='utf-8', method='html')
 
-    def find(self, query):
+    def find(self, query, **kwargs):
         """ Get the node(s) matching the query"""
-        nodes = self.widget.xpath(query)
-        if nodes:
-            refs = [node.attrib.get('ref') for node in nodes
-                    if node.attrib.get('ref')]
-            return [CACHE[ref] for ref in refs if ref in CACHE]
+        nodes = self.widget.xpath(query, **kwargs)
+        if not nodes:
+            return []
+        refs = [node.attrib.get('ref') for node in nodes]
+        if not refs:
+            return []
+        return [CACHE[ref] for ref in refs if ref and ref in CACHE]
 
     def parent_widget(self):
         """ Get the parent toolkit widget for this object.
@@ -256,11 +258,18 @@ class WebComponent(ProxyTag):
             else:
                 del self.widget.attrib[name]
             return
-        self.widget.set(name, '{}'.format(value))
+        self.widget.set(name, str(value))
         
     # -------------------------------------------------------------------------
     # Event triggers
     # -------------------------------------------------------------------------
     def _write_to_websocket(self, websocket, message):
         """ Defer to the current application instance """
-        LxmlApplication.instance().write_to_websocket(websocket, message)
+        WebApplication.instance().write_to_websocket(websocket, message)
+        
+        
+class RootWebComponent(WebComponent):
+    """ A root component """
+    
+    def create_widget(self):
+        self.widget = Element(self.declaration.tag)

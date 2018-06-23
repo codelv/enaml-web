@@ -10,8 +10,8 @@ with enaml.imports():
 
 @pytest.fixture
 def app():
-    from web.impl.lxml_app import LxmlApplication
-    app = LxmlApplication.instance() or LxmlApplication()
+    from web.apps.web_app import WebApplication
+    app = WebApplication.instance() or WebApplication()
     yield app
 
 

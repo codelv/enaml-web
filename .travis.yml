@@ -1,0 +1,17 @@
+language: python
+
+python:
+  - "3.6"
+
+install:
+  # Setup
+  - pip install enaml lxml motor markdown pygments
+  
+  # Testing
+  - pip install pytest pytest-coverage pytest-asyncio
+
+script:
+  - pytest -v tests --cov web --cov-report xml
+
+after_success:
+  - codecov

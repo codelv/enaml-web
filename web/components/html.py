@@ -27,6 +27,10 @@ class ProxyTag(ProxyToolkitObject):
         toolkit server implementation.
         """
         raise NotImplementedError
+    
+    def xpath(self, *args, **kwargs):
+        """ Perform an xpath lookup on the node """
+        raise NotImplementedError
 
 
 class Tag(ToolkitObject):
@@ -63,6 +67,9 @@ class Tag(ToolkitObject):
     #: Event from JS
     onclick = d_(Unicode())
     
+    #: Whether this is clickable via websockets
+    clickable = d_(Bool())
+    
     #:  Event from JS
     clicked = d_(Event())
     
@@ -73,7 +80,7 @@ class Tag(ToolkitObject):
         return u"{}".format(id(self))
     
     @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs', 
-             'onclick')
+             'onclick', 'clickable')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data 
         changes.
@@ -87,22 +94,15 @@ class Tag(ToolkitObject):
             else:
                 self.proxy.set_attribute(change['name'], change['value'])
 
-    @observe('websockets')
-    def _update_websockets(self, change):
-        """ When the websocket is set, update all children
-        to have the same websocket.
-        """
-        if change['value'] and self.parent is not None:
-            raise RuntimeError("Cannot set websocket on non parent node")
-    
     def _update_clients(self, change):
         """  If a change occurs when we have a websocket connection active
         notify the websocket client of the change. 
         """
         root = self.root_object()
         if isinstance(root, Html) and root.websockets:
+            name = change['name']
             msg = {
-                'ref': u'{}'.format(self.ref),
+                'ref': self.ref,
                 'type': change['type'],
                 'name': change['name'],
                 'value': change['value']
@@ -117,7 +117,7 @@ class Tag(ToolkitObject):
                 'type': 'added',
                 'name': 'children',
                 #'before':self.ch #: TODO: Handle placement?
-                'value': child.render()
+                'value': child.render().decode()
             }
             self._update_clients(change)
     
@@ -127,29 +127,37 @@ class Tag(ToolkitObject):
             change = {
                 'type': 'removed',
                 'name': 'children',
-                'value': u'{}'.format(self.ref),
+                'value': child.ref,
             }
             self._update_clients(change)
-                    
-    def xpath(self, query, first=False, last=False):
+    
+    def xpath(self, *args, **kwargs):
+        if not nodes:
+            return []
+        refs = [node.attrib.get('ref') for node in nodes]
+        if not refs:
+            return []
+        return [CACHE[ref] for ref in refs if ref and ref in CACHE]
+    
+    def xpath(self, query, **kwargs):
         """ Find nodes matching the given xpath query """
         if not self.proxy:
             return
-        nodes = self.proxy.find(query)
-        if first:
-            return nodes[0].declaration if nodes else None
-        elif last:
-            return nodes[-1].declaration if nodes else None
-        return [n.declaration for n in nodes] if nodes else []
+        nodes = self.proxy.find(query, **kwargs)
+        return [n.declaration for n in nodes]
     
-    def render(self, **kwargs):
-        """ Render to a string"""
+    def prepare(self, **kwargs):
+        """ Prepare for rendering """
         for k, v in kwargs.items():
             setattr(self, k, v)
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
             self.activate_proxy()
+    
+    def render(self, **kwargs):
+        """ Render to a string"""
+        self.prepare(**kwargs)
         return self.proxy.render()
 
 
@@ -157,6 +165,9 @@ class Html(Tag):
     #: Websocket clients observing changes
     #: Only to on the root of the tree
     websockets = d_(ContainerList())
+    
+    def _default_tag(self):
+        return 'html'
 
 
 class Head(Tag):

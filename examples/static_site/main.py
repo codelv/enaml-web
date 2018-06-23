@@ -1,16 +1,17 @@
 import enaml
-from web.impl.lxml_app import LxmlApplication
+from web.apps.web_app import WebApplication
+
+with enaml.imports():
+    from index import Index
+
 
 def main():
     # Must have at least one application
-    app = LxmlApplication()
+    app = WebApplication()
 
     # Generate index.html from index.enaml
-    with enaml.imports():
-        from pages import Index
-
-        with open('index.html', 'w') as f:
-            f.write(Index().render())
+    with open('index.html', 'wb') as f:
+        f.write(Index().render())
 
 if __name__ == '__main__':
     main()

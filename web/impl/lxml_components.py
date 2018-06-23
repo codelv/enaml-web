@@ -15,7 +15,12 @@ from web.components import html
 
 def generic_factory():
     from .lxml_toolkit_object import WebComponent
-    return WebComponent 
+    return WebComponent
+
+
+def html_factory():
+    from .lxml_toolkit_object import RootWebComponent
+    return RootWebComponent
 
 
 def code_factory():
@@ -42,6 +47,7 @@ FACTORIES = {
 #: Create special widgets
 FACTORIES.update({
     'Code': code_factory,
+    'Html': html_factory,
     'Markdown': markdown_factory,
     'Raw': raw_factory,
 })

@@ -51,9 +51,6 @@ class Markdown(Raw):
         'markdown.extensions.codehilite': {'css_class': 'highlight'},
     }))
 
-    #: Reference to the proxy
-    proxy = Typed(ProxyMarkdown)
-
     #: Disallow raw HTMl
     safe_mode = d_(Bool())
 
@@ -63,6 +60,9 @@ class Markdown(Raw):
 
     #: Tab size
     tab_length = d_(Int(4))
+    
+    #: Reference to the proxy
+    proxy = Typed(ProxyMarkdown)
 
     @observe('extensions', 'extension_configs', 'safe_mode', 'output_format',
              'tab_length')

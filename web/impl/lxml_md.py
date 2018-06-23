@@ -17,13 +17,6 @@ from web.components.md import ProxyMarkdown
 class MarkdownComponent(RawComponent, ProxyMarkdown):
     """ A block for rendering Markdown source. """
 
-    def init_widget(self):
-        """ Create the markdown source """
-        d = self.declaration
-        super(MarkdownComponent, self).init_widget()
-        if d.source:
-            self.set_source(d.source)
-
     def _refresh_source(self):
         d = self.declaration
         md = d.source
@@ -35,8 +28,7 @@ class MarkdownComponent(RawComponent, ProxyMarkdown):
             extension_configs=d.extension_configs
         )
         #: Parse source to html
-        super(MarkdownComponent, self).set_source(
-            "<div>{}</div>".format(source))
+        super(MarkdownComponent, self).set_source(source)
 
     def set_source(self, source):
         self._refresh_source()

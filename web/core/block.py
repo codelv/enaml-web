@@ -29,7 +29,7 @@ class Block(Declarative):
     block = d_(ForwardInstance(lambda: Block))
     
     #: If replace, replace all parent's children (except the block of course) 
-    mode = d_(Enum('replace', 'append'))
+    mode = d_(Enum('replace', 'append', 'prepend'))
     
     def initialize(self):
         """ A reimplemented initializer.
@@ -39,20 +39,44 @@ class Block(Declarative):
 
         """
         super(Block, self).initialize()
+        self.refresh_items()
 
+    def refresh_items(self):
         block = self.block
-        if block:  #: This block is setting the content of another block
-            #: Remove the existing blocks children
-            if self.mode == 'replace':
-                #: Clear the blocks children
-                for c in block.children:
-                    c.destroy()
-            #: Add this blocks children to the other block
-            block.insert_children(None, self.children)
+        if block:
+            # This block is setting the content of another block
+            before = None
             
-        else:  #: This block is inserting it's children into it's parent
+            # Remove the existing blocks children
+            if self.mode == 'replace':
+                # Clear the blocks children
+                for c in block.children:
+                    block.children.remove(c)
+                    if not c.is_destroyed:
+                        c.destroy()
+            # Add this blocks children to the other block
+            elif self.mode == 'prepend' and block.children:
+                before = block.children[0]
+                
+            block.insert_children(before, self.children)
+            
+        else:
+            # This block is inserting it's children into it's parent
             self.parent.insert_children(self, self.children)
+    
+    def _observe_mode(self, change):
+        """ If the mode changes. Refresh the items.
         
+        """
+        block = self.block
+        if block and self.is_initialized and change['type'] == 'update':
+            if change['oldvalue'] == 'replace':
+                raise NotImplementedError
+            for c in self.children:
+                block.children.remove(c)
+                c.set_parent(None)
+            self.refresh_items()
+    
     def _observe_block(self, change):
         """ A change handler for the 'objects' list of the Include.
 
@@ -63,9 +87,10 @@ class Block(Declarative):
         """
         if self.is_initialized and change['type'] == 'update':
             old_block = change['oldvalue']
-            old_block.parent.remove_children(old_block, self.children)
-            new_block = change['value']
-            new_block.parent.insert_children(new_block, self.children)
+            for c in self.children:
+                old_block.children.remove(c)
+                c.set_parent(None)
+            self.refresh_items()
                 
     def _observe__children(self, change):
         """ When the children of the block change. Update the referenced
@@ -76,21 +101,22 @@ class Block(Declarative):
             return
 
         block = self.block
-        if block:
-            #: This block is inserting into another block
-            if self.mode == 'replace':
-                block.children = change['value']
+        new_children = change['value']
+        old_children = change['oldvalue']
+        for c in old_children:
+            if c not in new_children and not c.is_destroyed:
+                c.destroy()
             else:
-                for c in change['oldvalue']:
-                    block.children.remove(c)
-                    c.destroy()
-                before = (block.children[-1]
-                          if block.children else None)
-                block.insert_children(before, change['value'])
+                c.set_parent(None)
+                
+        if block:
+            # This block is inserting into another block
+            before = None
+            if self.mode == 'replace':
+                block.children = []
+            if self.mode == 'prepend' and block.children:
+                before = block.children[0]
+            block.insert_children(before, new_children)
         else:
-            #: This block is a placeholder
-            new_children = change['value']
-            for c in change['oldvalue']:
-                if c not in new_children:
-                    c.destroy()
-            self.parent.insert_children(self, change['value'])
+            # This block is a placeholder
+            self.parent.insert_children(self, new_children)
