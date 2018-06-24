@@ -3,12 +3,15 @@ language: python
 python:
   - "3.6"
 
+services:
+  - mongodb
+
 install:
   # Setup
   - pip install enaml lxml motor markdown pygments
   
   # Testing
-  - pip install pytest pytest-coverage pytest-asyncio faker jinja2
+  - pip install pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2
   
   # Install
   - python setup.py develop
