@@ -1,5 +1,9 @@
 # Enaml Web #
 
+[![Build Status](https://travis-ci.org/codelv/enaml-web.svg?branch=master)](https://travis-ci.org/codelv/enaml-web)
+[![codecov](https://codecov.io/gh/codelv/enaml-web/branch/master/graph/badge.svg)](https://codecov.io/gh/codelv/enaml-web)
+
+
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
 let's you build websites in python declaratively. 
 
