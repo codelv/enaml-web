@@ -5,7 +5,7 @@ python:
 
 install:
   # Setup
-  - pip install enaml lxml motor markdown pygments
+  - pip install enaml lxml motor markdown pygments faker jinja2
   
   # Testing
   - pip install pytest pytest-coverage pytest-asyncio
