@@ -11,7 +11,7 @@ install:
   - pip install enaml lxml motor markdown pygments
   
   # Testing
-  - pip install pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2
+  - pip install codecov pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2
   
   # Install
   - python setup.py develop
