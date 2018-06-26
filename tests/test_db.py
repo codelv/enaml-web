@@ -1,4 +1,5 @@
 import pytest
+from pprint import pprint
 from atom.api import *
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFS
 from web.core.db import Model
@@ -22,6 +23,7 @@ class Page(Model):
     body = Unicode()
     author = Instance(User)
     images = List(Image)
+    related = List(ForwardInstance(lambda: Page))
     
     
 class Comment(Model):
@@ -30,8 +32,8 @@ class Comment(Model):
     status = Enum('pending', 'approved')
     body = Unicode()
     reply_to = ForwardInstance(lambda: Comment)
-
-
+    
+    
 @pytest.yield_fixture()
 def app(event_loop):
     client = AsyncIOMotorClient(io_loop=event_loop)
@@ -129,4 +131,25 @@ async def test_nested_save_restore(app):
                 reply = await Comment.restore(state)
                 assert reply.page._id == p._id
         
+
+@pytest.mark.asyncio
+async def test_circular(app):
+    # Test that a circular reference is properly stored as a reference
+    # and doesn't create an infinite loop
+    await Page.objects.drop()
     
+    p = Page(title=faker.catch_phrase(), body=faker.text())
+    related_page = Page(title=faker.catch_phrase(), body=faker.text(), 
+                        related=[p])
+    
+    # Create a circular reference
+    p.related = [related_page]
+    await p.save()
+    
+    # Make sure it restores properly
+    state = await Page.objects.find_one({'_id': p._id})
+    pprint(state)
+    r = await Page.restore(state)
+    assert r.title == p.title
+    assert r.related[0].title == related_page.title
+    assert r.related[0].related[0] == r

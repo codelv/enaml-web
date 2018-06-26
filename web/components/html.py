@@ -12,7 +12,7 @@ Created on Apr 2, 2017
 from __future__ import print_function
 from atom.api import (
     Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance, Bool,
-    ForwardTyped, Typed, observe
+    ForwardTyped, Typed, Coerced, observe
 )
 
 from enaml.core.declarative import d_
@@ -556,7 +556,7 @@ class Input(Tag):
     name = d_(Unicode())
     type = d_(Unicode())
     disabled = d_(Bool())
-    checked = d_(Bool())
+    checked = d_(Coerced(bool))
     value = d_(Value())
 
     def _default_name(self):

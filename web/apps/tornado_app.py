@@ -11,25 +11,31 @@ Created on Apr 12, 2017
 """
 import tornado.ioloop
 import tornado.web
-from atom.api import Instance
-from web.impl.lxml_app import LxmlApplication
+from atom.api import Instance, List
+from web.apps.web_app import WebApplication
 
 
-class TornadoApplication(LxmlApplication):
+class TornadoApplication(WebApplication):
     #: Tornado app to run
     app = Instance(tornado.web.Application)
     
     #: IOLoop to run in
     ioloop = Instance(tornado.ioloop.IOLoop)
     
+    #: Handlers to add
+    handlers = List(tuple)
+    
+    def _default_app(self):
+        return tornado.web.Application(self.handlers)
+    
     def _default_ioloop(self):
         return tornado.ioloop.IOLoop.current()
     
-    def start(self):
+    def start(self, **kwargs):
         """ Start the application's main event loop.
 
         """
-        self.app.listen(self.port)
+        self.app.listen(kwargs.pop('port', self.port))
         self.ioloop.start()
 
     def stop(self):
@@ -87,3 +93,64 @@ class TornadoApplication(LxmlApplication):
 
         """
         websocket.write_message(message)
+
+    def add_route(self, route, handler, **kwargs):
+        """ Create a route for the given handler
+        
+        Parameters
+        ----------
+        route: String
+            The route used
+        handler: Object
+            The application specific handler for this route
+        kwargs: Dict
+            Any extra kwargs for this route
+        
+        """
+        
+        self.handlers.append((route, handler, kwargs))
+    
+    def add_static_route(self, route, path, **kwargs):
+        """ Create a route for serving static files at the given path.
+        
+        Parameters
+        ----------
+        route: String
+            The route used
+        path: String
+            The file path
+        kwargs: Dict
+            Any extra kwargs for this route
+        
+        """
+        self.add_route(route+"/(.*)", tornado.web.StaticFileHandler, path=path)
+        
+    def add_error_handler(self, error, handler, **kwargs):
+        """ Create a route for serving static files at the given path.
+        
+        Parameters
+        ----------
+        error: Exception
+            The exception to handle
+        handler: web.core.http.Handler
+            The handler for this exception
+        kwargs: Dict
+            Any extra kwarg
+        
+        """
+        raise NotImplementedError
+    
+    def url_for(self, route, **kwargs):
+        """ Return the url for the given route
+        
+        Parameters
+        ----------
+        route: String
+            The route used
+            
+        Returns
+        -------
+        url: String
+            The url of the route
+        """
+        self.app.reverse_url(route, **kwargs)

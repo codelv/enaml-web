@@ -28,16 +28,6 @@ def find_subclasses(cls):
     return classes
 
 
-class _Scope(Atom):
-    """ Handles circular references """
-    
-    #: Circular references
-    guards = Typed(set, ())
-    
-    #: References
-    refs = Dict()
-
-
 class ModelSerializer(Atom):
     """ Handles serializing and deserializing of Model subclasses. It
     will automatically save and restore references where present.
@@ -60,19 +50,32 @@ class ModelSerializer(Atom):
         self.__class__._instance = self
 
     def flatten(self, v, scope=None):
-        """ Convert Model objects to a dict """
+        """ Convert Model objects to a dict 
+        
+        Parameters
+        ----------
+        v: Object
+            The object to flatten
+        scope: Dict
+            The scope of references available for circular lookups
+        
+        Returns
+        -------
+        result: Object
+            The flattened object
+        
+        """
         flatten = self.flatten
-        scope = scope or _Scope()
+        scope = scope or {}
         
-        # Circular reference
+        # Handle circular reference
         ref = id(v)
-        if ref in scope.guards:
-            return {'__ref__': ref}
-        else:
-            scope.guards.add(ref)
-        
         if isinstance(v, Model):
-            state =  v.__getstate__()
+            if ref in scope:
+                return {'__ref__': ref}
+            else:
+                scope[ref] = v
+            state =  v.__getstate__(scope)
             _id = state.get("_id")
             return {'_id': _id,
                     '__ref__': ref,
@@ -80,44 +83,54 @@ class ModelSerializer(Atom):
         elif isinstance(v, (list, tuple, set)):
             return [flatten(item, scope) for item in v]
         elif isinstance(v, (dict, _DictProxy)):
-            return {flatten(k, scope): flatten(item, scope) 
+            return {k: flatten(item, scope) 
                     for k, item in v.items()}
+        # TODO: Handle other object types
         return v
 
     async def unflatten(self, v, scope=None):
-        """ Convert a dict object to a Model"""
+        """ Convert dict or list to Models
+        
+        Parameters
+        ----------
+        v: Dict or List
+            The object(s) to unflatten
+        scope: Dict
+            The scope of references available for circular lookups
+        
+        Returns
+        -------
+        result: Object
+            The unflattened object
+        
+        """
         unflatten = self.unflatten
-        scope = scope or _Scope()
+        scope = scope or {}
         
         if isinstance(v, dict):
             # Circular reference
-            ref = v.get('__ref__')
-            if ref is not None:
-                if ref in scope.refs:
-                    return scope.refs[ref]
-                else:
-                    v.pop('__ref__')
-                    obj = await unflatten(v, scope)
-                    scope.refs[ref] = obj
-                    return obj
+            ref = v.pop('__ref__', None)
+            if ref is not None and ref in scope:
+                return scope[ref]
             
             # Create the object
             name = v.get('__model__')
             if name is not None:
                 Cls = self.registry.get(name)
                 if not Cls:
-                    raise ValueError(f"Unknown or unregistered model: {name}")
-                obj = Cls()
+                    raise KeyError(f"Unknown or unregistered model: {name}")
+                obj = Cls.__new__(Cls)
                 _id = v.get('_id')
                 if _id is not None:
                     v = await Cls.objects.find_one({'_id':_id})
                     # TODO: What if this returns none?
-                await obj.__setstate__(v)
+                if ref is not None:
+                    scope[ref] = obj
+                await obj.__setstate__(v, scope)
                 return obj
-            return {await unflatten(k): await unflatten(i) 
-                    for k, i  in v.items()}
+            return {k: await unflatten(i, scope) for k, i in v.items()}
         elif isinstance(v, (list, tuple)):
-            return [await unflatten(item) for item in v]
+            return [await unflatten(item, scope) for item in v]
         return v
 
     def _default_registry(self):
@@ -188,17 +201,20 @@ class Model(Atom):
     #: Handles encoding and decoding
     serializer = ModelSerializer.instance()
 
-    def __getstate__(self):
+    def __getstate__(self, scope=None):
         state = super(Model, self).__getstate__()
         flatten = self.serializer.flatten
-        state = {f: flatten(state[f]) for f in self.__fields__}
+        ref = id(self)
+        scope = scope or {}
+        scope[ref] = self
+        state = {f: flatten(state[f], scope) for f in self.__fields__}
         state['__model__'] = self.__model__
-        state['__ref__'] = id(self)  # ID for circular references
+        state['__ref__'] = ref  # ID for circular references
         if self._id is not None:
             state['_id'] = self._id
         return state
 
-    async def __setstate__(self, state):
+    async def __setstate__(self, state, scope=None):
         """ Restore an object from the a state from the database. This is
         async as it will lookup any referenced objects from the DB.
         
@@ -211,10 +227,17 @@ class Model(Atom):
         if name != self.__model__:
             raise ValueError(f"Trying to use {name} state for "
                              f"{self.__model__} object")
+        scope = scope or {}
+        ref = state.pop('__ref__', None)
+        if ref is not None:
+            scope[ref] = self
+        members = self.members()
         for k, v in state.items():
-            if hasattr(self, k):
+            
+            # Don't use getattr because it triggers a default value lookup
+            if members.get(k):
                 try:
-                    setattr(self, k, await unflatten(v))
+                    setattr(self, k, await unflatten(v, scope))
                 except Exception as e:
                     exc = traceback.format_exc()
                     Application.instance().logger.error(
