@@ -14,7 +14,7 @@ import socket
 import asyncio
 from functools import partial
 from web.core.http import Request
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 from atom.api import (
     Atom, Dict, Str, Enum, Typed, ForwardInstance, Int, Instance, Bool,

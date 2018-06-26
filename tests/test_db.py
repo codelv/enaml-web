@@ -3,7 +3,7 @@ from pprint import pprint
 from atom.api import *
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFS
 from web.core.db import Model
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 from utils import faker
 
 class User(Model):

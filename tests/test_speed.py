@@ -10,7 +10,7 @@ with enaml.imports():
 
 @pytest.fixture
 def app():
-    from web.apps.web_app import WebApplication
+    from web.core.app import WebApplication
     app = WebApplication.instance() or WebApplication()
     yield app
 

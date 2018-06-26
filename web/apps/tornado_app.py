@@ -12,7 +12,7 @@ Created on Apr 12, 2017
 import tornado.ioloop
 import tornado.web
 from atom.api import Instance, List
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 
 class TornadoApplication(WebApplication):

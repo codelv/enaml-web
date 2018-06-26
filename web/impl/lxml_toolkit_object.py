@@ -14,7 +14,7 @@ from atom.api import Typed,  Constant,  Event
 from web.components.html import ProxyTag
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 
 CACHE = weakref.WeakValueDictionary()

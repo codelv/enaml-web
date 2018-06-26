@@ -15,7 +15,7 @@ from atom.api import Instance
 from twisted.internet import reactor, endpoints
 from twisted.web import server
 from twisted.python import log
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 
 class UtfEncoder(json.JSONEncoder):

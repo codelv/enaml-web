@@ -3,7 +3,7 @@ import pytest
 import inspect
 from utils import compile_source
 from textwrap import dedent
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 @pytest.fixture
 def app():

@@ -34,7 +34,7 @@ from the view. This is shown in the simple case of a static site generator:
 ```python
 
 import enaml
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 app = WebApplication()
 
@@ -58,7 +58,7 @@ you can do something like this:
 import enaml
 import tornado.web
 import tornado.ioloop
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 # Import Index from index.enaml
 with enaml.imports():

@@ -17,7 +17,7 @@ from atom.api import (
 )
 
 def web_application(self):
-    from web.apps.web_app import WebApplication
+    from web.core.app import WebApplication
     return WebApplication
 
 

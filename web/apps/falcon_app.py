@@ -13,7 +13,7 @@ import os
 import falcon
 from wsgiref import simple_server
 from atom.api import Instance
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 
 class FalconApplication(WebApplication):
