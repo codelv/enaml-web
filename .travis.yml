@@ -5,13 +5,26 @@ python:
 
 services:
   - mongodb
+  
+before_install:
+  # Install wrk
+  - sudo apt update
+  - sudo apt install build-essential libssl-dev git -y
+  = git clone https://github.com/wg/wrk.git wrk
+  - cd wrk
+  - sudo make
+  - sudo make install
+  - cd ../
 
 install:
   # Setup
   - pip install enaml lxml motor markdown pygments
   
   # Testing
-  - pip install codecov pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2
+  - pip install codecov pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2 requests
+  
+  # Web apps
+  - pip install twisted tornado falcon sanic aiohttp flask
   
   # Install
   - python setup.py develop

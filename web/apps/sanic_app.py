@@ -348,7 +348,7 @@ class SanicApplication(WebApplication):
             Data to send to the websocket
 
         """
-        return self.run_until_complete(websocket.send(message))
+        return self.wait_for(websocket.send(message))
     
     # -------------------------------------------------------------------------
     # HTTP API
@@ -410,7 +410,6 @@ class SanicApplication(WebApplication):
             content_type=response.content_type,
             body_bytes=response.stream.getvalue()
         )
-        
     
     def add_route(self, route, handler, **kwargs):
         """ Create a route for the given handler
@@ -425,7 +424,7 @@ class SanicApplication(WebApplication):
             Any extra kwargs for this route
         
         """
-        self.app.add_route(route, handler, **kwargs)
+        self.app.add_route(handler, route, **kwargs)
     
     def add_static_route(self, route, path, **kwargs):
         """ Create a route for serving static files at the given path.

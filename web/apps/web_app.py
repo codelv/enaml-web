@@ -12,18 +12,10 @@ Created on Apr 17, 2017
 import sys
 import threading
 from logging import Logger, getLogger
-from atom.api import List, Bool, Int, Unicode, Value, Instance, ForwardSubclass
+from atom.api import List, Bool, Int, Unicode, Value, Instance, Subclass
 from enaml.application import Application, ProxyResolver
 from web.impl import lxml_components
-
-
-def request_factory():
-    from web.core.http import Request
-    return Request
-
-def response_factory():
-    from web.core.http import Response
-    return Response
+from web.core.http import Request, Response
 
 
 class WebApplication(Application):
@@ -52,11 +44,11 @@ class WebApplication(Application):
     
     #: Class used to generate the request object. 
     #: Use this if you wish to extend the functionality.
-    request_factory = ForwardSubclass(request_factory)
+    request_factory = Subclass(Request)
     
     #: Class used to generate the response object. 
     #: Use this if you wish to extend the functionality.
-    response_factory = ForwardSubclass(response_factory)
+    response_factory = Subclass(Response)
     
     def _default_logger(self):
         return getLogger("enaml")

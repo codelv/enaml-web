@@ -13,9 +13,12 @@ import io
 import ujson
 from atom.api import (
     Atom, Dict, Str, Int, Float, Instance, Bool, Property, Enum, Subclass, 
-    Tuple
+    Tuple, ForwardInstance
 )
-from web.apps.web_app import WebApplication
+
+def web_application(self):
+    from web.apps.web_app import WebApplication
+    return WebApplication
 
 
 class File(Atom):
@@ -164,10 +167,10 @@ class Handler(Atom):
     
     """
     #: App this delegates too
-    app = Instance(WebApplication)
+    app = ForwardInstance(web_application)
     
     def _default_app(self):
-        return WebApplication.instance()
+        return web_application().instance()
     
     def __call__(self, *args, **kwargs):
         """ A handler that creates an unpopulated request and response 

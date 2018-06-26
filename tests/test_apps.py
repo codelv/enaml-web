@@ -11,13 +11,19 @@ from multiprocessing import Process
 
 BASE = os.path.dirname(__file__)
 HELLO_WORLD = 'Hello World!'
-with open(os.path.join(BASE, 'templates', 'landing.html')) as f:
+with open(os.path.join(BASE, 'templates', 'landing.html'), 'r') as f:
     LANDING_PAGE = f.read()
+
+
+STATIC_PATH = os.path.join(BASE, '..', 'docs')
+with open(os.path.join(STATIC_PATH, 'data-binding.gif'), 'rb') as f:
+    STATIC_FILE = f.read()
 
 # Expected responses
 RESPONSES = {
     '/': HELLO_WORLD,
-    '/landing': LANDING_PAGE
+    '/landing': LANDING_PAGE,
+    '/static/data-binding.gif':  STATIC_FILE
 }
 
 def aiohttp_app(port):
@@ -32,21 +38,20 @@ def aiohttp_app(port):
     Requests/sec:   4408.86
     Transfer/sec:    701.81KB
     """
-    from web.impl.aiohttp_app import AioHttpApplication
-    from aiohttp.web import Application, Response, RouteTableDef
-    routes = RouteTableDef()
+    from web.apps.aiohttp_app import AiohttpApplication
+    from aiohttp.web import Response
 
-    @routes.get('/')
     async def home(request):
         return Response(text=HELLO_WORLD)
 
-    @routes.get('/landing')
     async def landing(request):
         return Response(text=LANDING_PAGE)
 
-    app = Application()
-    app.add_routes(routes)
-    AioHttpApplication(port=port, app=app).start()
+    app = AiohttpApplication()
+    app.add_route('/', home)
+    app.add_route('/landing', landing)
+    app.add_static_route('/static/', STATIC_PATH)
+    app.start(port=port)
 
 
 def sanic_app(port):
@@ -61,22 +66,80 @@ def sanic_app(port):
     Requests/sec:   6283.35
     Transfer/sec:    797.69KB
     """
-    from web.impl.sanic_app import SanicApplication
+    from web.apps.sanic_app import SanicApplication
     from sanic import Sanic, response
+    
+    app = SanicApplication()
 
-    app = Sanic()
-    app.static('/static/', '/static/')
-
-    @app.route('/')
     async def home(request):
         return response.html(HELLO_WORLD)
 
-    @app.route('/landing')
     async def landing(request):
         return response.html(LANDING_PAGE)
+    
+    app.add_route('/', home)
+    app.add_route('/landing', landing)
+    app.add_static_route('/static', STATIC_PATH)
+    app.start(port=port)
 
-    SanicApplication(port=port, app=app).start()
 
+def falcon_app(port):
+    """ With logging
+    
+    Running 30s test @ http://127.0.0.1:8888/
+      12 threads and 400 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    62.65ms   10.04ms 189.96ms   87.87%
+        Req/Sec   526.93    159.98     1.00k    64.25%
+      188860 requests in 30.06s, 23.41MB read
+    Requests/sec:   6283.35
+    Transfer/sec:    797.69KB
+    """
+    from web.apps.falcon_app import FalconApplication
+
+    app = FalconApplication()
+
+    class HomeResource(object):
+        def on_get(self, req, resp):
+            resp.body = HELLO_WORLD
+    
+    class LandingResource(object):
+        def on_get(self, req, resp):
+            resp.body = LANDING_PAGE
+    
+    app.add_route('/', HomeResource())
+    app.add_route('/landing', LandingResource())
+    app.add_static_route('/static', STATIC_PATH)
+    app.start(port=port)
+
+
+def flask_app(port):
+    """ With logging
+    
+    Running 30s test @ http://127.0.0.1:8888/
+      12 threads and 400 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    62.65ms   10.04ms 189.96ms   87.87%
+        Req/Sec   526.93    159.98     1.00k    64.25%
+      188860 requests in 30.06s, 23.41MB read
+    Requests/sec:   6283.35
+    Transfer/sec:    797.69KB
+    """
+    from web.apps.flask_app import FlaskApplication
+    from flask import Flask
+
+    app = FlaskApplication()
+
+    def home():
+        return HELLO_WORLD
+    
+    def landing():
+        return LANDING_PAGE
+    
+    app.add_route('/', home)
+    app.add_route('/landing', landing)
+    app.add_static_route('/static', STATIC_PATH)
+    app.start(port=port)
 
 def tornado_app(port):
     """ Even without logging it's slower!
@@ -104,24 +167,24 @@ def tornado_app(port):
 
     """
     import tornado.web
-    from web.impl.tornado_app import TornadoApplication
+    from web.apps.tornado_app import TornadoApplication
     from tornado.log import enable_pretty_logging
     enable_pretty_logging()
+    
+    app = TornadoApplication()
 
     class MainHandler(tornado.web.RequestHandler):
         def get(self):
             self.write(HELLO_WORLD)
-
+    
     class LandingHandler(tornado.web.RequestHandler):
         def get(self):
             self.write(LANDING_PAGE)
-
-    app = tornado.web.Application([
-        (r"/", MainHandler),
-        (r"/landing", LandingHandler),
-    ])
-
-    TornadoApplication(port=port, app=app).start()
+    
+    app.add_route('/', MainHandler)
+    app.add_route('/landing', LandingHandler)
+    app.add_static_route('/static', STATIC_PATH)
+    app.start(port=port)
 
 
 def twisted_app(port):
@@ -139,7 +202,7 @@ def twisted_app(port):
     """
     from twisted.web import server
     from twisted.web.resource import Resource
-    from web.impl.twisted_app import TwistedApplication
+    from web.apps.twisted_app import TwistedApplication
 
     class Main(Resource):
         def getChild(self, name, request):
@@ -171,11 +234,12 @@ def clip(s, n=100):
     (server, route)
         for server in (
                 aiohttp_app,
-                sanic_app,
+                #sanic_app, # Sanic is a memory hog and keeps killing my laptop
+                falcon_app,
                 tornado_app,
-                twisted_app,
+                #twisted_app,
         )
-            for route in ('/', '/landing')
+            for route in RESPONSES.keys()
 ])
 def test_benchmarks(capsys, server, route):
     port = 8888
@@ -183,23 +247,32 @@ def test_benchmarks(capsys, server, route):
     benchmark = 'wrk -t12 -c400 -d30s {}'.format(url)
     p = Process(target=server, args=(port,))
     p.start()
-    time.sleep(1)
+    try:
+        time.sleep(1)
 
-    # Make sure the page is actually what we expect
-    r = requests.get(url)
-    if not r.ok:
+        # Make sure the page is actually what we expect
+        r = requests.get(url)
+        if not r.ok:
+            with capsys.disabled():
+                print(clip(r.content, 100))
+            assert r.ok
+        if 'static' in route:
+            assert r.content == RESPONSES[route]
+        else:
+            assert r.content.decode() == RESPONSES[route]
+
+        # Run wrk
+        results = subprocess.check_output(benchmark.split())
         with capsys.disabled():
-            print(clip(r.content, 100))
-    assert r.content.decode() == RESPONSES[route]
-
-    # Run wrk
-    results = subprocess.check_output(benchmark.split())
-    p.terminate()
-    with capsys.disabled():
-        print("\n---------------------")
-        for line in results.split(b"\n"):
-            print(line.decode())
-        print("---------------------")
+            print("\n---------------------")
+            for line in results.split(b"\n"):
+                print(line.decode())
+            print("---------------------")
+    finally:
+        p.terminate()
+    time.sleep(2)
+    
 
 if __name__ == '__main__':
-  twisted_app(8888)
+  aiohttp_app(8888)
+  

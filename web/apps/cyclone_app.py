@@ -9,9 +9,9 @@ Created on Apr 12, 2017
 
 @author: jrm
 """
-import cyclone.web
+import cyclone.web 
 from atom.api import Instance
-from web.impl.twisted_app import TwistedApplication, log, reactor
+from web.apps.twisted_app import TwistedApplication, log, reactor
 
 
 class CycloneApplication(TwistedApplication):

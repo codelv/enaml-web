@@ -10,21 +10,24 @@ Created on May 26, 2018
 @author: jrm
 """
 import asyncio
-from aiohttp.web import Application, run_app
+import aiohttp.web
 from functools import partial
 from atom.api import Instance
-from web.impl.lxml_app import LxmlApplication
+from web.apps.web_app import WebApplication
 
 
-class AioHttpApplication(LxmlApplication):
+class AiohttpApplication(WebApplication):
     """ An application based on AioHttp
     
     """
     #: The app
-    app = Instance(Application)
+    app = Instance(aiohttp.web.Application)
 
     #: Event loop
     loop = Instance(asyncio.BaseEventLoop)
+    
+    def _default_app(self):
+        return aiohttp.web.Application()
 
     def _default_loop(self):
         return asyncio.get_event_loop()
@@ -33,9 +36,10 @@ class AioHttpApplication(LxmlApplication):
         """ Start the application's main event loop.
 
         """
-        run_app(self.app,
-                host=self.interface,
-                port=self.port, **kwargs)
+        aiohttp.web.run_app(self.app,
+                            host=kwargs.pop('host', self.interface),
+                            port=kwargs.pop('port', self.port),
+                            **kwargs)
 
     def stop(self):
         """ Stop the application's main event loop.
@@ -82,7 +86,29 @@ class AioHttpApplication(LxmlApplication):
         if kwargs:
             callback = partial(callback, **kwargs)
         self.loop.call_later(ms/1000.0, callback, *args)
+    
+    def wait_for(self, future):
+        """ Run the async task until it finishes.
+        
+        Returns
+        -------
+        result : Object
+            The return result from the future
+        
+        """
+        loop = self.loop
+        # Future
+        if isinstance(future, asyncio.Future):
+            while not future.done():
+                loop._run_once()
+            return future.result()
+        
+        # Coroutine / CoroWrapper
+        for res in future:
+            loop._run_once()
+        return res.result()
 
+    
     def write_to_websocket(self, websocket, message):
         """ Send message data to a twisted websocket.
 
@@ -95,4 +121,50 @@ class AioHttpApplication(LxmlApplication):
 
         """
         #: TODO
-        raise NotImplementedError
+        self.wait_for(websocket.send(message))
+    
+    def add_route(self, route, handler, **kwargs):
+        """ Create a route for the given handler
+        
+        Parameters
+        ----------
+        route: String
+            The route used
+        handler: Object
+            The application specific handler for this route
+        kwargs: Dict
+            Any extra kwargs for this route
+        
+        """
+        for m in kwargs.pop('methods', ('get',)):
+            self.app.router.add_route(m, route, handler)
+    
+    def add_static_route(self, route, path, **kwargs):
+        """ Create a route for serving static files at the given path.
+        
+        Parameters
+        ----------
+        route: String
+            The route used
+        path: String
+            The file path
+        kwargs: Dict
+            Any extra kwargs for this route
+        
+        """
+        self.app.router.add_static(route, path, **kwargs)
+        
+    def url_for(self, route, **kwargs):
+        """ Return the url for the given route
+        
+        Parameters
+        ----------
+        route: String
+            The route used
+            
+        Returns
+        -------
+        url: String
+            The url of the route
+        """
+        self.app.router.url_for(route, **kwargs)
