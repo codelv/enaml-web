@@ -10,7 +10,7 @@ before_install:
   # Install wrk
   - sudo apt update
   - sudo apt install build-essential libssl-dev git -y
-  = git clone https://github.com/wg/wrk.git wrk
+  - git clone https://github.com/wg/wrk.git wrk
   - cd wrk
   - sudo make
   - sudo make install
