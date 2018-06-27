@@ -21,23 +21,23 @@ class FalconApplication(WebApplication):
     app = Instance(falcon.API, ())
     
     #: The server
-    loop = Instance(simple_server.WSGIServer)
+    httpd = Instance(simple_server.WSGIServer)
     
     def start(self, **kwargs):
         """ Start the application's main event loop.
 
         """
-        self.loop = simple_server.make_server(
+        self.httpd = simple_server.make_server(
             kwargs.pop('host', self.interface),
             kwargs.pop('port', self.port),
             self.app, **kwargs)
-        self.loop.serve_forever()
+        self.httpd.serve_forever()
 
     def stop(self):
         """ Stop the application's main event loop.
 
         """
-        self.loop.shutdown()
+        self.httpd.shutdown()
 
     # -------------------------------------------------------------------------
     # HTTP API

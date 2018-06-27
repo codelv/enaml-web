@@ -238,37 +238,40 @@ class SanicApplication(WebApplication):
     #: The event loop
     loop = Instance(asyncio.AbstractEventLoop)
     
+    #: Use a custom request object that doesn't need conversion
     request_factory = set_default(SanicRequest)
     
-    started = Bool()
-    
+    #: Whether uvloop is used
+    using_uvloop = Bool()
+        
     websocket_enabled = Bool(True)
     
     def _default_app(self):
         return Sanic(request_class=SanicRequest)
+    
+    def _default_loop(self):
+        try:
+            import uvloop
+            self.using_uvloop = True
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        except ImportError:
+            pass
+        return asyncio.get_event_loop()
 
     def start(self, **kwargs):
         """ Start the application's main event loop.
 
         """
-        async def set_loop():
-            self.loop = self._default_loop()
-        self.loop = self.app.add_task(set_loop)
-        self.started = True
         self.app.run(host=kwargs.pop('host', self.interface),
                      port=kwargs.pop('port', self.port),
                      debug=kwargs.pop('debug', self.debug), 
                      **kwargs)
 
-    def _default_loop(self):
-        if not self.app.loop:
-            raise RuntimeError("Invalid application event loop")
-        return self.app.loop
-    
     def stop(self):
         """ Stop the application's main event loop.
 
         """
+        print("Stopping loop")
         self.loop.stop()
         
     def deferred_call(self, callback, *args, **kwargs):
@@ -287,12 +290,7 @@ class SanicApplication(WebApplication):
         """
         if kwargs:
             callback = partial(callback, **kwargs)
-        if self.started:
-            self.loop.call_soon_threadsafe(callback, *args)
-        else:
-            async def task():
-                await callback(*args)
-            self.app.add_task(task)
+        self.loop.call_soon_threadsafe(callback, *args)
 
     def timed_call(self, ms, callback, *args, **kwargs):
         """ Invoke a callable on the main event loop thread at a
@@ -315,7 +313,7 @@ class SanicApplication(WebApplication):
         if kwargs:
             callback = partial(callback, **kwargs)
         self.loop.call_later(ms/1000.0, callback, *args)
-        
+            
     def wait_for(self, future):
         """ Run the async task until it finishes.
         
@@ -325,17 +323,22 @@ class SanicApplication(WebApplication):
             The return result from the future
         
         """
-        loop = self.loop
         # Future
         if isinstance(future, asyncio.Future):
             while not future.done():
-                loop._run_once()
+                self._run_once()
             return future.result()
         
         # Coroutine / CoroWrapper
         for res in future:
-            loop._run_once()
+            self._run_once()
         return res.result()
+    
+    def _run_once(self):
+        if self.using_uvloop:
+            if not hasattr(self.loop, '_run_once'):
+                raise RuntimeError("Requires a patch")
+        self.loop._run_once()
 
     def write_to_websocket(self, websocket, message):
         """ Send message data to a twisted websocket.

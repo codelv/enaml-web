@@ -116,7 +116,7 @@ def falcon_app(port):
     app.add_route('/', HomeResource())
     app.add_route('/landing', LandingResource())
     app.add_static_route('/static', STATIC_PATH)
-    app.timed_call(31000, app.stop)
+    #app.timed_call(1000, app.stop)
     app.start(port=port)
 
 
@@ -293,9 +293,10 @@ def test_benchmarks(capsys, server, route):
         p.join(5)
         if p.is_alive():
             p.terminate()
+        p.join(1)
     time.sleep(2)
     
 
 if __name__ == '__main__':
-  aiohttp_app(8888)
+  falcon_app(8888)
   
