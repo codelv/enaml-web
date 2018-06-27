@@ -10,6 +10,7 @@ import subprocess
 from functools import wraps
 from multiprocessing import Process
 from pytest_cov.embed import cleanup_on_sigterm
+cleanup_on_sigterm()
 
 BASE = os.path.dirname(__file__)
 HELLO_WORLD = 'Hello World!'
@@ -262,11 +263,7 @@ def test_benchmarks(capsys, server, route):
     url = 'http://127.0.0.1:{}{}'.format(port, route)
     benchmark = 'wrk -t12 -c400 -d30s {}'.format(url)
     
-    def wrapped(*args, **kwargs):
-        cleanup_on_sigterm()
-        return server(*args, **kwargs)
-    
-    p = Process(target=wrapped, args=(port,))
+    p = Process(target=server, args=(port,))
     p.start()
     try:
         time.sleep(1)
