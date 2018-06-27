@@ -11,7 +11,7 @@ Created on Jun 15, 2018
 """
 import os
 import falcon
-from wsgiref import simple_server
+from meinheld import server
 from atom.api import Instance
 from web.core.app import WebApplication
 
@@ -20,24 +20,58 @@ class FalconApplication(WebApplication):
     #: A preconfigured falcon API
     app = Instance(falcon.API, ())
     
-    #: The server
-    httpd = Instance(simple_server.WSGIServer)
-    
     def start(self, **kwargs):
         """ Start the application's main event loop.
 
         """
-        self.httpd = simple_server.make_server(
-            kwargs.pop('host', self.interface),
-            kwargs.pop('port', self.port),
-            self.app, **kwargs)
-        self.httpd.serve_forever()
+        address = (kwargs.pop('host', self.interface),
+                       kwargs.pop('port', self.port))
+        print("Falcon running on {}".format(address))
+        server.listen(address)
+        server.run(self.app)
 
     def stop(self):
         """ Stop the application's main event loop.
 
         """
-        self.httpd.shutdown()
+        server.shutdown()
+        
+    def deferred_call(self, callback, *args, **kwargs):
+        """ Invoke a callable on the next cycle of the main event loop
+        thread.
+
+        Parameters
+        ----------
+        callback : callable
+            The callable object to execute at some point in the future.
+
+        *args, **kwargs
+            Any additional positional and keyword arguments to pass to
+            the callback.
+
+        """
+        server.schedule_call(0, callback, *args, **kwargs)
+    
+    def timed_call(self, ms, callback, *args, **kwargs):
+        """ Invoke a callable on the main event loop thread at a
+        specified time in the future.
+
+        Parameters
+        ----------
+        ms : int
+            The time to delay, in milliseconds, before executing the
+            callable.
+
+        callback : callable
+            The callable object to execute at some point in the future.
+
+        *args, **kwargs
+            Any additional positional and keyword arguments to pass to
+            the callback.
+
+        """
+        #: TODO: This does not work
+        server.schedule_call(int(ms/1000.0), callback, *args, **kwargs)
 
     # -------------------------------------------------------------------------
     # HTTP API

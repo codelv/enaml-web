@@ -116,7 +116,7 @@ def falcon_app(port):
     app.add_route('/', HomeResource())
     app.add_route('/landing', LandingResource())
     app.add_static_route('/static', STATIC_PATH)
-    #app.timed_call(1000, app.stop)
+    #app.timed_call(31000, app.stop) # Does not work
     app.start(port=port)
 
 
