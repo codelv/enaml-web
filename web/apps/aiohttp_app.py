@@ -10,6 +10,7 @@ Created on May 26, 2018
 @author: jrm
 """
 import asyncio
+from asyncio.coroutines import iscoroutine, CoroWrapper
 import aiohttp.web
 from functools import partial
 from atom.api import Instance
@@ -97,16 +98,19 @@ class AiohttpApplication(WebApplication):
         
         """
         loop = self.loop
+        
+        if iscoroutine(future):
+            # Coroutine / CoroWrapper
+            coro = CoroWrapper(future)
+            for res in coro:
+                loop._run_once()
+            future = res
+        
         # Future
         if isinstance(future, asyncio.Future):
             while not future.done():
                 loop._run_once()
             return future.result()
-        
-        # Coroutine / CoroWrapper
-        for res in future:
-            loop._run_once()
-        return res.result()
 
     
     def write_to_websocket(self, websocket, message):

@@ -44,10 +44,8 @@ class Request(Atom):
     #: Http version
     version = Str()
     
-    #: Request methods
-    #: from https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
-    method = Str()#Enum('get', 'head', 'post', 'put', 'delete', 'connect',
-             #     'options', 'trace', 'patch')
+    #: Request method
+    method = Str()
     
     #: Request cookies
     cookies = Instance(dict)

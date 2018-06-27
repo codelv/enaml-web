@@ -93,7 +93,7 @@ class TwistedApplication(WebApplication):
         """
         reactor.callLater(ms/1000.0, callback, *args, **kwargs)
         
-    def run_until_complete(self, future):
+    def wait_for(self, future):
         """ Run the async task until it finishes.
         
         Returns
@@ -122,108 +122,3 @@ class TwistedApplication(WebApplication):
             message = json.dumps(message, cls=UtfEncoder).encode('utf-8')
         websocket.sendMessage(message)
     
-    # -------------------------------------------------------------------------
-    # HTTP API
-    # -------------------------------------------------------------------------
-    def dispatch_request(self, handler, *args, **kwargs):
-        """ Takes the request args and kwargs and populates the abstract
-        request and response objects. It shall then call handle_request.
-        
-        Parameters
-        ----------
-        handler: web.core.http.Handler
-            The handler chosen by the web applications's router.
-        args: Tuple
-            The args passed by this web application.
-        kwargs: Dict
-            The kwargs passed by this web application.
-            
-        Returns
-        -------
-        result: Object
-            The result returned by handle request.
-        
-        """
-        raise NotImplementedError
-        
-    def handle_request(self, handler, request, response):
-        """ Invokes the handler method with the request and response objects
-        and converts the response to the expected format for the web server.
-        
-        Parameters
-        ----------
-        handler: web.core.http.Hanlder
-            The handler and call that with the populated request and response.
-        request: web.core.http.Request
-            The request object
-        response: web.core.http.Response
-            The response object. This implementation should convert this
-            to the proper type needed by this application.
-        
-        Returns
-        -------
-        result: Object
-            A proper response expected by this web server.
-        
-        """
-        raise NotImplementedError
-    
-    def add_route(self, route, handler, **kwargs):
-        """ Create a route for the given handler
-        
-        Parameters
-        ----------
-        route: String
-            The route used
-        handler: Object
-            The application specific handler for this route
-        kwargs: Dict
-            Any extra kwargs for this route
-        
-        """
-        raise NotImplementedError
-    
-    def add_static_route(self, route, path, **kwargs):
-        """ Create a route for serving static files at the given path.
-        
-        Parameters
-        ----------
-        route: String
-            The route used
-        path: String
-            The file path
-        kwargs: Dict
-            Any extra kwargs for this route
-        
-        """
-        raise NotImplementedError
-    
-    def add_error_handler(self, error, handler, **kwargs):
-        """ Create a route for serving static files at the given path.
-        
-        Parameters
-        ----------
-        error: Exception
-            The exception to handle
-        handler: web.core.http.Handler
-            The handler for this exception
-        kwargs: Dict
-            Any extra kwarg
-        
-        """
-        raise NotImplementedError
-    
-    def url_for(self, route, **kwargs):
-        """ Return the reversed url for the given route
-        
-        Parameters
-        ----------
-        route: String
-            The route used
-            
-        Returns
-        -------
-        url: String
-            The url of the route
-        """
-        raise NotImplementedError

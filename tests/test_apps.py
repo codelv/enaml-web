@@ -7,7 +7,9 @@ import time
 import pytest
 import requests
 import subprocess
+from functools import wraps
 from multiprocessing import Process
+from pytest_cov.embed import cleanup_on_sigterm
 
 BASE = os.path.dirname(__file__)
 HELLO_WORLD = 'Hello World!'
@@ -25,6 +27,7 @@ RESPONSES = {
     '/landing': LANDING_PAGE,
     '/static/data-binding.gif':  STATIC_FILE
 }
+
 
 def aiohttp_app(port):
     """ Without logging...
@@ -51,6 +54,7 @@ def aiohttp_app(port):
     app.add_route('/', home)
     app.add_route('/landing', landing)
     app.add_static_route('/static/', STATIC_PATH)
+    app.timed_call(31000, app.stop)
     app.start(port=port)
 
 
@@ -80,7 +84,9 @@ def sanic_app(port):
     app.add_route('/', home)
     app.add_route('/landing', landing)
     app.add_static_route('/static', STATIC_PATH)
+    app.timed_call(31000, app.stop)
     app.start(port=port)
+    
 
 
 def falcon_app(port):
@@ -110,6 +116,7 @@ def falcon_app(port):
     app.add_route('/', HomeResource())
     app.add_route('/landing', LandingResource())
     app.add_static_route('/static', STATIC_PATH)
+    app.timed_call(31000, app.stop)
     app.start(port=port)
 
 
@@ -139,7 +146,9 @@ def flask_app(port):
     app.add_route('/', home)
     app.add_route('/landing', landing)
     app.add_static_route('/static', STATIC_PATH)
+    app.timed_call(31000, app.stop)
     app.start(port=port)
+
 
 def tornado_app(port):
     """ Even without logging it's slower!
@@ -184,6 +193,7 @@ def tornado_app(port):
     app.add_route('/', MainHandler)
     app.add_route('/landing', LandingHandler)
     app.add_static_route('/static', STATIC_PATH)
+    app.timed_call(31000, app.stop)
     app.start(port=port)
 
 
@@ -202,6 +212,7 @@ def twisted_app(port):
     """
     from twisted.web import server
     from twisted.web.resource import Resource
+    from twisted.web.static import File
     from web.apps.twisted_app import TwistedApplication
 
     class Main(Resource):
@@ -221,23 +232,28 @@ def twisted_app(port):
 
     root = Main()
     root.putChild('landing', Landing())
+    root.putChild('static', File(STATIC_PATH))
 
     site = server.Site(root)
-    TwistedApplication(port=port, site=site).start()
+    app = TwistedApplication(port=port, site=site)
+    app.timed_call(31000, app.stop)
+    app.start()
+
 
 def clip(s, n=100):
-    if len(s)<=n:
+    if len(s) <= n:
         return s
     return s[:n]
+
 
 @pytest.mark.parametrize('server, route', [
     (server, route)
         for server in (
                 aiohttp_app,
-                #sanic_app, # Sanic is a memory hog and keeps killing my laptop
+                sanic_app, # Sanic is a memory hog and keeps killing my laptop
                 falcon_app,
                 tornado_app,
-                #twisted_app,
+                twisted_app,
         )
             for route in RESPONSES.keys()
 ])
@@ -245,7 +261,12 @@ def test_benchmarks(capsys, server, route):
     port = 8888
     url = 'http://127.0.0.1:{}{}'.format(port, route)
     benchmark = 'wrk -t12 -c400 -d30s {}'.format(url)
-    p = Process(target=server, args=(port,))
+    
+    def wrapped(*args, **kwargs):
+        cleanup_on_sigterm()
+        return server(*args, **kwargs)
+    
+    p = Process(target=wrapped, args=(port,))
     p.start()
     try:
         time.sleep(1)
@@ -269,7 +290,9 @@ def test_benchmarks(capsys, server, route):
                 print(line.decode())
             print("---------------------")
     finally:
-        p.terminate()
+        p.join(5)
+        if p.is_alive():
+            p.terminate()
     time.sleep(2)
     
 
