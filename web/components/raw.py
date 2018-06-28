@@ -35,7 +35,7 @@ class Raw(Tag):
     tag = set_default("div")
 
     #: Raw source to parse and display
-    source = d_(Unicode())
+    source = d_(Unicode()).tag(attr=False)
 
     @observe('source')
     def _update_proxy(self, change):

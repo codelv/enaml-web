@@ -91,8 +91,8 @@ def test_markdown(app):
     # Use xpath the widget directly
     assert len(view.proxy.widget.xpath('/html/body/div/h1')) == 1
     
-    print(view.render(source="\n- Rendered content\n"))
-    assert len(view.proxy.widget.xpath('/html/body/div/ul')) == 1
+    print(view.render(source="\n- Item 1\n- Item 2\n"))
+    assert len(view.proxy.widget.xpath('/html/body/div/ul/li')) == 2
     
     
 def test_code(app):

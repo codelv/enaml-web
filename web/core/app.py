@@ -123,28 +123,6 @@ class WebApplication(Application):
         """
         raise NotImplementedError
         
-    def handle_request(self, handler, request, response):
-        """ Invokes the handler method with the request and response objects
-        and converts the response to the expected format for the web server.
-        
-        Parameters
-        ----------
-        handler: web.core.http.Hanlder
-            The handler and call that with the populated request and response.
-        request: web.core.http.Request
-            The request object
-        response: web.core.http.Response
-            The response object. This implementation should convert this
-            to the proper type needed by this application.
-        
-        Returns
-        -------
-        result: Object
-            A proper response expected by this web server.
-        
-        """
-        raise NotImplementedError
-    
     def add_route(self, route, handler, **kwargs):
         """ Create a route for the given handler
         

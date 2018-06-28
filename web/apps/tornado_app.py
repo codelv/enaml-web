@@ -93,6 +93,25 @@ class TornadoApplication(WebApplication):
 
         """
         websocket.write_message(message)
+    
+    # -------------------------------------------------------------------------
+    # HTTP API
+    # -------------------------------------------------------------------------
+    def dispatch_request(self, handler, application, request, **kwargs):
+        """ Dispatch the request and response. Since this hooks in at the
+        application level no conversion is needed on the request. 
+        
+        """
+        response = tornado.web.RequestHandler(application, request, **kwargs)
+        method = request.method.lower()
+        
+        f = getattr(handler, method)
+        
+        def wrapper(self, *args, **kwargs):
+            return f(request, response, *args, **kwargs)
+        
+        setattr(response, method, wrapper)
+        return response
 
     def add_route(self, route, handler, **kwargs):
         """ Create a route for the given handler

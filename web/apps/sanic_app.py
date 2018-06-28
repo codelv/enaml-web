@@ -361,58 +361,9 @@ class SanicApplication(WebApplication):
         application level no conversion is needed on the request. 
         
         """
-        request.args = args
-        request.kwargs = kwargs
-        response = self.response_factory(request=request)
-        return self.handle_request(handler, request, response)
-    
-    async def handle_request(self, handler, request, response):
-        """ Handle the request and response.
-        
-        Parameters
-        ----------
-        handler: web.core.http.Handler
-            A user provided handler that will handle the request and response
-            parameters by the user. Once the request method is parsed it
-            should lookup the method on this handler and call that with the
-            populated request and response if present.
-        request: web.core.http.Request
-            The request object
-        response: web.core.http.Response
-            The response object. This implementation should convert this
-            to the proper type needed by this application.
-        
-        Returns
-        -------
-        result: Object
-            A proper response expected by this web server.
-        
-        """
-        f = getattr(handler, request.method.lower(), None)
-        if f is None:
-            raise NotFound("Method not supported")
-        
-        # Call the handler
-        stream = await f(request, response)
-        
-        if stream is not None:
-            return StreamingHTTPResponse(
-                stream,
-                status=response.status,
-                headers=response.headers,
-                content_type=response.content_type,
-            )
-        elif response.location:
-            response.status = 302
-            response.headers['Location'] = response.location
-            response.content_type = "text/html; charset=utf-8"
-            
-        return HTTPResponse(
-            status=response.status,
-            headers=response.headers,
-            content_type=response.content_type,
-            body_bytes=response.stream.getvalue()
-        )
+        f = getattr(handler, request.method.lower())
+        return f(request, HTTPResponse(content_type='text/html'), *args, 
+                 **kwargs)
     
     def add_route(self, route, handler, **kwargs):
         """ Create a route for the given handler

@@ -10,13 +10,19 @@ Created on Jun 14, 2018
 @author: jrm
 """
 import io
-import ujson
 from atom.api import (
     Atom, Dict, Str, Int, Float, Instance, Bool, Property, Enum, Subclass, 
     Tuple, ForwardInstance
 )
 
-def web_application(self):
+
+try:
+    import ujson as json
+except ImportError:
+    import json
+
+
+def web_application():
     from web.core.app import WebApplication
     return WebApplication
 
@@ -29,7 +35,7 @@ class File(Atom):
     content_type = Str()
     
     #: Some stream object
-    stream = Instance(io.IOBase)
+    stream = Instance(io.IOBase).tag(store=False)
     
         
 class Request(Atom):
@@ -87,7 +93,7 @@ class Request(Atom):
     files = Instance(dict)
 
     #: Some stream object
-    stream = Instance(io.IOBase)
+    stream = Instance(io.IOBase).tag(store=False)
     
     #: Args passed to the handler
     args = Tuple()
@@ -126,7 +132,7 @@ class Response(Atom):
     status = Int(200)
     
     #: Some stream object
-    stream = Instance(io.IOBase)
+    stream = Instance(io.IOBase).tag(store=False)
     
     #: The request this response is for
     request = Instance(Request)
@@ -147,7 +153,7 @@ class Response(Atom):
                                        self.method,
                                        self.path)
 
-    def json(self, data, dumps=ujson.dumps):
+    def json(self, data, dumps=json.dumps):
         """ Set the json response """
         self.content_type = 'application/json'
         self.stream.write(dumps(data))
@@ -165,7 +171,7 @@ class Handler(Atom):
     
     """
     #: App this delegates too
-    app = ForwardInstance(web_application)
+    app = ForwardInstance(web_application).tag(store=False)
     
     def _default_app(self):
         return web_application().instance()

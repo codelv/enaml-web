@@ -11,6 +11,7 @@ Created on Jun 15, 2018
 """
 import os
 import falcon
+from falcon.routing.util import set_default_responders
 from meinheld import server
 from atom.api import Instance
 from web.core.app import WebApplication
@@ -76,6 +77,15 @@ class FalconApplication(WebApplication):
     # -------------------------------------------------------------------------
     # HTTP API
     # -------------------------------------------------------------------------
+    def dispatch_request(self, handler, request, response, *args, **kwargs):
+        """ Dispatch the request and response. Since this hooks in at the
+        application level no conversion is needed on the request. 
+        
+        """
+        f = getattr(handler, request.method.lower())
+        response.content_type = 'text/html'
+        return f(request, response, *args, **kwargs)
+    
     def add_route(self, route, handler, **kwargs):
         """ Create a route for the given handler
         
@@ -89,7 +99,17 @@ class FalconApplication(WebApplication):
             Any extra kwargs for this route
         
         """
-        self.app.add_route(route, handler, **kwargs)
+        
+        if not route.startswith('/'):
+            raise ValueError("route must start with '/'")
+
+        if '//' in route:
+            raise ValueError("route may not contain '//'")
+        
+        methods = kwargs.pop('methods', ('GET',))
+        method_map = {m.upper(): handler for m in methods}
+        set_default_responders(method_map)
+        self.app._router.add_route(route, method_map, handler, **kwargs)
     
     def add_static_route(self, route, path, **kwargs):
         """ Create a route for serving static files at the given path.

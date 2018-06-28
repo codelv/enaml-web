@@ -17,12 +17,10 @@ from lxml.etree import _Element, Element, SubElement
 from web.core.app import WebApplication
 
 
+#: Components are cached for lookup by ref
 CACHE = weakref.WeakValueDictionary()
-DEFAULT_EXCLUDES = ['tag', 'attrs', 'cls', 'class',
-                    'style', 'activated', 'initialized',
-                    'text', 'tail', 'websocket']
-
-
+   
+   
 class WebComponent(ProxyTag):
     """ An lxml implementation of an Enaml ProxyToolkitObject.
 
@@ -32,10 +30,6 @@ class WebComponent(ProxyTag):
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
     
-    #: Attributes to exclude from passing to the element
-    #: These are either used internally or manually set
-    excluded = Constant(default=DEFAULT_EXCLUDES)
-
     # -------------------------------------------------------------------------
     # Initialization API
     # -------------------------------------------------------------------------
@@ -80,15 +74,20 @@ class WebComponent(ProxyTag):
             if d.id:
                 widget.set('id', d.id)
             
-            #: Set any attributes that may be defined
+            # Set any attributes that may be defined
             for name, member in d.members().items():
                 if not member.metadata:
                     continue
-                elif not (member.metadata.get('d_member') and
-                          member.metadata.get('d_final')):
+                meta = member.metadata
+                
+                # Exclude any attr tags
+                if not (meta.get('d_member') and meta.get('d_final')):
                     continue
-                elif name in self.excluded:
+                
+                # Skip any items with attr=false
+                elif not meta.get('attr', True):
                     continue
+                
                 elif isinstance(member, Event):
                     continue
                 value = getattr(d, name)
@@ -236,7 +235,7 @@ class WebComponent(ProxyTag):
         self.widget.tag = tag
         
     def set_attrs(self, attrs):
-        """ Set any attributes not explicitly defined"""
+        """ Set any attributes not explicitly defined """
         self.widget.attrib.update(attrs)
         
     def set_cls(self, cls):
@@ -251,8 +250,8 @@ class WebComponent(ProxyTag):
                         else str(style))
 
     def set_attribute(self, name, value):
-        """ Default handler for those not explicitly defined"""
-        if isinstance(value, bool):
+        """ Default handler for those not explicitly defined """
+        if value in (True, False):
             if value:
                 self.widget.set(name, name)
             else:

@@ -10,6 +10,8 @@ import subprocess
 from functools import wraps
 from multiprocessing import Process
 from pytest_cov.embed import cleanup_on_sigterm
+from web.core.http import Handler
+
 cleanup_on_sigterm()
 
 BASE = os.path.dirname(__file__)
@@ -43,17 +45,20 @@ def aiohttp_app(port):
     Transfer/sec:    701.81KB
     """
     from web.apps.aiohttp_app import AiohttpApplication
-    from aiohttp.web import Response
+    
+    class Home(Handler):
+        async def get(self, request, response):
+            response.body = HELLO_WORLD
+            return response
 
-    async def home(request):
-        return Response(text=HELLO_WORLD)
-
-    async def landing(request):
-        return Response(text=LANDING_PAGE)
+    class Landing(Handler):
+        async def get(self, request, response):
+            response.body = LANDING_PAGE
+            return response
 
     app = AiohttpApplication()
-    app.add_route('/', home)
-    app.add_route('/landing', landing)
+    app.add_route('/', Home())
+    app.add_route('/landing', Landing())
     app.add_static_route('/static/', STATIC_PATH)
     app.timed_call(31000, app.stop)
     app.start(port=port)
@@ -76,14 +81,18 @@ def sanic_app(port):
     
     app = SanicApplication()
 
-    async def home(request):
-        return response.html(HELLO_WORLD)
-
-    async def landing(request):
-        return response.html(LANDING_PAGE)
+    class Home(Handler):
+        async def get(self, request, response):
+            response.body = HELLO_WORLD.encode()
+            return response
     
-    app.add_route('/', home)
-    app.add_route('/landing', landing)
+    class Landing(Handler):
+        async def get(self, request, response):
+            response.body = LANDING_PAGE.encode()
+            return response
+    
+    app.add_route('/', Home())
+    app.add_route('/landing', Landing())
     app.add_static_route('/static', STATIC_PATH)
     app.timed_call(31000, app.stop)
     app.start(port=port)
@@ -106,16 +115,16 @@ def falcon_app(port):
 
     app = FalconApplication()
 
-    class HomeResource(object):
-        def on_get(self, req, resp):
+    class Home(Handler):
+        def get(self, req, resp):
             resp.body = HELLO_WORLD
     
-    class LandingResource(object):
-        def on_get(self, req, resp):
+    class Landing(Handler):
+        def get(self, req, resp):
             resp.body = LANDING_PAGE
     
-    app.add_route('/', HomeResource())
-    app.add_route('/landing', LandingResource())
+    app.add_route('/', Home())
+    app.add_route('/landing', Landing())
     app.add_static_route('/static', STATIC_PATH)
     #app.timed_call(31000, app.stop) # Does not work
     app.start(port=port)

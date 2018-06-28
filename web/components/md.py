@@ -44,22 +44,22 @@ class Markdown(Raw):
     extensions = d_(List(default=[
         "markdown.extensions.codehilite",
         "markdown.extensions.fenced_code",
-    ]))
+    ])).tag(attr=False)
 
     #: Configuration for them
     extension_configs = d_(Dict(default={
         'markdown.extensions.codehilite': {'css_class': 'highlight'},
-    }))
+    })).tag(attr=False)
 
     #: Disallow raw HTMl
-    safe_mode = d_(Bool())
+    safe_mode = d_(Bool()).tag(attr=False)
 
     #: Output format
     output_format = d_(Enum("xhtml1", "xhtml5", "xhtml", "html4", "html5",
-                            "html"))
+                            "html")).tag(attr=False)
 
     #: Tab size
-    tab_length = d_(Int(4))
+    tab_length = d_(Int(4)).tag(attr=False)
     
     #: Reference to the proxy
     proxy = Typed(ProxyMarkdown)

@@ -16,7 +16,7 @@ from web.components.md import ProxyMarkdown
 
 class MarkdownComponent(RawComponent, ProxyMarkdown):
     """ A block for rendering Markdown source. """
-
+    
     def _refresh_source(self):
         d = self.declaration
         md = d.source

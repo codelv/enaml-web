@@ -11,15 +11,13 @@ Created on Aug 2, 2017
 """
 from atom.api import set_default
 from lxml import etree
-from .lxml_toolkit_object import WebComponent, DEFAULT_EXCLUDES
+from .lxml_toolkit_object import WebComponent
 from web.components.raw import ProxyRawNode
 
 
 class RawComponent(WebComponent, ProxyRawNode):
     """ A block for rendering raw html source. """
     
-    excluded = set_default(DEFAULT_EXCLUDES+['source'])
-
     def init_widget(self):
         """ Initialize the widget with the source. """
         d = self.declaration
@@ -28,13 +26,13 @@ class RawComponent(WebComponent, ProxyRawNode):
         else:
             super(RawComponent, self).init_widget()
 
-
     def set_source(self, source):
         """ Set the source by parsing the source and inserting it into the 
         component. 
         """
         self.widget.clear()
-        self.widget.append(etree.fromstring(source))
+        html = etree.HTML(source)
+        self.widget.extend(html[0])
 
         # Clear removes everything so it must be reinitialized
         super(RawComponent, self).init_widget()

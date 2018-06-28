@@ -44,25 +44,25 @@ class Tag(ToolkitObject):
     ref = d_(Unicode())
     
     #: Tag name (leave blank for class name)
-    tag = d_(Unicode())
+    tag = d_(Unicode()).tag(attr=False)
     
     #: CSS classes
-    cls = d_(Instance((list, object)))
+    cls = d_(Instance((list, object))).tag(attr=False)
     
     #: CSS styles
-    style = d_(Instance((dict, object)))
+    style = d_(Instance((dict, object))).tag(attr=False)
     
     #: Node text
-    text = d_(Unicode())
+    text = d_(Unicode()).tag(attr=False)
     
     #: Node tail text
-    tail = d_(Unicode())
+    tail = d_(Unicode()).tag(attr=False)
     
     #: Alt attribute
     alt = d_(Unicode())
     
     #: Custom attributes not explicitly defined
-    attrs = d_(Dict())
+    attrs = d_(Dict()).tag(attr=False)
     
     #: Event from JS
     onclick = d_(Unicode())
@@ -164,7 +164,7 @@ class Tag(ToolkitObject):
 class Html(Tag):
     #: Websocket clients observing changes
     #: Only to on the root of the tree
-    websockets = d_(ContainerList())
+    websockets = d_(ContainerList()).tag(attr=False)
     
     def _default_tag(self):
         return 'html'

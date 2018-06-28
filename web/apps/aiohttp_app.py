@@ -112,7 +112,6 @@ class AiohttpApplication(WebApplication):
                 loop._run_once()
             return future.result()
 
-    
     def write_to_websocket(self, websocket, message):
         """ Send message data to a twisted websocket.
 
@@ -126,6 +125,15 @@ class AiohttpApplication(WebApplication):
         """
         #: TODO
         self.wait_for(websocket.send(message))
+    
+    def dispatch_request(self, handler, request, *args, **kwargs):
+        """ Dispatch the request and response. Since this hooks in at the
+        application level no conversion is needed on the request. 
+        
+        """
+        f = getattr(handler, request.method.lower())
+        response = aiohttp.web.Response(content_type='text/html')
+        return f(request, response, *args, **kwargs)
     
     def add_route(self, route, handler, **kwargs):
         """ Create a route for the given handler

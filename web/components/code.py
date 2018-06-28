@@ -40,10 +40,10 @@ class Code(Raw):
     language = d_(Unicode())
 
     #: Output format
-    output_format = d_(Enum('html', 'latex', 'rtf'))
+    output_format = d_(Enum('html', 'latex', 'rtf')).tag(attr=False)
 
     #: Highlighter style to use
-    highlight_style = d_(Unicode())
+    highlight_style = d_(Unicode()).tag(attr=False)
 
     @observe('language', 'output_format', 'highlight_style')
     def _update_proxy(self, change):
