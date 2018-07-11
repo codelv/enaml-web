@@ -33,6 +33,11 @@ def markdown_factory():
     return MarkdownComponent
 
 
+def notebook_factory():
+    from .lxml_ipynb import NotebookComponent
+    return NotebookComponent
+
+
 def raw_factory():
     from .lxml_raw import RawComponent
     return RawComponent
@@ -49,5 +54,6 @@ FACTORIES.update({
     'Code': code_factory,
     'Html': html_factory,
     'Markdown': markdown_factory,
+    'Notebook': notebook_factory,
     'Raw': raw_factory,
 })

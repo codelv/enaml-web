@@ -11,8 +11,29 @@ Created on Apr 12, 2017
 """
 import tornado.ioloop
 import tornado.web
+from functools import wraps
 from atom.api import Instance, List
 from web.core.app import WebApplication
+
+
+class DelegateHandler(tornado.web.RequestHandler):
+    delegate = None
+    
+    def __init__(self, application, request, delegate):
+        super(DelegateHandler, self).__init__(application, request)
+        self.delegate = delegate
+    
+    def __getattr__(self, name):
+        print(f"GETATTR {name}")
+        f = getattr(self, self.delegate, None)
+        if f is None:
+            raise tornado.web.HTTPError(405)
+        
+        @wraps(f)
+        def wrapped(self, *args, **kwargs):
+            print("DISPATCH")
+            return f(self.request, self, *args, **kwargs)
+        return wrapped
 
 
 class TornadoApplication(WebApplication):
@@ -97,21 +118,25 @@ class TornadoApplication(WebApplication):
     # -------------------------------------------------------------------------
     # HTTP API
     # -------------------------------------------------------------------------
-    def dispatch_request(self, handler, application, request, **kwargs):
+    def dispatch_request(self, handler, request, *args, **kwargs):
         """ Dispatch the request and response. Since this hooks in at the
         application level no conversion is needed on the request. 
         
         """
-        response = tornado.web.RequestHandler(application, request, **kwargs)
         method = request.method.lower()
+        f = getattr(handler, method, None)
+        response = tornado.web.RequestHandler(self.app, request)
         
-        f = getattr(handler, method)
+        if f is None:
+            raise tornado.web.HTTPError(405)
         
-        def wrapper(self, *args, **kwargs):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
             return f(request, response, *args, **kwargs)
         
-        setattr(response, method, wrapper)
-        return response
+        setattr(response, method, wrapped)
+        transforms = [t(self.request) for t in self.app.transforms]
+        self.deferred_call(response._execute, transforms)
 
     def add_route(self, route, handler, **kwargs):
         """ Create a route for the given handler
@@ -126,7 +151,6 @@ class TornadoApplication(WebApplication):
             Any extra kwargs for this route
         
         """
-        
         self.handlers.append((route, handler, kwargs))
     
     def add_static_route(self, route, path, **kwargs):
@@ -142,7 +166,8 @@ class TornadoApplication(WebApplication):
             Any extra kwargs for this route
         
         """
-        self.add_route(route+"/(.*)", tornado.web.StaticFileHandler, path=path)
+        self.add_route(route.rstrip("/")+"/(.*)", 
+                       tornado.web.StaticFileHandler, path=path)
         
     def add_error_handler(self, error, handler, **kwargs):
         """ Create a route for serving static files at the given path.

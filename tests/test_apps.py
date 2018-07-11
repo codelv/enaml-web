@@ -192,16 +192,18 @@ def tornado_app(port):
     
     app = TornadoApplication()
 
-    class MainHandler(tornado.web.RequestHandler):
-        def get(self):
-            self.write(HELLO_WORLD)
+    class Home(Handler):
+        def get(self, req, resp):
+            resp.write(HELLO_WORLD)
+            resp.finish()
     
-    class LandingHandler(tornado.web.RequestHandler):
-        def get(self):
-            self.write(LANDING_PAGE)
+    class Landing(Handler):
+        def get(self, req, resp):
+            resp.write(LANDING_PAGE)
+            resp.finish()
     
-    app.add_route('/', MainHandler)
-    app.add_route('/landing', LandingHandler)
+    app.add_route('/', Home())
+    app.add_route('/landing', Landing())
     app.add_static_route('/static', STATIC_PATH)
     app.timed_call(31000, app.stop)
     app.start(port=port)
@@ -304,5 +306,5 @@ def test_benchmarks(capsys, server, route):
     
 
 if __name__ == '__main__':
-  falcon_app(8888)
+  tornado_app(8888)
   

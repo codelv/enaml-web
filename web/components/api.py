@@ -11,5 +11,6 @@ Created on Apr 16, 2017
 """
 from .html import *
 from .md import Markdown
+from .ipynb import Notebook
 from .code import Code
 from .raw import Raw

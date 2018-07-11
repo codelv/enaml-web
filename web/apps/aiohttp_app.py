@@ -17,6 +17,12 @@ from atom.api import Instance
 from web.core.app import WebApplication
 
 
+from aiohttp.web_request import BaseRequest
+
+#: Equals returns true even though the requests are completely different
+BaseRequest.__eq__ = lambda self, other: id(self) == id(other)
+
+
 class AiohttpApplication(WebApplication):
     """ An application based on AioHttp
     
