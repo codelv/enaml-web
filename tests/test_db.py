@@ -1,7 +1,7 @@
 import pytest
 from pprint import pprint
 from atom.api import *
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFS
+from motor.motor_asyncio import AsyncIOMotorClient
 from web.core.db import Model
 from web.core.app import WebApplication
 from utils import faker
