@@ -20,13 +20,10 @@ before_install:
 
 install:
   # Setup
-  - pip install enaml lxml motor markdown pygments
+  - pip install enaml lxml motor markdown pygments nbconvert
   
   # Testing
   - pip install codecov pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2 requests
-  
-  # Web apps
-  - pip install twisted tornado falcon sanic aiohttp flask meinheld
   
   # Install
   - python setup.py develop

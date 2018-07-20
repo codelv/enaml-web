@@ -252,6 +252,34 @@ def twisted_app(port):
     app.start()
 
 
+def vibora_app(port):
+    """ With logging
+    
+    """
+    from web.apps.vibora_app import ViboraApplication
+    from vibora import Request, Response
+    app = ViboraApplication()
+    
+    class AsyncHandler(Handler):
+        async def __call__(self, request: Request) -> Response:
+            return super().__call__(request)
+
+    class Home(AsyncHandler):
+        async def get(self, request, response):
+            return Response(HELLO_WORLD.encode())
+    
+    class Landing(AsyncHandler):
+        async def get(self, request, response):
+            return Response(LANDING_PAGE.encode())
+    
+    app.add_static_route('/static', STATIC_PATH)
+    app.add_route('/', Home())
+    app.add_route('/landing', Landing())
+    
+    app.timed_call(31000, app.stop)
+    app.start(port=port)
+
+
 def clip(s, n=100):
     if len(s) <= n:
         return s
@@ -261,11 +289,12 @@ def clip(s, n=100):
 @pytest.mark.parametrize('server, route', [
     (server, route)
         for server in (
-                aiohttp_app,
-                sanic_app, # Sanic is a memory hog and keeps killing my laptop
-                falcon_app,
-                tornado_app,
-                twisted_app,
+                #aiohttp_app,
+                #sanic_app, # Sanic is a memory hog and keeps killing my laptop
+                #falcon_app,
+                #tornado_app,
+                #twisted_app,
+                vibora_app,
         )
             for route in RESPONSES.keys()
 ])
@@ -306,5 +335,5 @@ def test_benchmarks(capsys, server, route):
     
 
 if __name__ == '__main__':
-  tornado_app(8888)
+  vibora_app(8888)
   

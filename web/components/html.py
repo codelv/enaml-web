@@ -22,12 +22,6 @@ from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 class ProxyTag(ProxyToolkitObject):
     declaration = ForwardTyped(lambda: Tag)
 
-    def _write_to_websocket(self, websocket, message):
-        """ Write the given data to the given websocket using the underlying
-        toolkit server implementation.
-        """
-        raise NotImplementedError
-    
     def xpath(self, *args, **kwargs):
         """ Perform an xpath lookup on the node """
         raise NotImplementedError
@@ -87,28 +81,27 @@ class Tag(ToolkitObject):
         """
         #: Try default handler
         if change['type'] == 'update' and self.proxy_is_active:
-            self._update_clients(change)
             handler = getattr(self.proxy, 'set_' + change['name'], None)
             if handler is not None:
                 handler(change['value'])
             else:
                 self.proxy.set_attribute(change['name'], change['value'])
+            self._notify_modified(change)
 
-    def _update_clients(self, change):
+    def _notify_modified(self, change):
         """  If a change occurs when we have a websocket connection active
         notify the websocket client of the change. 
         """
         root = self.root_object()
-        if isinstance(root, Html) and root.websockets:
+        if isinstance(root, Html):
             name = change['name']
-            msg = {
+            change = {
                 'ref': self.ref,
                 'type': change['type'],
                 'name': change['name'],
                 'value': change['value']
             }
-            for ws in root.websockets:
-                self.proxy._write_to_websocket(ws, msg)
+            root.modified(change)
             
     def child_added(self, child):
         super(Tag, self).child_added(child)
@@ -119,7 +112,7 @@ class Tag(ToolkitObject):
                 #'before':self.ch #: TODO: Handle placement?
                 'value': child.render().decode()
             }
-            self._update_clients(change)
+            self._notify_modified(change)
     
     def child_removed(self, child):
         super(Tag, self).child_removed(child)
@@ -129,7 +122,7 @@ class Tag(ToolkitObject):
                 'name': 'children',
                 'value': child.ref,
             }
-            self._update_clients(change)
+            self._notify_modified(change)
     
     def xpath(self, *args, **kwargs):
         if not nodes:
@@ -162,9 +155,9 @@ class Tag(ToolkitObject):
 
 
 class Html(Tag):
-    #: Websocket clients observing changes
-    #: Only to on the root of the tree
-    websockets = d_(ContainerList()).tag(attr=False)
+    #: Dom modified event. This will fire when any child node is updated, added
+    #: or removed. Observe this event to handle updating websockets.
+    modified = d_(Event(dict), writable=False).tag(attr=False)
     
     def _default_tag(self):
         return 'html'

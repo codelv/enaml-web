@@ -84,9 +84,6 @@ if __name__ == "__main__":
 
 ```
 
-You can also use the enaml application implementation for the framework if
-it exists, which provides hooks for databinding with websockets.
-
 ### How it works
 
 enaml-web generates a dom of [lxml](http://lxml.de/) elements. You can use this 
@@ -153,7 +150,9 @@ trigger JS events on the client.
 
 To use:
 1. Include enaml.js in your page
-2. Use a websocket handle and send events 
+2. Observe the `modified` event of an Html node and pass these changes to the
+client via websockets.
+3. Enamljs will send events back to the server, update the dom accordingly. 
 
 
 #### Data models
@@ -431,8 +430,7 @@ enamldef Icon(I):
 
 My website uses it
 
-- [www.codelv.com](https://www.codelv.com/) - Built entirely using enaml-web (and cyclone)
-
+- [www.codelv.com](https://www.codelv.com/) - Built entirely using enaml-web
 
 
 

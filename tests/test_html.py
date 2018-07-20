@@ -71,6 +71,7 @@ def test_raw(app):
     print(view.render(source="<h1>Rendered content!</h1>"))
     assert len(view.proxy.widget.xpath('/html/body/div/h1')) == 1
     
+    
 def test_markdown(app):
     # Test that raw content is rendered
     Page = compile_source(dedent("""
@@ -115,3 +116,23 @@ def test_code(app):
     print(view.render(source=inspect.getsource(compile_source)))
     # Use xpath the widget directly
     assert len(view.proxy.widget.xpath('/html/body/div/div/pre')) == 1
+
+
+def test_notebook(app):
+    # Test that raw content is rendered
+    Page = compile_source(dedent("""
+    from web.components.api import *
+    from web.core.api import *
+    
+    enamldef Page(Html): view:
+        attr source
+        Head:
+            Title:
+                text = "Test"
+        Body:
+            Notebook: 
+                source << view.source 
+    """), 'Page')
+    view = Page()
+    with open('tests/templates/cell-magics.ipynb') as f:
+        view.render(source=f.read())
