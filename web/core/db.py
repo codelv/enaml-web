@@ -9,14 +9,16 @@ Created on Jun 12, 2018
 
 @author: jrm
 """
+import os
 import bson
 import traceback
 from atom.api import (
     Atom, Property, Instance, Dict, Unicode, Coerced, Value, ForwardInstance,
-    Typed
+    Typed, Bytes
 )
 from atom.dict import _DictProxy
 from enaml.application import Application
+from pprint import pformat
 
 
 def find_subclasses(cls):
@@ -69,8 +71,8 @@ class ModelSerializer(Atom):
         scope = scope or {}
         
         # Handle circular reference
-        ref = id(v)
         if isinstance(v, Model):
+            ref = v.__ref__
             if ref in scope:
                 return {'__ref__': ref}
             else:
@@ -109,7 +111,7 @@ class ModelSerializer(Atom):
         
         if isinstance(v, dict):
             # Circular reference
-            ref = v.pop('__ref__', None)
+            ref = v.get('__ref__')
             if ref is not None and ref in scope:
                 return scope[ref]
             
@@ -174,6 +176,9 @@ class Model(Atom):
 
     #: Model type for serialization / deserialization
     __model__ = Unicode()
+    
+    #: Unique ID
+    __ref__ = Bytes()
 
     #: Fields thare are saved in the db. By default it uses all atom members
     #: that don't start with an underscore and are not taged with store.
@@ -182,6 +187,9 @@ class Model(Atom):
     # =========================================================================
     # Defaults 
     # =========================================================================
+    def _default___ref__(self):
+        return os.urandom(16)
+    
     def _default___fields__(self):
         """ By default it ignores any pivate members (starting with underscore)
         and any member tagged with store=False.
@@ -204,12 +212,13 @@ class Model(Atom):
     def __getstate__(self, scope=None):
         state = super(Model, self).__getstate__()
         flatten = self.serializer.flatten
-        ref = id(self)
+        
         scope = scope or {}
+        ref = self.__ref__
         scope[ref] = self
         state = {f: flatten(state[f], scope) for f in self.__fields__}
         state['__model__'] = self.__model__
-        state['__ref__'] = ref  # ID for circular references
+        state['__ref__'] = ref # ID for circular references
         if self._id is not None:
             state['_id'] = self._id
         return state
@@ -237,11 +246,19 @@ class Model(Atom):
             # Don't use getattr because it triggers a default value lookup
             if members.get(k):
                 try:
-                    setattr(self, k, await unflatten(v, scope))
+                    obj = await unflatten(v, scope)
+                    setattr(self, k, obj)
                 except Exception as e:
                     exc = traceback.format_exc()
                     Application.instance().logger.error(
-                        f"State {self.__model__}.{k} = {v}: {exc}")
+                        f"Error setting state:"
+                        f"{self.__model__}.{k} = {pformat(obj)}:"
+                        f"\nSelf: {ref}: {scope.get(ref)}"
+                        f"\nValue: {pformat(v)}"
+                        f"\nScope: {pformat(scope)}"
+                        f"\nState: {pformat(state)}"
+                        f"\n{exc}"
+                    )
     
     # ==========================================================================
     # Database API
@@ -253,7 +270,7 @@ class Model(Atom):
     @classmethod
     async def restore(cls, state):
         """ Restore an object from the database """
-        obj = cls()
+        obj = cls.__new__(cls)
         await obj.__setstate__(state)
         return obj
     
