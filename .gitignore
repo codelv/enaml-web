@@ -3,3 +3,14 @@ __pycache__/
 *.py[cod]
 __enamlcache__/
 *.enamlc
+tmp/
+.idea/
+.kdev4/
+*.kdev4
+*.egg-info
+dist/
+build/
+.coverage
+.directory
+.pytest_cache/
+htmlcov/

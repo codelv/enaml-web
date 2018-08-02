@@ -2,22 +2,22 @@ import pytest
 from pprint import pprint
 from atom.api import *
 from motor.motor_asyncio import AsyncIOMotorClient
-from web.core.db import Model
+from web.core.db.api import NoSQLModel
 from web.core.app import WebApplication
 from utils import faker
 
-class User(Model):
+class User(NoSQLModel):
     name = Unicode()
     email = Unicode()
     active = Bool()
 
 
-class Image(Model):
+class Image(NoSQLModel):
     name = Unicode()
     path = Unicode()
 
 
-class Page(Model):
+class Page(NoSQLModel):
     title = Unicode()
     status = Enum('preview', 'live')
     body = Unicode()
@@ -26,7 +26,7 @@ class Page(Model):
     related = List(ForwardInstance(lambda: Page))
     
     
-class Comment(Model):
+class Comment(NoSQLModel):
     page = Instance(Page)
     author = Instance(User)
     status = Enum('pending', 'approved')

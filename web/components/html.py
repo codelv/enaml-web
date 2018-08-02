@@ -3,7 +3,7 @@ Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
 
-The full license is in the file COPYING.txt, distributed with this software.
+The full license is in the file LICENSE.txt, distributed with this software.
 
 Created on Apr 2, 2017
 
@@ -73,7 +73,7 @@ class Tag(ToolkitObject):
     def _default_ref(self):
         return u"{}".format(id(self))
     
-    @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs', 
+    @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs',
              'onclick', 'clickable')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data 

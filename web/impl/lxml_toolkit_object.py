@@ -3,7 +3,7 @@ Copyright (c) 2017, Jairus Martin.
 
 Distributed under the terms of the MIT License.
 
-The full license is in the file COPYING.txt, distributed with this software.
+The full license is in the file LICENSE.txt, distributed with this software.
 
 Created on Apr 12, 2017
 
@@ -258,13 +258,6 @@ class WebComponent(ProxyTag):
                 del self.widget.attrib[name]
             return
         self.widget.set(name, str(value))
-        
-    # -------------------------------------------------------------------------
-    # Event triggers
-    # -------------------------------------------------------------------------
-    def _write_to_websocket(self, websocket, message):
-        """ Defer to the current application instance """
-        WebApplication.instance().write_to_websocket(websocket, message)
         
         
 class RootWebComponent(WebComponent):

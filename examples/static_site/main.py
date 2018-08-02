@@ -1,5 +1,5 @@
 import enaml
-from web.apps.web_app import WebApplication
+from web.core.app import WebApplication
 
 with enaml.imports():
     from index import Index

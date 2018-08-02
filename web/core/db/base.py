@@ -3,18 +3,16 @@ Copyright (c) 2018, Jairus Martin.
 
 Distributed under the terms of the MIT License.
 
-The full license is in the file COPYING.txt, distributed with this software.
+The full license is in the file LICENSE.text, distributed with this software.
 
 Created on Jun 12, 2018
 
 @author: jrm
 """
 import os
-import bson
 import traceback
 from atom.api import (
-    Atom, Property, Instance, Dict, Unicode, Coerced, Value, ForwardInstance,
-    Typed, Bytes
+    Atom, Property, Instance, Dict, Unicode, Coerced, Value, Typed, Bytes
 )
 from atom.dict import _DictProxy
 from enaml.application import Application
@@ -36,20 +34,22 @@ class ModelSerializer(Atom):
     
     """
     #: Make a singleton so we can reuse the registry
-    _instance = None
+    _instance = {}
 
     #: Store all registered models
     registry = Dict()
     
     @classmethod
     def instance(cls):
-        return cls._instance or cls()
+        return ModelSerializer._instance.get(cls) or cls()
 
     def __init__(self, *args, **kwargs):
-        if self._instance is not None:
-            raise RuntimeError("Only one serializer should exist!")
+        cls = self.__class__
+        if self._instance.get(cls) is not None:
+            raise RuntimeError("Only one serializer per class should exist!")
+        else:
+            ModelSerializer._instance[cls] = self
         super(ModelSerializer, self).__init__(*args, **kwargs)
-        self.__class__._instance = self
 
     def flatten(self, v, scope=None):
         """ Convert Model objects to a dict 
@@ -124,7 +124,7 @@ class ModelSerializer(Atom):
                 obj = Cls.__new__(Cls)
                 _id = v.get('_id')
                 if _id is not None:
-                    v = await Cls.objects.find_one({'_id':_id})
+                    v = await self.find_object(Cls, _id)
                     # TODO: What if this returns none?
                 if ref is not None:
                     scope[ref] = obj
@@ -136,8 +136,25 @@ class ModelSerializer(Atom):
         return v
 
     def _default_registry(self):
-        return {f'{m.__module__}.{m.__name__}': m
-                for m in find_subclasses(Model)}
+        raise NotImplementedError
+    
+    async def find_object(self, object_class, object_id):
+        """ Lookup the given object_id for the given object_class
+        
+        Parameters
+        ----------
+        object_class: Class
+            The object Class needed
+        object_id: Object
+            The object ID used by this ModelManager
+        
+        Returns
+        -------
+        result: Dict
+            The model state needed to restore this object
+        
+        """
+        raise NotImplementedError
 
 
 class ModelManager(Atom):
@@ -159,28 +176,31 @@ class ModelManager(Atom):
     database = Property(_get_database)
 
     def __get__(self, obj, cls=None):
-        """ Handle objects from the class that owns the manager """
+        """ Handle objects from the class that owns the manager. Subclasses 
+        should override this as needed.
+        
+        """
         name = f'{cls.__module__}.{cls.__name__}' if cls else obj.__model__
         return self.database[name]
 
 
 class Model(Atom):
     """ An atom model that can be serialized and deserialized to and from 
-    MongoDB.
+    a database.
     
     """
-    __slots__ = ('__weakref__',)
+    __slots__ = '__weakref__'
     
-    #: ID of this object in the database
-    _id = Instance(bson.ObjectId)
+    #: ID of this object in the database. Subclasses can redefine this as needed
+    _id = Bytes()
 
-    #: Model type for serialization / deserialization
+    #: Model type for serialization and deserialization
     __model__ = Unicode()
     
-    #: Unique ID
+    #: A unique ID used to handle cyclical serialization and deserialization
     __ref__ = Bytes()
 
-    #: Fields thare are saved in the db. By default it uses all atom members
+    #: Fields that are saved in the db. By default it uses all atom members
     #: that don't start with an underscore and are not taged with store.
     __fields__ = Instance(set, ())
     
@@ -206,8 +226,8 @@ class Model(Atom):
     # Serialization API
     # ==========================================================================
 
-    #: Handles encoding and decoding
-    serializer = ModelSerializer.instance()
+    #: Handles encoding and decoding. Subclasses should redefine this.
+    serializer = None
 
     def __getstate__(self, scope=None):
         state = super(Model, self).__getstate__()
@@ -264,8 +284,8 @@ class Model(Atom):
     # Database API
     # ==========================================================================
     
-    #: Handles database access
-    objects = ModelManager()
+    #: Handles database access. Subclasses should redefine this.
+    objects = None
     
     @classmethod
     async def restore(cls, state):
@@ -276,17 +296,8 @@ class Model(Atom):
     
     async def save(self):
         """ Alias to delete this object to the database """
-        db  = self.objects
-        state = self.__getstate__()
-        if self._id is not None:
-            return await db.replace_one({'_id': self._id}, state, upsert=True)
-        else:
-            r= await db.insert_one(state)
-            self._id = r.inserted_id
-            return r
+        raise NotImplementedError
 
     async def delete(self):
         """ Alias to delete this object in the database """
-        db = self.objects
-        if self._id:
-            return await db.delete_one({'_id': self._id})
+        raise NotImplementedError
