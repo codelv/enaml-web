@@ -1,3 +1,7 @@
+# 0.6.0
+
+The `web.core.db` module refactored and made into a package and split to 
+support both nosql and sql. 
 
 # 0.5.0
 

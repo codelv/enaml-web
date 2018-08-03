@@ -7,20 +7,11 @@ python:
   
 services:
   - mongodb
-  
-before_install:
-  # Install wrk
-  - sudo apt update
-  - sudo apt install build-essential libssl-dev git -y
-  - git clone https://github.com/wg/wrk.git wrk
-  - cd wrk
-  - sudo make
-  - sudo cp wrk /usr/local/bin
-  - cd ../
+  - mysql
 
 install:
   # Setup
-  - pip install enaml lxml motor markdown pygments nbconvert
+  - pip install enaml lxml motor markdown pygments nbconvert sqlalchemy aiomysql
   
   # Testing
   - pip install codecov pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2 requests

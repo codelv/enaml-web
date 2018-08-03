@@ -14,8 +14,9 @@ import traceback
 from atom.api import (
     Atom, Property, Instance, Dict, Unicode, Coerced, Value, Typed, Bytes
 )
+from atom.atom import AtomMeta, with_metaclass
 from atom.dict import _DictProxy
-from enaml.application import Application
+from web.core.app import WebApplication
 from pprint import pformat
 
 
@@ -33,23 +34,17 @@ class ModelSerializer(Atom):
     will automatically save and restore references where present.
     
     """
-    #: Make a singleton so we can reuse the registry
-    _instance = {}
+    #: Hold one instance per subclass for easy reuse
+    _instances = {}
 
     #: Store all registered models
     registry = Dict()
     
     @classmethod
     def instance(cls):
-        return ModelSerializer._instance.get(cls) or cls()
-
-    def __init__(self, *args, **kwargs):
-        cls = self.__class__
-        if self._instance.get(cls) is not None:
-            raise RuntimeError("Only one serializer per class should exist!")
-        else:
-            ModelSerializer._instance[cls] = self
-        super(ModelSerializer, self).__init__(*args, **kwargs)
+        if cls not in ModelSerializer._instances:
+            ModelSerializer._instances[cls] = cls()
+        return ModelSerializer._instances[cls]
 
     def flatten(self, v, scope=None):
         """ Convert Model objects to a dict 
@@ -125,7 +120,8 @@ class ModelSerializer(Atom):
                 _id = v.get('_id')
                 if _id is not None:
                     v = await self.find_object(Cls, _id)
-                    # TODO: What if this returns none?
+                    if v is None:
+                        return None
                 if ref is not None:
                     scope[ref] = obj
                 await obj.__setstate__(v, scope)
@@ -138,14 +134,14 @@ class ModelSerializer(Atom):
     def _default_registry(self):
         raise NotImplementedError
     
-    async def find_object(self, object_class, object_id):
-        """ Lookup the given object_id for the given object_class
+    async def find_object(self, cls, _id):
+        """ Lookup the given object_id for the given cls
         
         Parameters
         ----------
-        object_class: Class
-            The object Class needed
-        object_id: Object
+        cls: Class
+            The type of object expected
+        _id: Object
             The object ID used by this ModelManager
         
         Returns
@@ -166,8 +162,18 @@ class ModelManager(Atom):
     MyModel.objects.find_one({'_id':'someid})
     
     """
+    
+    #: Stores instances of each class so we can easily reuse them if desired
+    _instances = {}
+
+    @classmethod
+    def instance(cls):
+        if cls not in ModelManager._instances:
+            ModelManager._instances[cls] = cls()
+        return ModelManager._instances[cls]
+
     def _get_database(self):
-        db =  Application.instance().database
+        db =  WebApplication.instance().database
         if db is None:
             raise EnvironmentError("No database set!")
         return db
@@ -180,11 +186,30 @@ class ModelManager(Atom):
         should override this as needed.
         
         """
-        name = f'{cls.__module__}.{cls.__name__}' if cls else obj.__model__
-        return self.database[name]
+        raise NotImplementedError
 
 
-class Model(Atom):
+class ModelMeta(AtomMeta):
+    def __new__(meta, name, bases, dct):
+        cls = AtomMeta.__new__(meta, name, bases, dct)
+        
+        # Fields that are saved in the db. By default it uses all atom members
+        # that don't start with an underscore and are not taged with store.
+        if '__fields__' not in dct:
+            cls.__fields__ = tuple((
+                m.name for m in cls.members().values()
+                if not m.name.startswith("_") and
+                (not m.metadata or m.metadata.get('store', True))
+            ))
+        
+        # Model name used so the serializer knows what class to recreate
+        # when restoring
+        if '__model__' not in dct:
+            cls.__model__ = f'{cls.__module__}.{cls.__name__}'
+        return cls
+
+
+class Model(with_metaclass(ModelMeta, Atom)):
     """ An atom model that can be serialized and deserialized to and from 
     a database.
     
@@ -194,39 +219,16 @@ class Model(Atom):
     #: ID of this object in the database. Subclasses can redefine this as needed
     _id = Bytes()
 
-    #: Model type for serialization and deserialization
-    __model__ = Unicode()
-    
     #: A unique ID used to handle cyclical serialization and deserialization
-    __ref__ = Bytes()
-
-    #: Fields that are saved in the db. By default it uses all atom members
-    #: that don't start with an underscore and are not taged with store.
-    __fields__ = Instance(set, ())
+    #: Do NOT use python's id() as these are reused and can cause conflicts
+    __ref__ = Bytes(factory=lambda: os.urandom(16))
     
-    # =========================================================================
-    # Defaults 
-    # =========================================================================
-    def _default___ref__(self):
-        return os.urandom(16)
-    
-    def _default___fields__(self):
-        """ By default it ignores any pivate members (starting with underscore)
-        and any member tagged with store=False.
-        """
-        return set((m.name for m in self.members().values()
-                    if not m.name.startswith("_") and
-                        (not m.metadata or m.metadata.get('store', True))))
-
-    def _default___model__(self):
-        cls = self.__class__
-        return f'{cls.__module__}.{cls.__name__}'
-
     # ==========================================================================
     # Serialization API
     # ==========================================================================
-
-    #: Handles encoding and decoding. Subclasses should redefine this.
+    
+    #: Handles encoding and decoding. Subclasses should redefine this to a
+    #: subclass of ModelSerializer
     serializer = None
 
     def __getstate__(self, scope=None):
@@ -270,7 +272,7 @@ class Model(Atom):
                     setattr(self, k, obj)
                 except Exception as e:
                     exc = traceback.format_exc()
-                    Application.instance().logger.error(
+                    WebApplication.instance().logger.error(
                         f"Error setting state:"
                         f"{self.__model__}.{k} = {pformat(obj)}:"
                         f"\nSelf: {ref}: {scope.get(ref)}"

@@ -2,9 +2,10 @@ import pytest
 from pprint import pprint
 from atom.api import *
 from motor.motor_asyncio import AsyncIOMotorClient
-from web.core.db.api import NoSQLModel
+from web.core.db.nosql import NoSQLModel
 from web.core.app import WebApplication
 from utils import faker
+
 
 class User(NoSQLModel):
     name = Unicode()
