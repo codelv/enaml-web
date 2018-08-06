@@ -69,7 +69,7 @@ class ModelSerializer(Atom):
         if isinstance(v, Model):
             ref = v.__ref__
             if ref in scope:
-                return {'__ref__': ref}
+                return {'__ref__': ref, '__model__': v.__model__}
             else:
                 scope[ref] = v
             state =  v.__getstate__(scope)
