@@ -14,8 +14,8 @@ rows to a table), paginate, filter, sort, handle clicks, etc.. in realtime
 without needing to refresh the page. React, angular, and other frameworks are 
 not needed.
 
-For example, the following interaction is done 100% in python using async 
-MongoDB queries via [Motor](https://motor.readthedocs.io/en/stable/). Including
+For example, the following interaction is done 100% in python and [materialize](http://materializecss.com/)
+using async MongoDB queries via [Motor](https://motor.readthedocs.io/en/stable/). Including
 all dropdown menu sorting, etc.. 
 
 ![interactive-websites-in-python-with-enaml](https://user-images.githubusercontent.com/380158/44675893-b4ceb380-a9ff-11e8-89e9-9ca2bce7d217.gif)
@@ -231,7 +231,7 @@ For example:
 ```python
 
 from atom.api import Unicode, Int, Instance, List
-from web.core.db import Model
+from web.core.db.nosql import Model
 
 
 class Group(Model):
