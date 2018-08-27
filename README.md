@@ -7,7 +7,19 @@
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
 let's you build websites in python declaratively. 
 
-![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
+You can use enaml-web to build "interactive" websites primarily in python 
+(only a few lines of js needed). By manipulating the dom and pushing the changes 
+between the client(s) and server, you can easily add / remove components (ie add 
+rows to a table), paginate, filter, sort, handle clicks, etc.. in realtime 
+without needing to refresh the page. React, angular, and other frameworks are 
+not needed.
+
+For example, the following interaction is done 100% in python using async 
+MongoDB queries via [Motor](https://motor.readthedocs.io/en/stable/). Including
+all dropdown menu sorting, etc.. 
+
+![interactive-websites-in-python-with-enaml](https://user-images.githubusercontent.com/380158/44675893-b4ceb380-a9ff-11e8-89e9-9ca2bce7d217.gif)
+
 
 ### Short intro
 
@@ -36,6 +48,7 @@ from the view. This is shown in the simple case of a static site generator:
 import enaml
 from web.core.app import WebApplication
 
+# Create an enaml Application that supports web components
 app = WebApplication()
 
 # Import Index from index.enaml
@@ -50,8 +63,8 @@ with open('index.html', 'w') as f:
 ```
 
 You can also use it in a request handler with your favorite web framework. You
-can pass in objects to populate dynamic views. For example with tornado web 
-you can do something like this:
+can pass in kwargs to render to populate dynamic views. For example with tornado 
+web you can do something like this:
 
 
 ```python
@@ -84,10 +97,15 @@ if __name__ == "__main__":
 
 ```
 
-### How it works
+All kwargs passed to render will do a `setattr(view, k, v)` on the view and fire
+any observers you defined in enaml. You can also just set attributes yourself ie 
+`view.request = request` then call `render()` later. 
 
+
+### How it works
 enaml-web generates a dom of [lxml](http://lxml.de/) elements. You can use this 
 to create any html page.
+
 
 ##### Inhernetly secure
 
@@ -139,6 +157,9 @@ be installed and used.
 
 Because enaml-web is generating a dom, you can use websockets and some js 
 to manipulate the dom to do data binding between the client to server.
+
+The dom can be shared per user or per session making it easy to create 
+collaborative pages or they can be unique to each page.
 
 ![Data binding](https://github.com/frmdstryr/enaml-web/blob/master/docs/data-binding.gif?raw=true)
 
@@ -193,6 +214,8 @@ enamldef AddMessageView(Base): page:
             model << message
    
 ```
+
+![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
 
 
 ### Simple ORM with MongoDB
