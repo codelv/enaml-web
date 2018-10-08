@@ -1,3 +1,7 @@
+# 0.6.1
+
+Replace `Bool` fields with `Coerced(bool)` to better support numpy bools.
+
 # 0.6.0
 
 The `web.core.db` module refactored and made into a package and split to 

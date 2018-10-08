@@ -11,7 +11,7 @@ Created on Apr 2, 2017
 """
 from __future__ import print_function
 from atom.api import (
-    Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance, Bool,
+    Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance,
     ForwardTyped, Typed, Coerced, observe
 )
 
@@ -62,7 +62,7 @@ class Tag(ToolkitObject):
     onclick = d_(Unicode())
     
     #: Whether this is clickable via websockets
-    clickable = d_(Bool())
+    clickable = d_(Coerced(bool))
     
     #:  Event from JS
     clicked = d_(Event())
@@ -538,7 +538,7 @@ class Select(Tag):
 
 class Option(Tag):
     value = d_(Unicode())
-    selected = d_(Bool())
+    selected = d_(Coerced(bool))
     
     @observe('value', 'selected')
     def _update_proxy(self, change):
@@ -548,7 +548,7 @@ class Option(Tag):
 class Input(Tag):
     name = d_(Unicode())
     type = d_(Unicode())
-    disabled = d_(Bool())
+    disabled = d_(Coerced(bool))
     checked = d_(Coerced(bool))
     value = d_(Value())
 
@@ -587,7 +587,7 @@ class Button(Tag):
 
 
 class Video(Tag):
-    controls = d_(Bool())
+    controls = d_(Coerced(bool))
     
     @observe('controls')
     def _update_proxy(self, change):
