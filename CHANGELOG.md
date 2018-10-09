@@ -1,3 +1,8 @@
+# 0.6.2
+
+Add option to define order when restoring state by tagging members with
+a `setstate_order=<number>` to used for sorting. The default is `1000`.
+
 # 0.6.1
 
 Replace `Bool` fields with `Coerced(bool)` to better support numpy bools.

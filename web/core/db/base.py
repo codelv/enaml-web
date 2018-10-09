@@ -244,10 +244,23 @@ class Model(with_metaclass(ModelMeta, Atom)):
         if self._id is not None:
             state['_id'] = self._id
         return state
-
+    
     async def __setstate__(self, state, scope=None):
         """ Restore an object from the a state from the database. This is
         async as it will lookup any referenced objects from the DB.
+        
+        State is restored by calling setattr(k, v) for every item in the state
+        that has an associated atom member.  Members can be tagged with a
+        `setstate_order=<number>` to define the order of setattr calls. Errors 
+        from setattr are caught and logged instead of raised.
+        
+        Parameters
+        ----------
+        state: Dict
+            A dictionary of state keys and values
+        scope: Dict or None
+            A namespace to use to resolve any possible circular references.
+            The __ref__ value is used as the keys.
         
         """
         unflatten = self.serializer.unflatten
@@ -263,24 +276,35 @@ class Model(with_metaclass(ModelMeta, Atom)):
         if ref is not None:
             scope[ref] = self
         members = self.members()
-        for k, v in state.items():
-            
-            # Don't use getattr because it triggers a default value lookup
-            if members.get(k):
-                try:
-                    obj = await unflatten(v, scope)
-                    setattr(self, k, obj)
-                except Exception as e:
-                    exc = traceback.format_exc()
-                    WebApplication.instance().logger.error(
-                        f"Error setting state:"
-                        f"{self.__model__}.{k} = {pformat(obj)}:"
-                        f"\nSelf: {ref}: {scope.get(ref)}"
-                        f"\nValue: {pformat(v)}"
-                        f"\nScope: {pformat(scope)}"
-                        f"\nState: {pformat(state)}"
-                        f"\n{exc}"
-                    )
+        
+        # Order the keys by the members 'setstate_order' if given
+        valid_keys = []
+        for k in state.keys():
+            m = members.get(k)
+            if m is not None:
+                if m.metadata:
+                    order = m.metadata.get('setstate_order', 1000)
+                else:
+                    order = 1000
+                valid_keys.append((order, k))
+        valid_keys.sort()
+        
+        for order, k in valid_keys:
+            v = state[k]
+            try:
+                obj = await unflatten(v, scope)
+                setattr(self, k, obj)
+            except Exception as e:
+                exc = traceback.format_exc()
+                WebApplication.instance().logger.error(
+                    f"Error setting state:"
+                    f"{self.__model__}.{k} = {pformat(obj)}:"
+                    f"\nSelf: {ref}: {scope.get(ref)}"
+                    f"\nValue: {pformat(v)}"
+                    f"\nScope: {pformat(scope)}"
+                    f"\nState: {pformat(state)}"
+                    f"\n{exc}"
+                )
     
     # ==========================================================================
     # Database API
