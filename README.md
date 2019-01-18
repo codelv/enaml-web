@@ -7,16 +7,10 @@
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
 let's you build websites in python declaratively. 
 
-You can use enaml-web to build "interactive" websites primarily in python 
-(only a few lines of js needed). By manipulating the dom and pushing the changes 
-between the client(s) and server, you can easily add / remove components (ie add 
-rows to a table), paginate, filter, sort, handle clicks, etc.. in realtime 
-without needing to refresh the page. React, angular, and other frameworks are 
-not needed.
+You can use enaml-web to build "interactive" websites using python, enaml, and a few lines of _simple_ javascript (see the simple pandas [dataframe viewer](https://github.com/codelv/enaml-web/tree/master/examples/dataframe_viewer) example). The view state (dom) is stored on the server as an enaml view and interaction works by syncing changes between
+between the client(s) and server using websockets (or polling). 
 
-For example, the following interaction is done 100% in python and [materialize](http://materializecss.com/)
-using async MongoDB queries via [Motor](https://motor.readthedocs.io/en/stable/). Including
-all dropdown menu sorting, etc.. 
+To demonstrate, the following interaction is all handled with enaml-web
 
 ![interactive-websites-in-python-with-enaml](https://user-images.githubusercontent.com/380158/44675893-b4ceb380-a9ff-11e8-89e9-9ca2bce7d217.gif)
 
