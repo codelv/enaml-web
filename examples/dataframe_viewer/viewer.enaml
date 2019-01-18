@@ -1,0 +1,102 @@
+import pandas as pd
+from web.core.api import Looper, Conditional
+from web.components.api import *
+
+
+enamldef Viewer(Html): viewer:
+    attr request # The tornado request
+    attr response # The tornado response handler
+    attr csv_files # Files in the repo
+    attr dataframe
+    attr loading = False
+    Head:
+        Title:
+            text = "Pandas Dataframe Viewer"
+        Script:
+            src = 'https://code.jquery.com/jquery-3.3.1.min.js'
+            type = 'text/javascript'
+        Script:
+            src = '/static/app.js'
+            type = 'text/javascript'
+        Script:
+            text = '''
+            $(document).ready(function(){
+                initViewer(%s);
+            });
+            '''% viewer.ref
+
+        Link:
+            rel="stylesheet"
+            href="//stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+            attrs = dict(
+                integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS",
+                crossorigin="anonymous"
+            )
+    Body:
+        cls = 'container'
+        H1:
+            text = 'DataFrame Viewer'
+        P:
+            text = 'This example demonstrates an interactive web app built with enaml'
+        Div:
+            cls = 'card'
+            Div:
+                cls = 'card-header'
+                text = "Choose a dataset"
+            Div:
+                cls = 'card-body'
+                P:
+                    Select: select:
+                        Option:
+                            pass
+                        Looper:
+                            iterable = csv_files
+                            Option:
+                                value = loop_item
+                                text = loop_item.split("/")[-1]
+                Button:
+                    text = "Load dataset"
+                    cls = 'btn btn-info'
+                    clickable = True
+                    clicked ::
+                        if select.value:
+                            viewer.loading = True
+                            viewer.dataframe = pd.read_csv(select.value)
+                            viewer.loading = False
+            Div:
+                cls = 'card-footer overflow-auto'
+                Conditional:
+                    condition << viewer.dataframe is None and not viewer.loading
+                    Div:
+                        cls = 'text-info'
+                        text = "No dataframe is loaded"
+                Conditional:
+                    condition << viewer.loading
+                    Div:
+                        cls = 'text-center'
+                        Div:
+                            cls = 'spinner-border text-info'
+                            Span:
+                                cls = 'sr-only'
+                                text = 'Loading...'
+                Conditional:
+                    condition << viewer.dataframe is not None and not viewer.loading
+                    Table:
+                        cls = 'table'
+                        THead:
+                            Tr:
+                                Looper:
+                                    iterable << dataframe.columns
+                                    Th:
+                                        text << str(loop_item)
+                        TBody:
+                            Looper:
+                                iterable << dataframe
+                                Tr:
+                                    attr row = loop_index
+                                    Looper:
+                                        iterable << dataframe.columns
+                                        Td:
+                                            attr col = loop_index
+                                            text << str(dataframe.iloc[row, col])
+
