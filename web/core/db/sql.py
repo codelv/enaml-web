@@ -20,14 +20,15 @@ from .base import ModelManager, ModelSerializer, Model, find_subclasses
 
 # kwargs reserved for sqlalchemy table columns
 COLUMN_KWARGS = (
-    'autoincrement', 'default', 'doc', 'key', 'index', 'info', 'nullable', 
+    'autoincrement', 'default', 'doc', 'key', 'index', 'info', 'nullable',
     'onupdate', 'primary_key', 'server_default', 'server_onupdate',
     'quote', 'unique', 'system', 'comment'
 )
-    
+
+
 def py_type_to_sql_column(cls, **kwargs):
     """ Convert the python type to an alchemy table column type
-    
+
     """
     if issubclass(cls, Model):
         name =  f'{cls.__model__}._id'
@@ -47,11 +48,11 @@ def py_type_to_sql_column(cls, **kwargs):
     raise NotImplementedError(f"A column for {cls} could not be detected, "
                               "please specifiy it manually by tagging it with "
                               ".tag(column=<sqlalchemy column>)")
-        
+
 
 def atom_member_to_sql_column(member, **kwargs):
     """ Convert the atom member type to an sqlalchemy table column type
-    
+
     """
     if isinstance(member, api.Str):
         return sa.String(**kwargs)
@@ -86,13 +87,13 @@ def atom_member_to_sql_column(member, **kwargs):
         item_type = member.validate_mode[-1]
         if item_type is None:
             raise TypeError("List and Tuple members must specifiy types")
-        
+
         # Resolve the item type
         if hasattr(item_type, 'resolve'):
             value_type = item_type.resolve()
         else:
             value_type = item_type.validate_mode[-1]
-            
+
         if value_type is None:
             raise TypeError("List and Tuple members must specifiy types")
         elif isinstance(value_type, Model):
@@ -106,40 +107,40 @@ def atom_member_to_sql_column(member, **kwargs):
     raise NotImplementedError(f"A column for {member} could not be detected, "
                               "please specifiy it manually by tagging it with "
                               ".tag(column=<sqlalchemy column>)")
-        
+
 
 def create_table_column(member):
     """ Converts an Atom member into a sqlalchemy data type.
-    
+
     Parameters
     ----------
     member: Member
         The atom member
-        
+
     Returns
     -------
     column: Column
         An sqlalchemy column
-    
+
     References
     ----------
     1. https://docs.sqlalchemy.org/en/latest/core/types.html
-    
+
     """
     metadata = member.metadata or {}
-    
+
     # If a column is specified use that
     if 'column' in metadata:
         return metadata['column']
-    
+
     metadata.pop('store', None)
-    
+
     # Extract column kwargs from member metadata
     kwargs = {}
     for k in COLUMN_KWARGS:
         if k in metadata:
             kwargs[k] = metadata.pop(k)
-    
+
     args = atom_member_to_sql_column(member, **metadata)
     if not isinstance(args, (tuple, list)):
         args = (args,)
@@ -149,7 +150,7 @@ def create_table_column(member):
 def create_table(model):
     """ Create an sqlalchemy table by inspecting the Model and generating
     a column for each member.
-    
+
     """
     if not issubclass(model, Model):
         raise TypeError("Only Models are supported")
@@ -162,14 +163,14 @@ def create_table(model):
 
 class SQLModelSerializer(ModelSerializer):
     """ Uses sqlalchemy to lookup the model.
-    
+
     """
-    async def find_object(self, cls, _id):
-        result = await cls.objects.select('*').where(_id=object_id)
+    async def get_object_state(self, obj, _id):
+        ModelType = obj.__class__
+        result = await ModelType.objects.select('*').where(_id=_id)
         # Convert the result to a dict
-        
-        return state
-    
+        return result
+
     def _default_registry(self):
         return {m.__model__: m for m in find_subclasses(SQLModel)}
 
@@ -177,18 +178,18 @@ class SQLModelSerializer(ModelSerializer):
 class SQLModelManager(ModelManager):
     """ Manages models via aiopg, aiomysql, or similar libraries supporting
     SQLAlchemy tables. It stores a table for each class
-    
+
     """
     #: Mapping of model to table used to store the model
     tables = Dict()
-    
+
     def _default_tables(self):
         """ Create all the tables """
         return {m: create_table(m) for m in find_subclasses(SQLModel)}
-    
+
     def __get__(self, obj, cls=None):
         """ Retrieve the table for the requested object or class.
-        
+
         """
         cls = cls or obj.__class__
         if not issubclass(cls, Model):
@@ -197,19 +198,19 @@ class SQLModelManager(ModelManager):
             self.tables[cls] = create_table(cls)
         table = self.tables[cls]
         return SQLClient(manager=self, table=table)
-     
+
 
 class SQLClient(Atom):
     """ A light wrapper that ensures that a connection to the DB is aquired
-    before each transaction. 
-    
+    before each transaction.
+
     """
     #: Engine instance for the given backend
     manager = Instance(SQLModelManager)
-    
+
     #: Table instance
     table = Instance(sa.Table)
-    
+
     async def __getattr__(self, attr):
         """ Wrap each query """
         engine = self.manager.database
@@ -220,14 +221,14 @@ class SQLClient(Atom):
 class SQLModel(Model):
     """ A model that can be saved and restored to and from a database supported
     by sqlalchemy.
-    
+
     """
     #: ID of this object in the database
     _id = Int().tag(primary_key=True)
-    
+
     #: Use SQL serializer
     serializer = SQLModelSerializer.instance()
-    
+
     #: Use SQL object manager
     objects = SQLModelManager.instance()
 

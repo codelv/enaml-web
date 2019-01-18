@@ -17,11 +17,12 @@ from .base import ModelManager, ModelSerializer, Model, find_subclasses
 class NoSQLModelSerializer(ModelSerializer):
     """ Handles serializing and deserializing of Model subclasses. It
     will automatically save and restore references where present.
-    
-    """    
-    def find_object(self, cls, _id):
-        return cls.objects.find_one({'_id': _id})
-    
+
+    """
+    async def get_object_state(self, obj, _id):
+        ModelType = obj.__class__
+        return await ModelType.objects.find_one({'_id': _id})
+
     def _default_registry(self):
         return {m.__model__: m for m in find_subclasses(NoSQLModel)}
 
@@ -29,11 +30,11 @@ class NoSQLModelSerializer(ModelSerializer):
 class NoSQLModelManager(ModelManager):
     """ A descriptor so you can use this somewhat like Django's models.
     Assuming your using motor or txmongo.
-    
+
     Examples
     --------
     MyModel.objects.find_one({'_id':'someid})
-    
+
     """
     def __get__(self, obj, cls=None):
         """ Handle objects from the class that owns the manager """
@@ -44,11 +45,11 @@ class NoSQLModelManager(ModelManager):
 
 
 class NoSQLModel(Model):
-    """ An atom model that can be serialized and deserialized to and from 
+    """ An atom model that can be serialized and deserialized to and from
     MongoDB.
-    
+
     """
-    
+
     #: ID of this object in the database
     _id = Instance(bson.ObjectId)
 
@@ -57,7 +58,7 @@ class NoSQLModel(Model):
 
     #: Handles database access
     objects = NoSQLModelManager.instance()
-    
+
     async def save(self):
         """ Alias to delete this object to the database """
         db = self.objects
