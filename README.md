@@ -14,6 +14,13 @@ To demonstrate, the following interaction is all handled with enaml-web
 
 ![interactive-websites-in-python-with-enaml](https://user-images.githubusercontent.com/380158/44675893-b4ceb380-a9ff-11e8-89e9-9ca2bce7d217.gif)
 
+### Examples
+
+See the examples folder
+
+- [www.codelv.com](https://www.codelv.com/) - Built entirely using enaml-web
+- [SMD Component search](https://github.com/frmdstryr/smd-search) - View and search a pandas dataframe
+
 
 ### Short intro
 
@@ -36,7 +43,6 @@ enamldef Index(Html):
 Calling `render()` on an instance of this enaml view then generates the html
 from the view. This is shown in the simple case of a static site generator:
 
-
 ```python
 
 import enaml
@@ -56,8 +62,7 @@ with open('index.html', 'w') as f:
 
 ```
 
-You can also use it in a request handler with your favorite web framework. You
-can pass in kwargs to render to populate dynamic views. For example with tornado 
+You can also use it in a request handler with your favorite web framework. For example with tornado 
 web you can do something like this:
 
 
@@ -91,10 +96,14 @@ if __name__ == "__main__":
 
 ```
 
-All kwargs passed to render will do a `setattr(view, k, v)` on the view and fire
-any observers you defined in enaml. You can also just set attributes yourself ie 
-`view.request = request` then call `render()` later. 
+### So what's the advantage over plain html? 
 
+It's as simple as html but it's python so you can, loop over lists, render conditionally, 
+format variables, etc... 
+
+Also, it's not just formatting a template,  the server maintains the page state so 
+you can interact with the page after it's rendered.  This is something that no other
+python template frameworks can do (to my knowledge).
 
 ### How it works
 enaml-web generates a dom of [lxml](http://lxml.de/) elements. You can use this 
@@ -441,15 +450,6 @@ enamldef Icon(I):
     cls = 'material-icons'
 
 ```
-
-
-### Examples
-
-My website uses it
-
-- [www.codelv.com](https://www.codelv.com/) - Built entirely using enaml-web
-
-
 
  
 
