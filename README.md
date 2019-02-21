@@ -5,10 +5,10 @@
 
 
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
-let's you build websites in python declaratively. 
+let's you build websites in python declaratively.
 
 You can use enaml-web to build "interactive" websites using python, enaml, and a few lines of _simple_ javascript (see the simple pandas [dataframe viewer](https://github.com/codelv/enaml-web/tree/master/examples/dataframe_viewer) example). The view state (dom) is stored on the server as an enaml view and interaction works by syncing changes between
-between the client(s) and server using websockets (or polling). 
+between the client(s) and server using websockets (or polling).
 
 To demonstrate, the following interaction is all handled with enaml-web
 
@@ -24,7 +24,7 @@ See the examples folder
 
 ### Short intro
 
-To use enaml web, you simply replace html tags with the enaml component 
+To use enaml web, you simply replace html tags with the enaml component
 (the capitalized tag name). For example:
 
 ```python
@@ -62,7 +62,7 @@ with open('index.html', 'w') as f:
 
 ```
 
-You can also use it in a request handler with your favorite web framework. For example with tornado 
+You can also use it in a request handler with your favorite web framework. For example with tornado
 web you can do something like this:
 
 
@@ -84,10 +84,10 @@ class IndexHandler(tornado.web.RequestHandler):
 class Application(tornado.web.Application):
     def __init__(self):
         super(Application, self).__init__([
-                (r'/',IndexHandler) 
+                (r'/',IndexHandler)
            ],
         )
-        
+
 if __name__ == "__main__":
     web_app = WebApplication()
     app = Application()
@@ -96,60 +96,60 @@ if __name__ == "__main__":
 
 ```
 
-### So what's the advantage over plain html? 
+### So what's the advantage over plain html?
 
-It's as simple as html but it's python so you can, loop over lists, render conditionally, 
-format variables, etc... 
+It's as simple as html but it's python so you can, loop over lists, render conditionally,
+format variables, etc...
 
-Also, it's not just formatting a template,  the server maintains the page state so 
+Also, it's not just formatting a template,  the server maintains the page state so
 you can interact with the page after it's rendered.  This is something that no other
 python template frameworks can do (to my knowledge).
 
 ### How it works
-enaml-web generates a dom of [lxml](http://lxml.de/) elements. You can use this 
+enaml-web generates a dom of [lxml](http://lxml.de/) elements. You can use this
 to create any html page.
 
 
 ##### Inhernetly secure
 
-Since an lxml dom is generated it means that your code is inherently secure from 
+Since an lxml dom is generated it means that your code is inherently secure from
 injection as it automatically escapes all attributes. Also a closing tag cannot
-be accidentally missed. 
+be accidentally missed.
 
-The atom framework provides additional security by enforcing runtime type 
-checking and optional validation. 
+The atom framework provides additional security by enforcing runtime type
+checking and optional validation.
 
 
 ##### Extendable via templates and blocks
 
 Like other template engines, enaml-web provides a "Block" node that allows
-you to define a part of a template that can be overridden or extended. 
+you to define a part of a template that can be overridden or extended.
 
-Enaml also provides pattern nodes for handling conditional statments, loops, 
-dynamic nodes based on lists or models, and nodes generated from more complex 
+Enaml also provides pattern nodes for handling conditional statments, loops,
+dynamic nodes based on lists or models, and nodes generated from more complex
 templates (ex automatic form generation).
 
 
 ##### No template tags needed
 
-Many templating engines require the use of "template tags" wrapped in `{% %}` 
-or similar to allow the use of python code to transform variables. 
+Many templating engines require the use of "template tags" wrapped in `{% %}`
+or similar to allow the use of python code to transform variables.
 
-Since enaml is an extension to python, you can use any python code directly in 
+Since enaml is an extension to python, you can use any python code directly in
 your enaml components and templates. You don't need any template tags. You can,
 import and use tag functions from other frameworks if you need.
 
-You can "render" raw html source into nodes such as wysiwyg content from a 
+You can "render" raw html source into nodes such as wysiwyg content from a
 database or other sources. Components for rendering markdown and highlighted code
 blocks are also provided.
 
 ##### Component based
 
-Since enaml views are like python classes, you can "subclass" and extend any 
+Since enaml views are like python classes, you can "subclass" and extend any
 component and extend it's functionality. This enables you to quickly build
-reusable components. 
+reusable components.
 
-I'm working on components for several common css frameworks so they can simply 
+I'm working on components for several common css frameworks so they can simply
 be installed and used.
 
 1. [materialize-ui](https://github.com/frmdstryr/materialize)
@@ -158,10 +158,10 @@ be installed and used.
 
 ### Data binding
 
-Because enaml-web is generating a dom, you can use websockets and some js 
+Because enaml-web is generating a dom, you can use websockets and some js
 to manipulate the dom to do data binding between the client to server.
 
-The dom can be shared per user or per session making it easy to create 
+The dom can be shared per user or per session making it easy to create
 collaborative pages or they can be unique to each page.
 
 ![Data binding](https://github.com/frmdstryr/enaml-web/blob/master/docs/data-binding.gif?raw=true)
@@ -169,20 +169,20 @@ collaborative pages or they can be unique to each page.
 Each node as a unique identifier and can be modified using change events. An
 example of this is in the examples folder.
 
-You can also have the client trigger events on the server and have the server 
+You can also have the client trigger events on the server and have the server
 trigger JS events on the client.
 
 To use:
 1. Include enaml.js in your page
 2. Observe the `modified` event of an Html node and pass these changes to the
 client via websockets.
-3. Enamljs will send events back to the server, update the dom accordingly. 
+3. Enamljs will send events back to the server, update the dom accordingly.
 
 
 #### Data models
 
 Forms can automatically be generated and populated using enaml's DynamicTemplate
-nodes. An implementation of the `AutoForm` using the [materalize css](https://github.com/frmdstryr/materialize) 
+nodes. An implementation of the `AutoForm` using the [materalize css](https://github.com/frmdstryr/materialize)
 framework is available on my personal repo. With this, we can take a model like:
 
 ```python
@@ -197,14 +197,14 @@ class Message(Atom):
     sign_up = Bool(True)
 
 
-``` 
+```
 
-Then use the `AutoForm` node and pass in either a new or populated instance of 
+Then use the `AutoForm` node and pass in either a new or populated instance of
 the model to render the form.
 
 ```python
 
-from templates import Base 
+from templates import Base
 from web.components.api import *
 from web.core.api import Block
 
@@ -215,80 +215,18 @@ enamldef AddMessageView(Base): page:
         block = page.content
         AutoForm:
             model << message
-   
+
 ```
 
 ![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
 
 
-### Simple ORM with MongoDB
+### Database ORM with Atom
 
-Using Atom makes it easy to build a simple ORM. One is now provided that 
-handles serialization to and from MongoDB (or anything that takes json).
-It's used simlar to django.  It assumes you're using motor but should also work
-with txmongo as it simply proxies calls to the provided MongoDB collection.
+For working with a databse using atom see [atom-db](https://github.com/codelv/atom-db)
 
 
-For example:
-
-```python
-
-from atom.api import Unicode, Int, Instance, List
-from web.core.db.nosql import Model
-
-
-class Group(Model):
-    name = Unicode()
-
-class User(Model):
-    name = Unicode()
-    age = Int()
-    groups = List(Group)
-    
-
-```
-
-Then we can create an instance and save it. It will perform an upsert or replace
-the existing entry. 
-
-```python
-
-admins = Group(name="Admins")
-await admins.save()
-
-# It will save admins using it's ObjectID 
-bob = User(name="Bob", age=32, groups=[admins])
-await bob.save()
-
-tom = User(name="Tom", age=34, groups=[admins])
-await tom.save()
-
-```
-
-To fetch from the DB each model has a `ModelManager` called `objects` that will 
-simply return the collection for the model type. For example.
-
-```python
-
-# Fetch from db, you can use any MongoDB queries here
-state = await User.objects.find_one({'name': "James"})
-if state:
-    james = await User.restore(state)
-    
-# etc...
-```
-
-Restoring is async because it will automatically fetch any related objects 
-(ex the groups in this case). It saves objects using the ObjectID when present.
-
-And finally you can either delete using queries on the manager directly or
-call delete on the object.
-
-You can exclude members from being saved to the DB by tagging them 
-with `.tag(store=False)`.
-
-
-#### Raw, Markdown, and Code nodes 
+#### Raw, Markdown, and Code nodes
 
 The`Raw` node parses text into dom nodes (using lxml's html parser). Similarly
 `Markdown` and `Code` nodes parse markdown and highlight code respectively.
@@ -312,7 +250,7 @@ enamldef BlogPage(Page):
 ```
 
 This let's you use web wysiwyg editors to insert content into the etree.
- 
+
 
 #### Block node
 
@@ -340,14 +278,14 @@ enamldef Base(Html):
             pass
         Footer:
             text = "Footer"
-        
+
 ```
 
-Then you can import that view and _extend_ the template and override the 
+Then you can import that view and _extend_ the template and override the
 block's content.
 
 ```python
-from templates import Base 
+from templates import Base
 from web.components.api import *
 from web.core.api import Block
 
@@ -356,19 +294,19 @@ enamldef Page(Base): page:
         block = page.content
         P:
             text = "Content inserted between Header and Footer"
-            
+
 ```
 
 Blocks let you either replace, append, or prepend to the content.
 
-#### Custom Components 
+#### Custom Components
 
-Probably the best part, with enaml you can easily create reusable components 
+Probably the best part, with enaml you can easily create reusable components
 and share them through the views as you would any python class.
 
-For instance, to create a 
-[materalize breadcrumbs component](http://materializecss.com/breadcrumbs.html) 
-that automatically follows the current request path, simply include the required 
+For instance, to create a
+[materalize breadcrumbs component](http://materializecss.com/breadcrumbs.html)
+that automatically follows the current request path, simply include the required
 css/scripts in your base template, define the component as shown below:
 
 ```python
@@ -406,11 +344,11 @@ Breadcrumbs:
 ```
 
 
-### Gotachas 
+### Gotachas
 
 ##### Text and tail nodes
 
-Lxml uses text and tail properties to set text before and after child nodes, which can be confusing. 
+Lxml uses text and tail properties to set text before and after child nodes, which can be confusing.
 
 For instance in html you can do
 
@@ -431,16 +369,16 @@ P:
         text = "click here"
         tail = "then keep going"
 
-``` 
+```
 
-Notice how `tail` is set on the `A` NOT the `P`.  
-See [lxml etree documentation](http://lxml.de/tutorial.html#elements-contain-text) for more details. 
+Notice how `tail` is set on the `A` NOT the `P`.
+See [lxml etree documentation](http://lxml.de/tutorial.html#elements-contain-text) for more details.
 
 
 ##### Tag attribute
 
-In the current implementation the xml tag used is the lowercase of the class name. 
-When you subclass a component you must explicity set the tag attribute to the 
+In the current implementation the xml tag used is the lowercase of the class name.
+When you subclass a component you must explicity set the tag attribute to the
 desired tag name. For example:
 
 ```python
@@ -451,7 +389,7 @@ enamldef Icon(I):
 
 ```
 
- 
+
 
 
 
