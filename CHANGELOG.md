@@ -1,3 +1,7 @@
+# 0.8.0
+
+DB API was moved to an external project named `atom-db`
+
 # 0.7.0
 
 DB API was changed to use a `get_or_create` method that can work with caching

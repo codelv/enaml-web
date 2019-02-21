@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='enaml-web',
-    version='0.7.0',
+    version='0.8.0',
     author='CodeLV',
     author_email='frmdstryr@gmail.com',
     url='https://github.com/codelv/enaml-web',
@@ -19,7 +19,6 @@ setup(
     install_requires=['enaml >= 0.9.8', 'lxml>=3.4.0'],
     optional_requires=[
         'Pygments', 'Markdown', 'nbconvert',  # extra components
-        'sqlalchemy', 'motor', 'txmongo'  # database support
     ],
     packages=find_packages(),
 )
