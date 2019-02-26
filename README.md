@@ -138,6 +138,13 @@ Since enaml _is_ python, you can use any python code directly in
 your enaml components and templates. You don't need any template tags.
 
 
+##### Testing is easier
+
+Since the internal representation is lxml nodes, you can use lxml's xpath
+queries on the dom for testing. No need to use headless browsers and that
+complicated stuff (unless you're using a lot of js).
+
+
 ##### Component based
 
 Since enaml views are like python classes, you can "subclass" and extend any
@@ -384,8 +391,5 @@ enamldef Icon(I):
     cls = 'material-icons'
 
 ```
-
-
-
 
 
