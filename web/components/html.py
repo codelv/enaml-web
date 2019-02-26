@@ -1,5 +1,5 @@
 """
-Copyright (c) 2017, Jairus Martin.
+Copyright (c) 2017-2019, Jairus Martin.
 
 Distributed under the terms of the MIT License.
 
@@ -11,7 +11,7 @@ Created on Apr 2, 2017
 """
 from __future__ import print_function
 from atom.api import (
-    Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance,
+    Atom, Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance,
     ForwardTyped, Typed, Coerced, observe
 )
 
@@ -27,56 +27,82 @@ class ProxyTag(ProxyToolkitObject):
         raise NotImplementedError
 
 
+class SuperProxy(Atom):
+    """ A proxy for accessing overridden members. This requires a modification
+    to enaml at the moment.
+
+    """
+
+    #: Object of which to find the super node
+    owner = Typed(Atom)
+
+    def __getattr__(self, attr):
+        owner = self.owner
+        node = owner._d_node
+        engine = node.engine
+        while node and engine == node.engine:
+            node = node.super_node
+        if node is None or node == owner._d_node:
+            raise AttributeError('%s has no super node' % owner)
+        return node.engine.read(self.owner, attr)
+
+
 class Tag(ToolkitObject):
     #: Reference to the proxy object
     proxy = Typed(ProxyTag)
+
+    #: Enables accessing overridden expressions
+    base = Typed(SuperProxy)
 
     #: Object ID
     id = d_(Unicode())
 
     #: Object ID
     ref = d_(Unicode())
-    
+
     #: Tag name (leave blank for class name)
     tag = d_(Unicode()).tag(attr=False)
-    
+
     #: CSS classes
     cls = d_(Instance((list, object))).tag(attr=False)
-    
+
     #: CSS styles
     style = d_(Instance((dict, object))).tag(attr=False)
-    
+
     #: Node text
     text = d_(Unicode()).tag(attr=False)
-    
+
     #: Node tail text
     tail = d_(Unicode()).tag(attr=False)
-    
+
     #: Alt attribute
     alt = d_(Unicode())
-    
+
     #: Custom attributes not explicitly defined
     attrs = d_(Dict()).tag(attr=False)
-    
+
     #: Event from JS
     onclick = d_(Unicode())
-    
+
     #: Whether this is clickable via websockets
     clickable = d_(Coerced(bool))
-    
+
     #:  Event from JS
     clicked = d_(Event())
-    
+
     def _default_tag(self):
         return self.__class__.__name__.lower()
 
     def _default_ref(self):
         return u"{}".format(id(self))
-    
+
+    def _default_base(self):
+        return SuperProxy(owner=self)
+
     @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs',
              'onclick', 'clickable')
     def _update_proxy(self, change):
-        """ Update the proxy widget when the Widget data 
+        """ Update the proxy widget when the Widget data
         changes.
         """
         #: Try default handler
@@ -90,7 +116,7 @@ class Tag(ToolkitObject):
 
     def _notify_modified(self, change):
         """  If a change occurs when we have a websocket connection active
-        notify the websocket client of the change. 
+        notify the websocket client of the change.
         """
         root = self.root_object()
         if isinstance(root, Html):
@@ -102,7 +128,7 @@ class Tag(ToolkitObject):
                 'value': change['value']
             }
             root.modified(change)
-            
+
     def child_added(self, child):
         super(Tag, self).child_added(child)
         if isinstance(child, Tag) and self.proxy_is_active:
@@ -113,7 +139,7 @@ class Tag(ToolkitObject):
                 'value': child.render().decode()
             }
             self._notify_modified(change)
-    
+
     def child_removed(self, child):
         super(Tag, self).child_removed(child)
         if isinstance(child, Tag) and self.proxy_is_active:
@@ -123,7 +149,7 @@ class Tag(ToolkitObject):
                 'value': child.ref,
             }
             self._notify_modified(change)
-    
+
     def xpath(self, *args, **kwargs):
         if not nodes:
             return []
@@ -131,14 +157,14 @@ class Tag(ToolkitObject):
         if not refs:
             return []
         return [CACHE[ref] for ref in refs if ref and ref in CACHE]
-    
+
     def xpath(self, query, **kwargs):
         """ Find nodes matching the given xpath query """
         if not self.proxy:
             return
         nodes = self.proxy.find(query, **kwargs)
         return [n.declaration for n in nodes]
-    
+
     def prepare(self, **kwargs):
         """ Prepare for rendering """
         for k, v in kwargs.items():
@@ -147,7 +173,7 @@ class Tag(ToolkitObject):
             self.initialize()
         if not self.proxy_is_active:
             self.activate_proxy()
-    
+
     def render(self, **kwargs):
         """ Render to a string"""
         self.prepare(**kwargs)
@@ -158,21 +184,21 @@ class Html(Tag):
     #: Dom modified event. This will fire when any child node is updated, added
     #: or removed. Observe this event to handle updating websockets.
     modified = d_(Event(dict), writable=False).tag(attr=False)
-    
+
     def _default_tag(self):
         return 'html'
 
 
 class Head(Tag):
-    pass    
+    pass
 
 
 class Body(Tag):
-    pass    
+    pass
 
 
 class Title(Tag):
-    pass    
+    pass
 
 
 class P(Tag):
@@ -184,7 +210,7 @@ class H1(Tag):
 
 
 class H2(Tag):
-    pass           
+    pass
 
 
 class H3(Tag):
@@ -236,13 +262,13 @@ class Div(Tag):
 
 
 class Span(Tag):
-    pass                    
+    pass
 
 
 class A(Tag):
     href = d_(Unicode())
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
-    
+
     @observe('href', 'target')
     def _update_proxy(self, change):
         super(A, self)._update_proxy(change)
@@ -294,7 +320,7 @@ class Q(Tag):
 
 class Blockquote(Tag):
     cite = d_(Unicode())
-    
+
     @observe('cite')
     def _update_proxy(self, change):
         super(Blockquote, self)._update_proxy(change)
@@ -320,10 +346,10 @@ class Img(Tag):
     src = d_(Unicode())
     width = d_(Unicode())
     height = d_(Unicode())
-    
+
     @observe('src', 'width', 'height')
     def _update_proxy(self, change):
-        super(Img, self)._update_proxy(change)            
+        super(Img, self)._update_proxy(change)
 
 
 class Style(Tag):
@@ -335,7 +361,7 @@ class Link(Tag):
     rel = d_(Unicode())
     href = d_(Unicode())
     media = d_(Unicode())
-    
+
     @observe('type', 'rel', 'href', 'media')
     def _update_proxy(self, change):
         super(Link, self)._update_proxy(change)
@@ -343,7 +369,7 @@ class Link(Tag):
 
 class Map(Tag):
     name = d_(Unicode())
-    
+
     @observe('name')
     def _update_proxy(self, change):
         super(Map, self)._update_proxy(change)
@@ -353,7 +379,7 @@ class Area(Tag):
     shape = d_(Unicode())
     coords = d_(Unicode())
     href = d_(Unicode())
-    
+
     @observe('shape', 'coords', 'href')
     def _update_proxy(self, change):
         super(Area, self)._update_proxy(change)
@@ -379,7 +405,7 @@ class Td(Tag):
 class Th(Tag):
     colspan = d_(Unicode())
     rowspan = d_(Unicode())
-    
+
     @observe('colspan', 'rowspan')
     def _update_proxy(self, change):
         super(Th, self)._update_proxy(change)
@@ -399,7 +425,7 @@ class TFoot(Tag):
 
 class Caption(Tag):
     pass
-    
+
 
 class Ul(Tag):
     pass
@@ -407,7 +433,7 @@ class Ul(Tag):
 
 class Ol(Tag):
     type = d_(Enum("", "1", "A", "a", "I", "i"))
-    
+
     @observe('type')
     def _update_proxy(self, change):
         super(Ol, self)._update_proxy(change)
@@ -434,7 +460,7 @@ class IFrame(Tag):
     height = d_(Unicode())
     width = d_(Unicode())
     target = d_(Unicode())
-    
+
     @observe('src', 'height', 'width', 'target')
     def _update_proxy(self, change):
         super(IFrame, self)._update_proxy(change)
@@ -443,7 +469,7 @@ class IFrame(Tag):
 class Script(Tag):
     src = d_(Unicode())
     type = d_(Unicode())
-    
+
     @observe('type', 'src')
     def _update_proxy(self, change):
         super(Script, self)._update_proxy(change)
@@ -456,16 +482,16 @@ class NoScript(Tag):
 class Meta(Tag):
     name = d_(Unicode())
     content = d_(Unicode())
-    
+
     @observe('name', 'content')
     def _update_proxy(self, change):
         super(Meta, self)._update_proxy(change)
-    
+
 
 class Base(Tag):
     href = d_(Unicode())
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
-    
+
     @observe('href', 'target')
     def _update_proxy(self, change):
         super(Base, self)._update_proxy(change)
@@ -506,11 +532,11 @@ class Details(Tag):
 class Form(Tag):
     action = d_(Unicode())
     method = d_(Enum("post", "get"))
-    
+
     @observe('action', 'method')
     def _update_proxy(self, change):
         super(Form, self)._update_proxy(change)
-    
+
 
 class Fieldset(Tag):
     pass
@@ -534,16 +560,16 @@ class Select(Tag):
     @observe('name', 'value')
     def _update_proxy(self, change):
         super(Select, self)._update_proxy(change)
-    
+
 
 class Option(Tag):
     value = d_(Unicode())
     selected = d_(Coerced(bool))
-    
+
     @observe('value', 'selected')
     def _update_proxy(self, change):
         super(Option, self)._update_proxy(change)
-    
+
 
 class Input(Tag):
     name = d_(Unicode())
@@ -554,7 +580,7 @@ class Input(Tag):
 
     def _default_name(self):
         return u'{}'.format(self.ref)
-    
+
     @observe('name', 'type', 'disabled', 'checked', 'value')
     def _update_proxy(self, change):
         super(Input, self)._update_proxy(change)
@@ -567,7 +593,7 @@ class Textarea(Tag):
 
     def _default_name(self):
         return u'{}'.format(self.ref)
-    
+
     @observe('name', 'rows', 'cols')
     def _update_proxy(self, change):
         super(Textarea, self)._update_proxy(change)
@@ -577,10 +603,10 @@ class Button(Tag):
     name = d_(Unicode())
     type = d_(Unicode())
     value = d_(Unicode('1'))
-    
+
     def _default_name(self):
         return u'{}'.format(self.ref)
-    
+
     @observe('type')
     def _update_proxy(self, change):
         super(Button, self)._update_proxy(change)
@@ -588,7 +614,7 @@ class Button(Tag):
 
 class Video(Tag):
     controls = d_(Coerced(bool))
-    
+
     @observe('controls')
     def _update_proxy(self, change):
         super(Video, self)._update_proxy(change)
@@ -597,7 +623,7 @@ class Video(Tag):
 class Source(Tag):
     src = d_(Unicode())
     type = d_(Unicode())
-    
+
     @observe('src', 'type')
     def _update_proxy(self, change):
         super(Source, self)._update_proxy(change)
