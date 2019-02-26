@@ -106,11 +106,10 @@ you can interact with the page after it's rendered.  This is something that no o
 python template frameworks can do (to my knowledge).
 
 ### How it works
-enaml-web generates a dom of [lxml](http://lxml.de/) elements. You can use this
-to create any html page.
 
+It generates a dom of [lxml](http://lxml.de/) elements.
 
-##### Inhernetly secure
+##### Inherently secure
 
 Since an lxml dom is generated it means that your code is inherently secure from
 injection as it automatically escapes all attributes. Also a closing tag cannot
@@ -125,23 +124,19 @@ checking and optional validation.
 Like other template engines, enaml-web provides a "Block" node that allows
 you to define a part of a template that can be overridden or extended.
 
-Enaml also provides pattern nodes for handling conditional statments, loops,
+Enaml also provides pattern nodes for handling conditional statements, loops,
 dynamic nodes based on lists or models, and nodes generated from more complex
 templates (ex automatic form generation).
 
 
 ##### No template tags needed
 
-Many templating engines require the use of "template tags" wrapped in `{% %}`
+Many template engines require the use of "template tags" wrapped in `{% %}`
 or similar to allow the use of python code to transform variables.
 
-Since enaml is an extension to python, you can use any python code directly in
-your enaml components and templates. You don't need any template tags. You can,
-import and use tag functions from other frameworks if you need.
+Since enaml _is_ python, you can use any python code directly in
+your enaml components and templates. You don't need any template tags.
 
-You can "render" raw html source into nodes such as wysiwyg content from a
-database or other sources. Components for rendering markdown and highlighted code
-blocks are also provided.
 
 ##### Component based
 
@@ -155,6 +150,7 @@ be installed and used.
 1. [materialize-ui](https://github.com/frmdstryr/materialize)
 2. semantic-ui (coming soon)
 3. bootstrap (coming soon)
+
 
 ### Data binding
 
@@ -223,7 +219,7 @@ enamldef AddMessageView(Base): page:
 
 ### Database ORM with Atom
 
-For working with a databse using atom see [atom-db](https://github.com/codelv/atom-db)
+For working with a database using atom see [atom-db](https://github.com/codelv/atom-db)
 
 
 #### Raw, Markdown, and Code nodes
@@ -249,7 +245,7 @@ enamldef BlogPage(Page):
 
 ```
 
-This let's you use web wysiwyg editors to insert content into the etree.
+This let's you use web wysiwyg editors to insert content into the dom.
 
 
 #### Block node
@@ -301,8 +297,8 @@ Blocks let you either replace, append, or prepend to the content.
 
 #### Custom Components
 
-Probably the best part, with enaml you can easily create reusable components
-and share them through the views as you would any python class.
+With enaml you can easily create reusable components and share them through
+the views as you would any python class using regular python imports.
 
 For instance, to create a
 [materalize breadcrumbs component](http://materializecss.com/breadcrumbs.html)
