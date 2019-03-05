@@ -1,3 +1,7 @@
+# 0.8.2
+
+Added optgroup
+
 # 0.8.0
 
 DB API was moved to an external project named `atom-db`

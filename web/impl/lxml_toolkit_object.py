@@ -19,17 +19,17 @@ from web.core.app import WebApplication
 
 #: Components are cached for lookup by ref
 CACHE = weakref.WeakValueDictionary()
-   
-   
+
+
 class WebComponent(ProxyTag):
     """ An lxml implementation of an Enaml ProxyToolkitObject.
 
     """
     __slots__ = ('__weakref__',)
-    
+
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
-    
+
     # -------------------------------------------------------------------------
     # Initialization API
     # -------------------------------------------------------------------------
@@ -42,7 +42,7 @@ class WebComponent(ProxyTag):
 
         """
         self.widget = SubElement(self.parent_widget(), self.declaration.tag)
-        
+
     def init_widget(self):
         """ Initialize the state of the toolkit widget.
 
@@ -54,13 +54,13 @@ class WebComponent(ProxyTag):
         widget = self.widget
         if widget is not None:
             d = self.declaration
-            
+
             #: Save ref id
             ref = d.ref
             if ref:
                 CACHE[ref] = self
                 widget.set('ref', ref)
-            
+
             if d.text:
                 self.set_text(d.text)
             if d.tail:
@@ -73,27 +73,27 @@ class WebComponent(ProxyTag):
                 self.set_attrs(d.attrs)
             if d.id:
                 widget.set('id', d.id)
-            
+
             # Set any attributes that may be defined
             for name, member in d.members().items():
                 if not member.metadata:
                     continue
                 meta = member.metadata
-                
+
                 # Exclude any attr tags
                 if not (meta.get('d_member') and meta.get('d_final')):
                     continue
-                
+
                 # Skip any items with attr=false
                 elif not meta.get('attr', True):
                     continue
-                
+
                 elif isinstance(member, Event):
                     continue
                 value = getattr(d, name)
                 if value:
                     self.set_attribute(name, value)
-                
+
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.
 
@@ -103,7 +103,7 @@ class WebComponent(ProxyTag):
 
         """
         pass
-    
+
     def init_events(self):
         """ Initialize the event handlers of the toolkit widget.
 
@@ -149,8 +149,8 @@ class WebComponent(ProxyTag):
     def child_added(self, child):
         """ Handle the child added event from the declaration.
 
-        This handler will insert the child toolkit widget in the correct. 
-        position. Subclasses which need more control should reimplement this 
+        This handler will insert the child toolkit widget in the correct.
+        position. Subclasses which need more control should reimplement this
         method.
 
         """
@@ -221,27 +221,27 @@ class WebComponent(ProxyTag):
             w = child.widget
             if w is not None:
                 yield w
-                
+
     # -------------------------------------------------------------------------
     # Change handlers
     # -------------------------------------------------------------------------
     def set_text(self, text):
         self.widget.text = text
-        
+
     def set_tail(self, text):
         self.widget.tail = text
-        
+
     def set_tag(self, tag):
         self.widget.tag = tag
-        
+
     def set_attrs(self, attrs):
         """ Set any attributes not explicitly defined """
         self.widget.attrib.update(attrs)
-        
+
     def set_cls(self, cls):
         self.widget.set('class',
                         " ".join(cls) if isinstance(cls, list) else str(cls))
-        
+
     def set_style(self, style):
         self.widget.set('style',
                         ";".join("{}:{};".format(k, v)
@@ -251,17 +251,16 @@ class WebComponent(ProxyTag):
 
     def set_attribute(self, name, value):
         """ Default handler for those not explicitly defined """
-        if value in (True, False):
-            if value:
-                self.widget.set(name, name)
-            else:
-                del self.widget.attrib[name]
-            return
-        self.widget.set(name, str(value))
-        
-        
+        if value is True:
+            self.widget.set(name, name)
+        elif value is False:
+            del self.widget.attrib[name]
+        else:
+            self.widget.set(name, str(value))
+
+
 class RootWebComponent(WebComponent):
     """ A root component """
-    
+
     def create_widget(self):
         self.widget = Element(self.declaration.tag)
