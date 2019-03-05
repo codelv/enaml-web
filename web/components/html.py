@@ -571,6 +571,10 @@ class Option(Tag):
         super(Option, self)._update_proxy(change)
 
 
+class OptGroup(Tag):
+    pass
+
+
 class Input(Tag):
     name = d_(Unicode())
     type = d_(Unicode())
