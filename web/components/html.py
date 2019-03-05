@@ -572,7 +572,12 @@ class Option(Tag):
 
 
 class OptGroup(Tag):
-    pass
+    label = d_(Unicode())
+    disabled = d_(Coerced(bool))
+
+    @observe('label', 'disabled')
+    def _update_proxy(self, change):
+        super(OptGroup, self)._update_proxy(change)
 
 
 class Input(Tag):
