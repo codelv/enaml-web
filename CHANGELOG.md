@@ -1,3 +1,9 @@
+# 0.8.3
+
+- The refs are now hex formatted to make them shorter
+- Fixed double ';' when using style dict
+- Add draggable and support for drag/drop events
+
 # 0.8.2
 
 Added optgroup

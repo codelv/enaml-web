@@ -11,9 +11,9 @@ Created on Apr 12, 2017
 """
 import weakref
 from atom.api import Typed,  Constant,  Event
-from web.components.html import ProxyTag
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
+from web.components.html import ProxyTag
 from web.core.app import WebApplication
 
 
@@ -73,6 +73,8 @@ class WebComponent(ProxyTag):
                 self.set_attrs(d.attrs)
             if d.id:
                 widget.set('id', d.id)
+            if d.draggable:
+                self.set_draggable(d.draggable)
 
             # Set any attributes that may be defined
             for name, member in d.members().items():
@@ -239,15 +241,18 @@ class WebComponent(ProxyTag):
         self.widget.attrib.update(attrs)
 
     def set_cls(self, cls):
-        self.widget.set('class',
-                        " ".join(cls) if isinstance(cls, list) else str(cls))
+        if isinstance(cls, (tuple, list)):
+            cls = " ".join(cls)
+        else:
+            cls = str(cls)
+        self.widget.set('class', cls)
 
     def set_style(self, style):
-        self.widget.set('style',
-                        ";".join("{}:{};".format(k, v)
-                                 for k, v in style.items())
-                        if isinstance(style, dict)
-                        else str(style))
+        if isinstance(style, dict):
+            style = ";".join("%s:%s" % s for s in style.items())
+        else:
+            style = str(style)
+        self.widget.set('style', style)
 
     def set_attribute(self, name, value):
         """ Default handler for those not explicitly defined """
@@ -257,6 +262,10 @@ class WebComponent(ProxyTag):
             del self.widget.attrib[name]
         else:
             self.widget.set(name, str(value))
+
+    def set_draggable(self, draggable):
+        """ The draggable attr must be explicitly set to true or false """
+        self.widget.set('draggable', 'true' if draggable else 'false')
 
 
 class RootWebComponent(WebComponent):

@@ -2,20 +2,18 @@ dist: xenial
 language: python
 
 python:
+  - "2.7"
+  - "3.5"
   - "3.6"
   - "3.7"
-  
-services:
-  - mongodb
-  - mysql
 
 install:
   # Setup
-  - pip install enaml lxml motor markdown pygments nbconvert sqlalchemy aiomysql
-  
+  - pip install enaml lxml markdown pygments nbconvert
+
   # Testing
-  - pip install codecov pytest pytest-coverage pytest-asyncio pytest-benchmark faker jinja2 requests
-  
+  - pip install codecov pytest pytest-coverage pytest-benchmark faker jinja2 requests
+
   # Install
   - python setup.py develop
 

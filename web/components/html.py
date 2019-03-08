@@ -9,6 +9,7 @@ Created on Apr 2, 2017
 
 @author: jrm
 """
+
 from __future__ import print_function
 from atom.api import (
     Atom, Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance,
@@ -81,26 +82,43 @@ class Tag(ToolkitObject):
     #: Custom attributes not explicitly defined
     attrs = d_(Dict()).tag(attr=False)
 
-    #: Event from JS
+    #: JS onclick definition
     onclick = d_(Unicode())
 
-    #: Whether this is clickable via websockets
+    #: Used to tell js to send click events back to the server
     clickable = d_(Coerced(bool))
 
-    #:  Event from JS
+    #: Event triggered on click
     clicked = d_(Event())
+
+    #: Used to tell js to send drag events back to the server and sets the
+    #: draggable attribute. Must be used with ondragstart.
+    draggable = d_(Coerced(bool)).tag(attr=False)
+
+    #: JS ondragstart definition
+    ondragstart = d_(Unicode())
+
+    #: JS ondragover definition
+    ondragover = d_(Unicode())
+
+    #: JS ondrop definition
+    ondrop = d_(Unicode())
+
+    #: Event triggered when a drop occurs
+    dropped = d_(Event(ToolkitObject))
 
     def _default_tag(self):
         return self.__class__.__name__.lower()
 
     def _default_ref(self):
-        return u"{}".format(id(self))
+        return '%0x' % id(self)
 
     def _default_base(self):
         return SuperProxy(owner=self)
 
     @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs',
-             'onclick', 'clickable')
+             'onclick', 'clickable', 'ondragstart', 'ondragover', 'ondrop',
+             'draggable')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data
         changes.
