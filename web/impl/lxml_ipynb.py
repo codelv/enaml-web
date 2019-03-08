@@ -27,8 +27,7 @@ class NotebookComponent(RawComponent, ProxyNotebook):
         source, resources = self.exporter.from_notebook_node(
             nbformat.reads(source, as_version=self.declaration.version))
         # Parse source to html
-        super(NotebookComponent, self).set_source(
-            u"<div>{}</div>".format(source))
+        super(NotebookComponent, self).set_source(u"<div>%s</div>" % source)
 
     def set_version(self, version):
         self.set_source(self.declaration.source)

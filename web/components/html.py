@@ -23,8 +23,12 @@ from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 class ProxyTag(ProxyToolkitObject):
     declaration = ForwardTyped(lambda: Tag)
 
-    def xpath(self, *args, **kwargs):
+    def find(self, *args, **kwargs):
         """ Perform an xpath lookup on the node """
+        raise NotImplementedError
+
+    def render(self):
+        """ Render the node and all children """
         raise NotImplementedError
 
 
@@ -167,14 +171,6 @@ class Tag(ToolkitObject):
                 'value': child.ref,
             }
             self._notify_modified(change)
-
-    def xpath(self, *args, **kwargs):
-        if not nodes:
-            return []
-        refs = [node.attrib.get('ref') for node in nodes]
-        if not refs:
-            return []
-        return [CACHE[ref] for ref in refs if ref and ref in CACHE]
 
     def xpath(self, query, **kwargs):
         """ Find nodes matching the given xpath query """

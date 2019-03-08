@@ -55,12 +55,11 @@ class Markdown(Raw):
     safe_mode = d_(Bool()).tag(attr=False)
 
     #: Output format
-    output_format = d_(Enum("xhtml1", "xhtml5", "xhtml", "html4", "html5",
-                            "html")).tag(attr=False)
+    output_format = d_(Enum("xhtml", "html5")).tag(attr=False)
 
     #: Tab size
     tab_length = d_(Int(4)).tag(attr=False)
-    
+
     #: Reference to the proxy
     proxy = Typed(ProxyMarkdown)
 

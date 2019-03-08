@@ -24,14 +24,14 @@ class ProxyNotebook(ProxyRawNode):
 
 class Notebook(Raw):
     """ A node for rendering jupyter notebooks.
-    
+
     """
     #: Reference to the proxy
     proxy = Typed(ProxyNotebook)
-    
+
     #: Version
-    version = Int(4)
-    
+    version = d_(Int(4))
+
     @observe('version')
     def _update_proxy(self, change):
         """ Update the version """

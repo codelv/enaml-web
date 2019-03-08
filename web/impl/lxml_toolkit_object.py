@@ -146,6 +146,12 @@ class WebComponent(ProxyTag):
             if parent is not None:
                 parent.remove(widget)
             del self.widget
+
+            d = self.declaration
+            try:
+                del CACHE[d.ref]
+            except KeyError:
+                pass
         super(WebComponent, self).destroy()
 
     def child_added(self, child):

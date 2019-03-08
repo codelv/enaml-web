@@ -21,9 +21,6 @@ class ProxyCode(ProxyRawNode):
     def set_language(self, language):
         raise NotImplementedError
 
-    def set_output_format(self, output_format):
-        raise NotImplementedError
-
     def set_highlight_style(self, style):
         raise NotImplementedError
 
@@ -39,13 +36,10 @@ class Code(Raw):
     #: Language to parse if none is given it will guess which to use
     language = d_(Unicode())
 
-    #: Output format
-    output_format = d_(Enum('html', 'latex', 'rtf')).tag(attr=False)
-
     #: Highlighter style to use
     highlight_style = d_(Unicode()).tag(attr=False)
 
-    @observe('language', 'output_format', 'highlight_style')
+    @observe('language', 'highlight_style')
     def _update_proxy(self, change):
         """ The superclass implementation is sufficient. """
         super(Code, self)._update_proxy(change)
