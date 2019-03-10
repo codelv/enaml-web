@@ -16,23 +16,21 @@ from web.impl import lxml_components
 
 
 class WebApplication(Application):
-    """ Base enaml web application that uses the widgets defined in 
+    """ Base enaml web application that uses the widgets defined in
     `web.components.html`
 
     """
     #: Logger
-    logger = Instance(logging.Logger)
+    logger = Instance(logging.Logger,
+                      factory=lambda: logging.getLogger('enaml'))
 
     #: Database
     database = Value()
-    
-    def _default_logger(self):
-        return logging.getLogger('web')
-    
+
     def __init__(self, *args, **kwargs):
         """ Initialize a WebApplication.
 
         """
         super(WebApplication, self).__init__(*args, **kwargs)
         self.resolver = ProxyResolver(factories=lxml_components.FACTORIES)
-        
+

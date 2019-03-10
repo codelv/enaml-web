@@ -26,6 +26,7 @@ def test_hello_world(app):
     """), 'Page')
     view = Page()
     assert view.render()
+    assert len(list(view.proxy.child_widgets())) == 2
 
 
 @pytest.mark.parametrize('tag, attr, query', (
@@ -62,8 +63,10 @@ def test_html(app, tag, attr, query):
     assert len(view.proxy.widget.xpath(query)) == 1
 
 
+
 @pytest.mark.parametrize('tag, attr, default, change, query', (
     ('A', 'href', '"#"', '/home/', '//a[@href="/home/"]'),
+    ('A', 'tag', '"a"', 'span', '//span'),  # It's possible to change tags
     ('Base', 'href', '"#"', '/home/', '//base[@href="/home/"]'),
     ('Blockquote', 'cite', '"1"', '2', '//blockquote[@cite="2"]'),
     ('Img', 'width', '"100px"', '100%', '//img[@width="100%"]'),
@@ -79,6 +82,7 @@ def test_html(app, tag, attr, query):
     ('Form', 'method', '"get"', 'post', '//form[@method="post"]'),
     ('Select', 'value', '"0"', '1', '//select[@value="1"]'),
     ('Option', 'selected', 'False', 'True', '//option[@selected="selected"]'),
+    ('Option', 'selected', 'True', 'False', '//option'),
     ('OptGroup', 'label', '"a"', 'b', '//optgroup[@label="b"]'),
     ('Input', 'type', '"checkbox"', 'text', '//input[@type="text"]'),
     ('Textarea', 'rows', '"10"', '2', '//textarea[@rows="2"]'),

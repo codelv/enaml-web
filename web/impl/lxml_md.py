@@ -19,11 +19,10 @@ class MarkdownComponent(RawComponent, ProxyMarkdown):
 
     def _refresh_source(self):
         d = self.declaration
-        md = d.source
 
         #: Parse md and put in a root node
         source = markdown.markdown(
-            md,
+            d.source,
             tab_length=d.tab_length,
             safe_mode=d.safe_mode,
             output_format=d.output_format,

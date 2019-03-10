@@ -198,8 +198,6 @@ class WebComponent(ProxyTag):
         if not nodes:
             return []
         refs = [node.attrib.get('ref') for node in nodes]
-        if not refs:
-            return []
         return [CACHE[ref] for ref in refs if ref and ref in CACHE]
 
     def parent_widget(self):
