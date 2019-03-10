@@ -174,8 +174,6 @@ class Tag(ToolkitObject):
 
     def xpath(self, query, **kwargs):
         """ Find nodes matching the given xpath query """
-        if not self.proxy:
-            return
         nodes = self.proxy.find(query, **kwargs)
         return [n.declaration for n in nodes]
 

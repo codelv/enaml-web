@@ -33,7 +33,8 @@ def test_hello_world(app):
     ('Div', 'cls = ["btn", "btn-large"]', '//div[@class="btn btn-large"]'),
     ('Span', 'style = "float: left;"', '//span[@style="float: left;"]'),
     ('Span', 'style = {"background": "#fff", "color": "blue"}',
-        '//span[@style="background:#fff;color:blue"]'),
+        '//span[(@style="background:#fff;color:blue" or '
+                '@style="color:blue;background:#fff")]'),
     ('Li', 'clickable = True', '//li[@clickable="clickable"]'),
     ('Li', 'draggable = True', '//li[@draggable="true"]'),
     ('Img', 'id = "logo"', '//img[@id="logo"]'),
@@ -63,6 +64,7 @@ def test_html(app, tag, attr, query):
 
 @pytest.mark.parametrize('tag, attr, default, change, query', (
     ('A', 'href', '"#"', '/home/', '//a[@href="/home/"]'),
+    ('Base', 'href', '"#"', '/home/', '//base[@href="/home/"]'),
     ('Blockquote', 'cite', '"1"', '2', '//blockquote[@cite="2"]'),
     ('Img', 'width', '"100px"', '100%', '//img[@width="100%"]'),
     ('Link', 'rel', '"text/css"', 'favicon', '//link[@rel="favicon"]'),
@@ -129,6 +131,31 @@ def test_looper(app):
     view = Page()
     print(view.render())
     assert len(view.xpath('//*/li')) == 10
+
+
+def test_base(app):
+    # Base expression access
+    Page = compile_source(dedent("""
+    from web.components.api import *
+    from web.core.api import *
+
+    enamldef BtnLink(A):
+        cls = 'btn'
+
+    enamldef Page(Html): view:
+        attr source = ""
+        Head:
+            Title:
+                text = "Test"
+        Body:
+            BtnLink:
+                cls << base.cls + ' btn-large'
+    """), 'Page')
+    view = Page()
+
+    # This is not yet supported implemented in enaml
+    with pytest.raises(AttributeError):
+        print(view.render())
 
 
 def test_raw(app):
@@ -229,7 +256,6 @@ def test_code(app):
 
     print(view.render(highlight_style='colorful'))
     assert len(view.proxy.widget.xpath('/html/body/div/div/pre')) == 1
-
 
 
 def test_code_proxy(app):
