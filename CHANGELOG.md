@@ -1,3 +1,7 @@
+# 0.8.4
+
+Use atomref instead of weakref
+
 # 0.8.3
 
 - The refs are now hex formatted to make them shorter

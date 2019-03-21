@@ -63,7 +63,6 @@ def test_html(app, tag, attr, query):
     assert len(view.proxy.widget.xpath(query)) == 1
 
 
-
 @pytest.mark.parametrize('tag, attr, default, change, query', (
     ('A', 'href', '"#"', '/home/', '//a[@href="/home/"]'),
     ('A', 'tag', '"a"', 'span', '//span'),  # It's possible to change tags

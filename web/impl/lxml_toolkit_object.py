@@ -9,8 +9,8 @@ Created on Apr 12, 2017
 
 @author: jrm
 """
-import weakref
-from atom.api import Typed,  Constant,  Event
+from atom.api import Typed,  Constant,  Event, atomref
+from atom.datastructures.api import sortedmap
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
 from web.components.html import ProxyTag
@@ -18,14 +18,13 @@ from web.core.app import WebApplication
 
 
 #: Components are cached for lookup by ref
-CACHE = weakref.WeakValueDictionary()
+CACHE = sortedmap()
 
 
 class WebComponent(ProxyTag):
     """ An lxml implementation of an Enaml ProxyToolkitObject.
 
     """
-    __slots__ = ('__weakref__',)
 
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
@@ -58,7 +57,7 @@ class WebComponent(ProxyTag):
             #: Save ref id
             ref = d.ref
             if ref:
-                CACHE[ref] = self
+                CACHE[ref] = atomref(self)
                 widget.set('ref', ref)
 
             if d.text:
@@ -197,8 +196,14 @@ class WebComponent(ProxyTag):
         nodes = self.widget.xpath(query, **kwargs)
         if not nodes:
             return []
-        refs = [node.attrib.get('ref') for node in nodes]
-        return [CACHE[ref] for ref in refs if ref and ref in CACHE]
+        matches = []
+        for node in nodes:
+            aref = CACHE.get(node.attrib.get('ref'))
+            obj = aref() if aref else None
+            if obj is None:
+                continue
+            matches.append(obj)
+        return matches
 
     def parent_widget(self):
         """ Get the parent toolkit widget for this object.
