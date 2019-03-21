@@ -32,32 +32,9 @@ class ProxyTag(ProxyToolkitObject):
         raise NotImplementedError
 
 
-class SuperProxy(Atom):
-    """ A proxy for accessing overridden members. This requires a modification
-    to enaml at the moment.
-
-    """
-
-    #: Object of which to find the super node
-    owner = Typed(Atom)
-
-    def __getattr__(self, attr):
-        owner = self.owner
-        node = owner._d_node
-        engine = node.engine
-        while node and engine == node.engine:
-            node = node.super_node
-        if node is None or node == owner._d_node:
-            raise AttributeError('%s has no super node' % owner)
-        return node.engine.read(self.owner, attr)
-
-
 class Tag(ToolkitObject):
     #: Reference to the proxy object
     proxy = Typed(ProxyTag)
-
-    #: Enables accessing overridden expressions
-    base = Typed(SuperProxy)
 
     #: Object ID
     id = d_(Unicode())
