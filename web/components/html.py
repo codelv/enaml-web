@@ -94,9 +94,6 @@ class Tag(ToolkitObject):
     def _default_ref(self):
         return '%0x' % id(self)
 
-    def _default_base(self):
-        return SuperProxy(owner=self)
-
     @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs',
              'onclick', 'clickable', 'ondragstart', 'ondragover', 'ondrop',
              'draggable')

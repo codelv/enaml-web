@@ -10,7 +10,6 @@ Created on Apr 12, 2017
 @author: jrm
 """
 from atom.api import Typed,  Constant,  Event, atomref
-from atom.datastructures.api import sortedmap
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
 from web.components.html import ProxyTag
@@ -18,7 +17,7 @@ from web.core.app import WebApplication
 
 
 #: Components are cached for lookup by ref
-CACHE = sortedmap()
+CACHE = {}
 
 
 class WebComponent(ProxyTag):
@@ -51,49 +50,47 @@ class WebComponent(ProxyTag):
 
         """
         widget = self.widget
-        if widget is not None:
-            d = self.declaration
+        d = self.declaration
 
-            #: Save ref id
-            ref = d.ref
-            if ref:
-                CACHE[ref] = atomref(self)
-                widget.set('ref', ref)
+        #: Save ref id
+        ref = d.ref
+        CACHE[ref] = atomref(self)
+        widget.set('ref', ref)
 
-            if d.text:
-                self.set_text(d.text)
-            if d.tail:
-                self.set_tail(d.tail)
-            if d.style:
-                self.set_style(d.style)
-            if d.cls:
-                self.set_cls(d.cls)
-            if d.attrs:
-                self.set_attrs(d.attrs)
-            if d.id:
-                widget.set('id', d.id)
-            if d.draggable:
-                self.set_draggable(d.draggable)
+        if d.text:
+            self.set_text(d.text)
+        if d.tail:
+            self.set_tail(d.tail)
+        if d.style:
+            self.set_style(d.style)
+        if d.cls:
+            self.set_cls(d.cls)
+        if d.attrs:
+            self.set_attrs(d.attrs)
+        if d.id:
+            widget.set('id', d.id)
+        if d.draggable:
+            self.set_draggable(d.draggable)
 
-            # Set any attributes that may be defined
-            for name, member in d.members().items():
-                if not member.metadata:
-                    continue
-                meta = member.metadata
+        # Set any attributes that may be defined
+        for name, member in d.members().items():
+            if not member.metadata:
+                continue
+            meta = member.metadata
 
-                # Exclude any attr tags
-                if not (meta.get('d_member') and meta.get('d_final')):
-                    continue
+            # Exclude any attr tags
+            if not (meta.get('d_member') and meta.get('d_final')):
+                continue
 
-                # Skip any items with attr=false
-                elif not meta.get('attr', True):
-                    continue
+            # Skip any items with attr=false
+            elif not meta.get('attr', True):
+                continue
 
-                elif isinstance(member, Event):
-                    continue
-                value = getattr(d, name)
-                if value:
-                    self.set_attribute(name, value)
+            elif isinstance(member, Event):
+                continue
+            value = getattr(d, name)
+            if value:
+                self.set_attribute(name, value)
 
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.

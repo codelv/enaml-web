@@ -1,3 +1,7 @@
+# 0.8.5
+
+Use dict instead of sortedmap for caching (deletion is slow)
+
 # 0.8.4
 
 Use atomref instead of weakref
