@@ -136,31 +136,6 @@ def test_looper(app):
     assert len(view.xpath('//*/li')) == 10
 
 
-def test_base(app):
-    # Base expression access
-    Page = compile_source(dedent("""
-    from web.components.api import *
-    from web.core.api import *
-
-    enamldef BtnLink(A):
-        cls = 'btn'
-
-    enamldef Page(Html): view:
-        attr source = ""
-        Head:
-            Title:
-                text = "Test"
-        Body:
-            BtnLink:
-                cls << base.cls + ' btn-large'
-    """), 'Page')
-    view = Page()
-
-    # This is not yet supported implemented in enaml
-    with pytest.raises(AttributeError):
-        print(view.render())
-
-
 def test_raw(app):
     # Test that raw content is rendered
     Page = compile_source(dedent("""
