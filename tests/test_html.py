@@ -277,3 +277,45 @@ def test_notebook_proxy(app):
     proxy = ProxyNotebook()
     with pytest.raises(NotImplementedError):
         proxy.set_version(None)
+
+
+def test_insert_before(app):
+    Page = compile_source(dedent("""
+    from web.components.api import *
+    from web.core.api import *
+
+    enamldef Page(Html): view:
+        attr menu: list = []
+        Head:
+            Title:
+                text = "Test"
+        Body:
+            Ul:
+                Li:
+                    text = '1'
+                Looper:
+                    iterable << view.menu
+                    Li:
+                        text = loop_item
+                Li:
+                    text = '6'
+    """), 'Page')
+    view = Page()
+
+    evts = []
+
+    def on_modified(change):
+        evts.append(change)
+
+    view.observe('modified', on_modified)
+    view.render(menu=['2', '3', '4'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '2', '3', '4', '6']
+
+    view.render(menu=['2', '3', '4', '5'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '2', '3', '4', '5', '6']
+
+    e = evts[0]['value']
+    assert e['before'] == view.xpath('/html/body/ul/li')[-1].ref
+

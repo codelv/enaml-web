@@ -102,13 +102,21 @@ class Tag(ToolkitObject):
         changes.
         """
         #: Try default handler
-        if change['type'] == 'update' and self.proxy_is_active:
-            handler = getattr(self.proxy, 'set_' + change['name'], None)
+        t = change['type']
+        if t == 'update' and self.proxy_is_active:
+            name = change['name']
+            value = change['value']
+            handler = getattr(self.proxy, 'set_' + name, None)
             if handler is not None:
-                handler(change['value'])
+                handler(value)
             else:
-                self.proxy.set_attribute(change['name'], change['value'])
-            self._notify_modified(change)
+                self.proxy.set_attribute(name, value)
+            self._notify_modified({
+                'ref': self.ref,
+                'type': t,
+                'name': name,
+                'value': value
+            })
 
     def _notify_modified(self, change):
         """  If a change occurs when we have a websocket connection active
@@ -116,35 +124,40 @@ class Tag(ToolkitObject):
         """
         root = self.root_object()
         if isinstance(root, Html):
-            name = change['name']
-            change = {
-                'ref': self.ref,
-                'type': change['type'],
-                'name': change['name'],
-                'value': change['value']
-            }
             root.modified(change)
 
     def child_added(self, child):
         super(Tag, self).child_added(child)
         if isinstance(child, Tag) and self.proxy_is_active:
             change = {
+                'ref': self.ref,
                 'type': 'added',
                 'name': 'children',
-                #'before':self.ch #: TODO: Handle placement?
                 'value': child.render().decode()
             }
+
+            # Indicate where it was added
+            children = self.children
+            i = children.index(child) + 1
+            while i < len(children):
+                c = children[i]
+                if isinstance(c, Tag):  # Ignore pattern nodes
+                    change['before'] = c.ref
+                    break
+                else:
+                    i += 1
+            # else added to the end
             self._notify_modified(change)
 
     def child_removed(self, child):
         super(Tag, self).child_removed(child)
         if isinstance(child, Tag) and self.proxy_is_active:
-            change = {
+            self._notify_modified({
+                'ref': self.ref,
                 'type': 'removed',
                 'name': 'children',
                 'value': child.ref,
-            }
-            self._notify_modified(change)
+            })
 
     def xpath(self, query, **kwargs):
         """ Find nodes matching the given xpath query """

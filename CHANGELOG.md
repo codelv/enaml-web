@@ -1,3 +1,7 @@
+# 0.8.7
+
+Indicate where an added element should be inserted.
+
 # 0.8.5
 
 Use dict instead of sortedmap for caching (deletion is slow)
