@@ -21,7 +21,7 @@ enamldef Viewer(Html): viewer:
         Script:
             text = '''
             $(document).ready(function(){
-                initViewer(%s);
+                initViewer('%s');
             });
             '''% viewer.ref
 
