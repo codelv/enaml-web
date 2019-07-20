@@ -279,7 +279,64 @@ def test_notebook_proxy(app):
         proxy.set_version(None)
 
 
-def test_insert_before(app):
+def test_node_added(app):
+    Page = compile_source(dedent("""
+    from web.components.api import *
+    from web.core.api import *
+
+    enamldef Page(Html): view:
+        attr menu: list = []
+        Head:
+            Title:
+                text = "Test"
+        Body:
+            Ul:
+                Li:
+                    text = '1'
+                Looper:
+                    iterable << view.menu
+                    Li:
+                        text = loop_item
+    """), 'Page')
+    view = Page()
+
+    evts = []
+
+    def on_modified(change):
+        evts.append(change)
+
+    view.observe('modified', on_modified)
+    view.render(menu=['2', '3', '4'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '2', '3', '4']
+
+    # Add a new node
+    view.render(menu=['2', '3', '4', '5'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '2', '3', '4', '5']
+
+    # Save the node we're added
+    node = view.proxy.widget.xpath('/html/body/ul/li')[-1]
+    ref = node.attrib['ref']
+    parent_ref = node.getparent().attrib['ref']
+
+    for e in evts:
+        print(e)
+
+    # enaml-web should block extraneous moved events
+    assert len(evts) == 1
+
+    # Verify the modified event
+    e = evts[-1]
+    assert e['type'] == 'event' and e['name'] == 'modified'
+
+    # With value of children added
+    v = e['value']
+    assert v['type'] == 'added' and v['name'] == 'children'
+    assert v['ref'] == parent_ref # value is also the dom inserted
+
+
+def test_note_insert_before(app):
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
@@ -316,6 +373,118 @@ def test_insert_before(app):
     r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
     assert r == ['1', '2', '3', '4', '5', '6']
 
-    e = evts[0]['value']
+    for e in evts:
+        print(e)
+
+    # enaml-web should block extraneous moved events
+    assert len(evts) == 1
+
+    e = evts[-1]['value']
     assert e['before'] == view.xpath('/html/body/ul/li')[-1].ref
+
+
+def test_node_removed(app):
+    Page = compile_source(dedent("""
+    from web.components.api import *
+    from web.core.api import *
+
+    enamldef Page(Html): view:
+        attr menu: list = []
+        Head:
+            Title:
+                text = "Test"
+        Body:
+            Ul:
+                Li:
+                    text = '1'
+                Looper:
+                    iterable << view.menu
+                    Li:
+                        text = loop_item
+                Li:
+                    text = '6'
+    """), 'Page')
+    view = Page()
+
+    evts = []
+
+    def on_modified(change):
+        evts.append(change)
+
+    view.observe('modified', on_modified)
+    view.render(menu=['2', '3', '4'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '2', '3', '4', '6']
+
+    # Save the node we're removing
+    node = view.proxy.widget.xpath('/html/body/ul/li')[2]
+    ref = node.attrib['ref']
+    parent_ref = node.getparent().attrib['ref']
+
+    view.render(menu=['2', '4'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '2', '4', '6']
+
+    for e in evts:
+        print(e)
+
+    # enaml-web should block extraneous moved events
+    assert len(evts) == 1
+
+    # Verify the modified event
+    e = evts[0]
+    assert e['type'] == 'event' and e['name'] == 'modified'
+
+    # With value of children removed
+    v = e['value']
+    assert v['type'] == 'removed' and v['name'] == 'children'
+    assert v['value'] == ref and v['ref'] == parent_ref
+
+
+def test_node_moved(app):
+    Page = compile_source(dedent("""
+    from web.components.api import *
+    from web.core.api import *
+
+    enamldef Page(Html): view:
+        attr menu: list = []
+        Head:
+            Title:
+                text = "Test"
+        Body:
+            Ul:
+                Li:
+                    text = '1'
+                Looper:
+                    iterable << view.menu
+                    Li:
+                        text = loop_item
+                Li:
+                    text = '6'
+    """), 'Page')
+    view = Page()
+
+    evts = []
+
+    def on_modified(change):
+        evts.append(change)
+
+    view.observe('modified', on_modified)
+    view.render(menu=['2', '3', '4'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '2', '3', '4', '6']
+
+    view.render(menu=['4', '2', '3'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '4', '2', '3', '6']
+
+    for e in evts:
+        print(e)
+
+    assert len(evts) == 1
+
+    view.render(menu=['3', '2'])
+    r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
+    assert r == ['1', '3', '2', '6']
+
 

@@ -1,3 +1,7 @@
+# 0.8.8
+
+Add support for moved nodes
+
 # 0.8.7
 
 Indicate where an added element should be inserted.

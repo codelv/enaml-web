@@ -159,12 +159,41 @@ class WebComponent(ProxyTag):
 
         """
         super(WebComponent, self).child_added(child)
-        if child.widget is not None:
+        if isinstance(child, WebComponent):
             # Use insert to put in the correct spot
             for i, c in enumerate(self.children()):
-                if c == child:
+                if c is child:
                     self.widget.insert(i, child.widget)
                     break
+
+    def child_moved(self, child):
+        """ Handle the child moved event from the declaration.
+
+        This handler will pop the child and insert it in the correct position
+        if it isn't already there.
+
+        Subclasses which need more control should reimplement this method.
+
+        Returns
+        -------
+        was_moved: Bool
+            Whether a move was performed or not
+
+        """
+        # There is no super child_moved method
+        if isinstance(child, WebComponent):
+            # Determine the new index
+            for i, c in enumerate(self.children()):
+                if c is child:
+                    w = self.widget
+                    j = w.index(child.widget)
+                    if j != i:
+                        # Delete and re-insert at correct position
+                        del w[j]
+                        w.insert(i, child.widget)
+                        return True
+                    break
+        return False
 
     def child_removed(self, child):
         """ Handle the child removed event from the declaration.
@@ -174,11 +203,8 @@ class WebComponent(ProxyTag):
 
         """
         super(WebComponent, self).child_removed(child)
-        if child.widget is not None:
-            for i, c in enumerate(self.children()):
-                if c == child:
-                    del self.widget[i]
-                    break
+        if isinstance(child, WebComponent):
+            self.widget.remove(child.widget)
 
     # -------------------------------------------------------------------------
     # Public API

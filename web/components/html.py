@@ -149,6 +149,30 @@ class Tag(ToolkitObject):
             # else added to the end
             self._notify_modified(change)
 
+    def child_moved(self, child):
+        super(Tag, self).child_moved(child)
+        if isinstance(child, Tag) and self.proxy_is_active:
+            if self.proxy.child_moved(child.proxy):
+                change = {
+                    'ref': self.ref,
+                    'type': 'moved',
+                    'name': 'children',
+                    'value': child.ref
+                }
+
+                # Indicate where it was moved to
+                children = self.children
+                i = children.index(child) + 1
+                while i < len(children):
+                    c = children[i]
+                    if isinstance(c, Tag):  # Ignore pattern nodes
+                        change['before'] = c.ref
+                        break
+                    else:
+                        i += 1
+                # else moved to the end
+                self._notify_modified(change)
+
     def child_removed(self, child):
         super(Tag, self).child_removed(child)
         if isinstance(child, Tag) and self.proxy_is_active:
