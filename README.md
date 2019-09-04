@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/codelv/enaml-web.svg?branch=master)](https://travis-ci.org/codelv/enaml-web)
 [![codecov](https://codecov.io/gh/codelv/enaml-web/branch/master/graph/badge.svg)](https://codecov.io/gh/codelv/enaml-web)
+[![Downloads](https://pepy.tech/badge/enaml-web/month)](https://pepy.tech/project/enaml-web/month)
 
 
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
@@ -380,16 +381,19 @@ See [lxml etree documentation](http://lxml.de/tutorial.html#elements-contain-tex
 
 ##### Tag attribute
 
-In the current implementation the xml tag used is the lowercase of the class name.
-When you subclass a component you must explicity set the tag attribute to the
-desired tag name. For example:
+When creating a custom `Tag`, the `tag` attribute must be set to change what
+html tag is used for a node. For example:
 
 ```python
 
-enamldef Icon(I):
-    tag = 'i' # Force tag to be 'i' instead of 'icon' since 'icon' is not a valid html element
-    cls = 'material-icons'
+enamldef Svg(Tag):
+    tag = 'svg' # Force tag to be 'svg'
 
 ```
 
+This will then render a `<svg>...</svg>` tag.
+
+> Note: In previous versions (0.8.8 and below) the tag name defaulted to the
+lowercase class name. This is no longer done to eliminate a function call per
+node and to avoid having to explicitly redefine the tag when subclassing.
 

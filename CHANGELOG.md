@@ -1,3 +1,9 @@
+# 0.8.9
+
+Change tag attribute to use `set_default` instead of lower of class name.
+Rename `find` of ProxyTag to `xpath`.
+
+
 # 0.8.8
 
 Add support for moved nodes

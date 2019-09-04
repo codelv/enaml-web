@@ -110,7 +110,7 @@ def test_tag_proxy(app):
     from web.components.html import ProxyTag
     proxy = ProxyTag()
     with pytest.raises(NotImplementedError):
-        proxy.find("")
+        proxy.xpath("")
     with pytest.raises(NotImplementedError):
         proxy.render()
 

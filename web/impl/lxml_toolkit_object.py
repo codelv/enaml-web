@@ -214,7 +214,7 @@ class WebComponent(ProxyTag):
         return tostring(self.widget, pretty_print=True,
                         encoding='utf-8', method='html')
 
-    def find(self, query, **kwargs):
+    def xpath(self, query, **kwargs):
         """ Get the node(s) matching the query"""
         nodes = self.widget.xpath(query, **kwargs)
         if not nodes:

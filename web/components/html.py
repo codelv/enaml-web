@@ -13,7 +13,7 @@ Created on Apr 2, 2017
 from __future__ import print_function
 from atom.api import (
     Atom, Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance,
-    ForwardTyped, Typed, Coerced, observe
+    ForwardTyped, Typed, Coerced, observe, set_default
 )
 
 from enaml.core.declarative import d_
@@ -23,7 +23,7 @@ from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 class ProxyTag(ProxyToolkitObject):
     declaration = ForwardTyped(lambda: Tag)
 
-    def find(self, *args, **kwargs):
+    def xpath(self, *args, **kwargs):
         """ Perform an xpath lookup on the node """
         raise NotImplementedError
 
@@ -42,7 +42,7 @@ class Tag(ToolkitObject):
     #: Object ID
     ref = d_(Unicode())
 
-    #: Tag name (leave blank for class name)
+    #: Tag name
     tag = d_(Unicode()).tag(attr=False)
 
     #: CSS classes
@@ -88,9 +88,6 @@ class Tag(ToolkitObject):
     #: Event triggered when a drop occurs
     dropped = d_(Event(ToolkitObject))
 
-    def _default_tag(self):
-        return self.__class__.__name__.lower()
-
     def _default_ref(self):
         return '%0x' % id(self)
 
@@ -98,8 +95,10 @@ class Tag(ToolkitObject):
              'onclick', 'clickable', 'ondragstart', 'ondragover', 'ondrop',
              'draggable')
     def _update_proxy(self, change):
-        """ Update the proxy widget when the Widget data
-        changes.
+        """ Update the proxy widget when the Widget data changes.
+
+        This also notifies the root that the dom has been modified.
+
         """
         #: Try default handler
         t = change['type']
@@ -119,13 +118,21 @@ class Tag(ToolkitObject):
             })
 
     def _notify_modified(self, change):
-        """  If a change occurs when we have a websocket connection active
-        notify the websocket client of the change.
+        """  Triggers a modified event on the root node with the given change.
+
+        Parameters
+        ----------
+        change: Dict
+            A change event dict indicating what change has occurred.
+
         """
         root = self.root_object()
         if isinstance(root, Html):
             root.modified(change)
 
+    # =========================================================================
+    # Object API
+    # =========================================================================
     def child_added(self, child):
         super(Tag, self).child_added(child)
         if isinstance(child, Tag) and self.proxy_is_active:
@@ -174,6 +181,11 @@ class Tag(ToolkitObject):
                 self._notify_modified(change)
 
     def child_removed(self, child):
+        """ Handles the child removed event.
+
+        This will generate a modified event indicating which child was removed.
+
+        """
         super(Tag, self).child_removed(child)
         if isinstance(child, Tag) and self.proxy_is_active:
             self._notify_modified({
@@ -183,13 +195,33 @@ class Tag(ToolkitObject):
                 'value': child.ref,
             })
 
+    # =========================================================================
+    # Tag API
+    # =========================================================================
     def xpath(self, query, **kwargs):
-        """ Find nodes matching the given xpath query """
-        nodes = self.proxy.find(query, **kwargs)
+        """ Find nodes matching the given xpath query
+
+        Parameters
+        ----------
+        query: String
+            The xpath query to run
+
+        Returns
+        -------
+        nodes: List[Tag]
+            List of tags matching the xpath query.
+
+        """
+        nodes = self.proxy.xpath(query, **kwargs)
         return [n.declaration for n in nodes]
 
     def prepare(self, **kwargs):
-        """ Prepare for rendering """
+        """ Prepare this node for rendering.
+
+        This sets any attributes given, initializes and actives the proxy
+        as needed.
+
+        """
         for k, v in kwargs.items():
             setattr(self, k, v)
         if not self.is_initialized:
@@ -198,12 +230,22 @@ class Tag(ToolkitObject):
             self.activate_proxy()
 
     def render(self, **kwargs):
-        """ Render to a string"""
+        """ Render this tag and all children to a string.
+
+        Returns
+        -------
+        html: String
+            The rendered html content of the node.
+
+        """
         self.prepare(**kwargs)
         return self.proxy.render()
 
 
 class Html(Tag):
+    #: Set the tag name
+    tag = set_default('html')
+
     #: Dom modified event. This will fire when any child node is updated, added
     #: or removed. Observe this event to handle updating websockets.
     modified = d_(Event(dict), writable=False).tag(attr=False)
@@ -213,55 +255,68 @@ class Html(Tag):
 
 
 class Head(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('head')
 
 
 class Body(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('body')
 
 
 class Title(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('title')
 
 
 class P(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('p')
 
 
 class H1(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('h1')
 
 
 class H2(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('h2')
 
 
 class H3(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('h3')
 
 
 class H4(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('h4')
 
 
 class H5(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('h5')
 
 
 class H6(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('h6')
 
 
 class Hr(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('hr')
 
 
 class Br(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('br')
 
 
 class Pre(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('pre')
 
 
 #class Code(Tag):
@@ -269,27 +324,38 @@ class Pre(Tag):
 
 
 class Kbd(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('kbd')
 
 
 class Samp(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('samp')
 
 
 class Var(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('var')
 
 
 class Div(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('div')
 
 
 class Span(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('span')
 
 
 class A(Tag):
+    #: Set the tag name
+    tag = set_default('a')
+
+    #: Set the url
     href = d_(Unicode())
+
+    #: Set the target options
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
     @observe('href', 'target')
@@ -298,50 +364,64 @@ class A(Tag):
 
 
 class B(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('b')
 
 
 class I(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('i')
 
 
 class Strong(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('strong')
 
 
 class Em(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('em')
 
 
 class Mark(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('mark')
 
 
 class Small(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('small')
 
 
 class Del(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('del')
 
 
 class Ins(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('ins')
 
 
 class Sub(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('sub')
 
 
 class Sup(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('sup')
 
 
 class Q(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('q')
 
 
 class Blockquote(Tag):
+    #: Set the tag name
+    tag = set_default('blockquote')
+
     cite = d_(Unicode())
 
     @observe('cite')
@@ -350,22 +430,31 @@ class Blockquote(Tag):
 
 
 class Abbr(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('abbr')
 
 
 class Address(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('address')
 
 
 class Cite(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('cite')
 
 
 class Bdo(Tag):
+    #: Set the tag name
+    tag = set_default('bdo')
+
     dir = d_(Unicode())
 
 
 class Img(Tag):
+    #: Set the tag name
+    tag = set_default('img')
+
     src = d_(Unicode())
     width = d_(Unicode())
     height = d_(Unicode())
@@ -376,10 +465,14 @@ class Img(Tag):
 
 
 class Style(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('style')
 
 
 class Link(Tag):
+    #: Set the tag name
+    tag = set_default('link')
+
     type = d_(Unicode())
     rel = d_(Unicode())
     href = d_(Unicode())
@@ -391,6 +484,9 @@ class Link(Tag):
 
 
 class Map(Tag):
+    #: Set the tag name
+    tag = set_default('map')
+
     name = d_(Unicode())
 
     @observe('name')
@@ -399,6 +495,9 @@ class Map(Tag):
 
 
 class Area(Tag):
+    #: Set the tag name
+    tag = set_default('area')
+
     shape = d_(Unicode())
     coords = d_(Unicode())
     href = d_(Unicode())
@@ -409,14 +508,19 @@ class Area(Tag):
 
 
 class Table(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('table')
 
 
 class Tr(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('tr')
 
 
 class Td(Tag):
+    #: Set the tag name
+    tag = set_default('td')
+
     colspan = d_(Unicode())
     rowspan = d_(Unicode())
 
@@ -426,6 +530,9 @@ class Td(Tag):
 
 
 class Th(Tag):
+    #: Set the tag name
+    tag = set_default('th')
+
     colspan = d_(Unicode())
     rowspan = d_(Unicode())
 
@@ -435,26 +542,34 @@ class Th(Tag):
 
 
 class THead(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('thead')
 
 
 class TBody(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('tbody')
 
 
 class TFoot(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('tfoot')
 
 
 class Caption(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('caption')
 
 
 class Ul(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('ul')
 
 
 class Ol(Tag):
+    #: Set the tag name
+    tag = set_default('ol')
+
     type = d_(Enum("", "1", "A", "a", "I", "i"))
 
     @observe('type')
@@ -463,22 +578,29 @@ class Ol(Tag):
 
 
 class Li(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('li')
 
 
 class Dl(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('dl')
 
 
 class Dt(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('dt')
 
 
 class Dd(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('dd')
 
 
 class IFrame(Tag):
+    #: Set the tag name
+    tag = set_default('iframe')
+
     src = d_(Unicode())
     height = d_(Unicode())
     width = d_(Unicode())
@@ -490,6 +612,8 @@ class IFrame(Tag):
 
 
 class Script(Tag):
+    #: Set the tag name
+    tag = set_default('script')
     src = d_(Unicode())
     type = d_(Unicode())
 
@@ -499,10 +623,14 @@ class Script(Tag):
 
 
 class NoScript(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('noscript')
 
 
 class Meta(Tag):
+    #: Set the tag name
+    tag = set_default('meta')
+
     name = d_(Unicode())
     content = d_(Unicode())
 
@@ -512,6 +640,9 @@ class Meta(Tag):
 
 
 class Base(Tag):
+    #: Set the tag name
+    tag = set_default('base')
+
     href = d_(Unicode())
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
@@ -521,38 +652,49 @@ class Base(Tag):
 
 
 class Header(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('header')
 
 
 class Nav(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('nav')
 
 
 class Section(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('section')
 
 
 class Aside(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('aside')
 
 
 class Article(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('article')
 
 
 class Footer(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('footer')
 
 
 class Summary(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('summary')
 
 
 class Details(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('details')
 
 
 class Form(Tag):
+    #: Set the tag name
+    tag = set_default('form')
+
     action = d_(Unicode())
     method = d_(Enum("post", "get"))
 
@@ -562,18 +704,24 @@ class Form(Tag):
 
 
 class Fieldset(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('fieldset')
 
 
 class Legend(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('legend')
 
 
 class Label(Tag):
-    pass
+    #: Set the tag name
+    tag = set_default('label')
 
 
 class Select(Tag):
+    #: Set the tag name
+    tag = set_default('select')
+
     name = d_(Unicode())
     value = d_(Unicode())
 
@@ -586,6 +734,9 @@ class Select(Tag):
 
 
 class Option(Tag):
+    #: Set the tag name
+    tag = set_default('option')
+
     value = d_(Unicode())
     selected = d_(Coerced(bool))
 
@@ -595,6 +746,9 @@ class Option(Tag):
 
 
 class OptGroup(Tag):
+    #: Set the tag name
+    tag = set_default('optgroup')
+
     label = d_(Unicode())
     disabled = d_(Coerced(bool))
 
@@ -604,8 +758,12 @@ class OptGroup(Tag):
 
 
 class Input(Tag):
+    #: Set the tag name
+    tag = set_default('input')
+
     name = d_(Unicode())
     type = d_(Unicode())
+    placeholder = d_(Unicode())
     disabled = d_(Coerced(bool))
     checked = d_(Coerced(bool))
     value = d_(Value())
@@ -613,12 +771,15 @@ class Input(Tag):
     def _default_name(self):
         return u'{}'.format(self.ref)
 
-    @observe('name', 'type', 'disabled', 'checked', 'value')
+    @observe('name', 'type', 'disabled', 'checked', 'value', 'placeholder')
     def _update_proxy(self, change):
         super(Input, self)._update_proxy(change)
 
 
 class Textarea(Tag):
+    #: Set the tag name
+    tag = set_default('textarea')
+
     name = d_(Unicode())
     rows = d_(Unicode())
     cols = d_(Unicode())
@@ -632,6 +793,9 @@ class Textarea(Tag):
 
 
 class Button(Tag):
+    #: Set the tag name
+    tag = set_default('button')
+
     name = d_(Unicode())
     type = d_(Unicode())
     value = d_(Unicode('1'))
@@ -645,6 +809,9 @@ class Button(Tag):
 
 
 class Video(Tag):
+    #: Set the tag name
+    tag = set_default('video')
+
     controls = d_(Coerced(bool))
 
     @observe('controls')
@@ -653,6 +820,9 @@ class Video(Tag):
 
 
 class Source(Tag):
+    #: Set the tag name
+    tag = set_default('source')
+
     src = d_(Unicode())
     type = d_(Unicode())
 
