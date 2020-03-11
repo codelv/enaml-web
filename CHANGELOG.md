@@ -1,3 +1,7 @@
+# 0.8.10
+
+Add slot to support weakref on the Html tag
+
 # 0.8.9
 
 Change tag attribute to use `set_default` instead of lower of class name.

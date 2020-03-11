@@ -243,6 +243,8 @@ class Tag(ToolkitObject):
 
 
 class Html(Tag):
+    __slots__ = '__weakref__'
+
     #: Set the tag name
     tag = set_default('html')
 
