@@ -39,9 +39,6 @@ class Tag(ToolkitObject):
     #: Object ID
     id = d_(Unicode())
 
-    #: Object ID
-    ref = d_(Unicode())
-
     #: Tag name
     tag = d_(Unicode()).tag(attr=False)
 
@@ -88,7 +85,7 @@ class Tag(ToolkitObject):
     #: Event triggered when a drop occurs
     dropped = d_(Event(ToolkitObject))
 
-    def _default_ref(self):
+    def _default_id(self):
         return '%0x' % id(self)
 
     @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs',
@@ -111,7 +108,7 @@ class Tag(ToolkitObject):
             else:
                 self.proxy.set_attribute(name, value)
             self._notify_modified({
-                'ref': self.ref,
+                'id': self.id,
                 'type': t,
                 'name': name,
                 'value': value
@@ -137,7 +134,7 @@ class Tag(ToolkitObject):
         super(Tag, self).child_added(child)
         if isinstance(child, Tag) and self.proxy_is_active:
             change = {
-                'ref': self.ref,
+                'id': self.id,
                 'type': 'added',
                 'name': 'children',
                 'value': child.render().decode()
@@ -149,7 +146,7 @@ class Tag(ToolkitObject):
             while i < len(children):
                 c = children[i]
                 if isinstance(c, Tag):  # Ignore pattern nodes
-                    change['before'] = c.ref
+                    change['before'] = c.id
                     break
                 else:
                     i += 1
@@ -161,10 +158,10 @@ class Tag(ToolkitObject):
         if isinstance(child, Tag) and self.proxy_is_active:
             if self.proxy.child_moved(child.proxy):
                 change = {
-                    'ref': self.ref,
+                    'id': self.id,
                     'type': 'moved',
                     'name': 'children',
-                    'value': child.ref
+                    'value': child.id
                 }
 
                 # Indicate where it was moved to
@@ -173,7 +170,7 @@ class Tag(ToolkitObject):
                 while i < len(children):
                     c = children[i]
                     if isinstance(c, Tag):  # Ignore pattern nodes
-                        change['before'] = c.ref
+                        change['before'] = c.id
                         break
                     else:
                         i += 1
@@ -189,10 +186,10 @@ class Tag(ToolkitObject):
         super(Tag, self).child_removed(child)
         if isinstance(child, Tag) and self.proxy_is_active:
             self._notify_modified({
-                'ref': self.ref,
+                'id': self.id,
                 'type': 'removed',
                 'name': 'children',
-                'value': child.ref,
+                'value': child.id,
             })
 
     # =========================================================================
@@ -728,7 +725,7 @@ class Select(Tag):
     value = d_(Unicode())
 
     def _default_name(self):
-        return u'{}'.format(self.ref)
+        return u'{}'.format(self.id)
 
     @observe('name', 'value')
     def _update_proxy(self, change):
@@ -771,7 +768,7 @@ class Input(Tag):
     value = d_(Value())
 
     def _default_name(self):
-        return u'{}'.format(self.ref)
+        return u'{}'.format(self.id)
 
     @observe('name', 'type', 'disabled', 'checked', 'value', 'placeholder')
     def _update_proxy(self, change):
@@ -787,7 +784,7 @@ class Textarea(Tag):
     cols = d_(Unicode())
 
     def _default_name(self):
-        return u'{}'.format(self.ref)
+        return u'{}'.format(self.id)
 
     @observe('name', 'rows', 'cols')
     def _update_proxy(self, change):
@@ -803,7 +800,7 @@ class Button(Tag):
     value = d_(Unicode('1'))
 
     def _default_name(self):
-        return u'{}'.format(self.ref)
+        return u'{}'.format(self.id)
 
     @observe('type')
     def _update_proxy(self, change):

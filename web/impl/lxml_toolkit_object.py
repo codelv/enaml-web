@@ -16,7 +16,7 @@ from web.components.html import ProxyTag
 from web.core.app import WebApplication
 
 
-#: Components are cached for lookup by ref
+#: Components are cached for lookup by id
 CACHE = {}
 
 
@@ -53,9 +53,8 @@ class WebComponent(ProxyTag):
         d = self.declaration
 
         #: Save ref id
-        ref = d.ref
-        CACHE[ref] = atomref(self)
-        widget.set('ref', ref)
+        CACHE[d.id] = atomref(self)
+        widget.set('id', d.id)
 
         if d.text:
             self.set_text(d.text)
@@ -67,8 +66,6 @@ class WebComponent(ProxyTag):
             self.set_cls(d.cls)
         if d.attrs:
             self.set_attrs(d.attrs)
-        if d.id:
-            widget.set('id', d.id)
         if d.draggable:
             self.set_draggable(d.draggable)
 
@@ -145,7 +142,7 @@ class WebComponent(ProxyTag):
 
             d = self.declaration
             try:
-                del CACHE[d.ref]
+                del CACHE[d.id]
             except KeyError:
                 pass
         super(WebComponent, self).destroy()
@@ -221,7 +218,7 @@ class WebComponent(ProxyTag):
             return []
         matches = []
         for node in nodes:
-            aref = CACHE.get(node.attrib.get('ref'))
+            aref = CACHE.get(node.attrib.get('id'))
             obj = aref() if aref else None
             if obj is None:
                 continue

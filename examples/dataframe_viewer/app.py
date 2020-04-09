@@ -4,6 +4,7 @@ import enaml
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
+from tornado.log import enable_pretty_logging
 from web.core.app import WebApplication
 
 with enaml.imports():
@@ -44,7 +45,7 @@ class ViewerHandler(tornado.web.RequestHandler):
         )
 
         # Store the viewer in the cache
-        CACHE[viewer.ref] = viewer
+        CACHE[viewer.id] = viewer
 
         self.write(viewer.render())
 
@@ -75,10 +76,10 @@ class ViewerWebSocket(tornado.websocket.WebSocketHandler):
         log.debug(f'Update from js: {change}')
 
         # Lookup the node
-        ref = change.get('ref')
+        ref = change.get('id')
         if not ref:
             return
-        nodes = self.viewer.xpath('//*[@ref=$ref]', ref=ref)
+        nodes = self.viewer.xpath('//*[@id=$ref]', ref=ref)
         if not nodes:
             return  # Unknown node
         node = nodes[0]
@@ -109,6 +110,7 @@ class ViewerWebSocket(tornado.websocket.WebSocketHandler):
 
 
 def run():
+    enable_pretty_logging()
     # Needed to create enaml components
     enaml_app = WebApplication()
 
@@ -118,7 +120,7 @@ def run():
         (r'/websocket/', ViewerWebSocket),
         (r'/static/(.*)', tornado.web.StaticFileHandler, {
             'path': os.path.dirname(__file__)}),
-    ])
+    ], debug=True)
     app.listen(8888)
     tornado.ioloop.IOLoop.current().start()
 

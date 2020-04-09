@@ -1,3 +1,7 @@
+# 0.9.0
+
+Remove `ref` and just use `id` instead
+
 # 0.8.10
 
 Add slot to support weakref on the Html tag

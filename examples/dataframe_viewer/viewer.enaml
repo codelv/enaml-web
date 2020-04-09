@@ -23,7 +23,7 @@ enamldef Viewer(Html): viewer:
             $(document).ready(function(){
                 initViewer('%s');
             });
-            '''% viewer.ref
+            '''% viewer.id
 
         Link:
             rel="stylesheet"
