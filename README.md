@@ -4,9 +4,10 @@
 [![codecov](https://codecov.io/gh/codelv/enaml-web/branch/master/graph/badge.svg)](https://codecov.io/gh/codelv/enaml-web)
 [![Downloads](https://pepy.tech/badge/enaml-web/month)](https://pepy.tech/project/enaml-web/month)
 
-
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
 let's you build websites in python declaratively.
+
+> Note: A breaking change was introduced in 0.9.0 usage of `ref` should be replaced with `id`
 
 You can use enaml-web to build "interactive" websites using python, enaml, and a few lines of _simple_ javascript (see the simple pandas [dataframe viewer](https://github.com/codelv/enaml-web/tree/master/examples/dataframe_viewer) example). The view state (dom) is stored on the server as an enaml view and interaction works by syncing changes between
 between the client(s) and server using websockets (or polling).
@@ -14,6 +15,7 @@ between the client(s) and server using websockets (or polling).
 To demonstrate, the following interaction is all handled with enaml-web
 
 ![interactive-websites-in-python-with-enaml](https://user-images.githubusercontent.com/380158/44675893-b4ceb380-a9ff-11e8-89e9-9ca2bce7d217.gif)
+
 
 ### Examples
 
