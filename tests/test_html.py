@@ -317,8 +317,8 @@ def test_node_added(app):
 
     # Save the node we're added
     node = view.proxy.widget.xpath('/html/body/ul/li')[-1]
-    ref = node.attrib['ref']
-    parent_ref = node.getparent().attrib['ref']
+    ref = node.attrib['id']
+    parent_ref = node.getparent().attrib['id']
 
     for e in evts:
         print(e)
@@ -333,7 +333,7 @@ def test_node_added(app):
     # With value of children added
     v = e['value']
     assert v['type'] == 'added' and v['name'] == 'children'
-    assert v['ref'] == parent_ref # value is also the dom inserted
+    assert v['id'] == parent_ref # value is also the dom inserted
 
 
 def test_note_insert_before(app):
@@ -380,7 +380,7 @@ def test_note_insert_before(app):
     assert len(evts) == 1
 
     e = evts[-1]['value']
-    assert e['before'] == view.xpath('/html/body/ul/li')[-1].ref
+    assert e['before'] == view.xpath('/html/body/ul/li')[-1].id
 
 
 def test_node_removed(app):
@@ -418,8 +418,8 @@ def test_node_removed(app):
 
     # Save the node we're removing
     node = view.proxy.widget.xpath('/html/body/ul/li')[2]
-    ref = node.attrib['ref']
-    parent_ref = node.getparent().attrib['ref']
+    ref = node.attrib['id']
+    parent_ref = node.getparent().attrib['id']
 
     view.render(menu=['2', '4'])
     r = [li.text for li in view.proxy.widget.xpath('/html/body/ul/li')]
@@ -438,7 +438,7 @@ def test_node_removed(app):
     # With value of children removed
     v = e['value']
     assert v['type'] == 'removed' and v['name'] == 'children'
-    assert v['value'] == ref and v['ref'] == parent_ref
+    assert v['value'] == ref and v['id'] == parent_ref
 
 
 def test_node_moved(app):
