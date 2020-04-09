@@ -9,15 +9,11 @@ Created on Apr 12, 2017
 
 @author: jrm
 """
-from atom.api import Typed,  Constant,  Event, atomref
+from atom.api import Typed,  Constant, Event, Property, Dict, atomref
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
 from web.components.html import ProxyTag
 from web.core.app import WebApplication
-
-
-#: Components are cached for lookup by id
-CACHE = {}
 
 
 class WebComponent(ProxyTag):
@@ -27,6 +23,10 @@ class WebComponent(ProxyTag):
 
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
+
+    #: A cached reference to the root element.
+    #: WARNING: If the root is changed this becomes invalid
+    root = Property(lambda self: self.parent().root, cached=True)
 
     # -------------------------------------------------------------------------
     # Initialization API
@@ -53,7 +53,7 @@ class WebComponent(ProxyTag):
         d = self.declaration
 
         #: Save ref id
-        CACHE[d.id] = atomref(self)
+        self.root.cache[d.id] = atomref(self)
         widget.set('id', d.id)
 
         if d.text:
@@ -71,20 +71,21 @@ class WebComponent(ProxyTag):
 
         # Set any attributes that may be defined
         for name, member in d.members().items():
-            if not member.metadata:
-                continue
             meta = member.metadata
+            if not meta:
+                continue
 
             # Exclude any attr tags
             if not (meta.get('d_member') and meta.get('d_final')):
                 continue
 
-            # Skip any items with attr=false
+            # Skip any items tagged with attr=false
             elif not meta.get('attr', True):
                 continue
 
             elif isinstance(member, Event):
                 continue
+
             value = getattr(d, name)
             if value:
                 self.set_attribute(name, value)
@@ -140,11 +141,9 @@ class WebComponent(ProxyTag):
                 parent.remove(widget)
             del self.widget
 
-            d = self.declaration
-            try:
-                del CACHE[d.id]
-            except KeyError:
-                pass
+            # Remove from cache
+            self.root.cache.pop(self.declaration.id, None)
+
         super(WebComponent, self).destroy()
 
     def child_added(self, child):
@@ -217,8 +216,9 @@ class WebComponent(ProxyTag):
         if not nodes:
             return []
         matches = []
+        cache = self.root.cache
         for node in nodes:
-            aref = CACHE.get(node.attrib.get('id'))
+            aref = cache.get(node.attrib.get('id'))
             obj = aref() if aref else None
             if obj is None:
                 continue
@@ -299,6 +299,13 @@ class WebComponent(ProxyTag):
 
 class RootWebComponent(WebComponent):
     """ A root component """
+
+    #: Components are cached for lookup by id so xpath queries from lxml
+    #: can retrieve their declaration component
+    cache = Dict(str, atomref)
+
+    #: Return a reference to self since this is the root
+    root = Property(lambda self: self, cached=True)
 
     def create_widget(self):
         self.widget = Element(self.declaration.tag)
