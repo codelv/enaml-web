@@ -302,7 +302,7 @@ class RootWebComponent(WebComponent):
 
     #: Components are cached for lookup by id so xpath queries from lxml
     #: can retrieve their declaration component
-    cache = Dict(str, atomref)
+    cache = Dict()
 
     #: Return a reference to self since this is the root
     root = Property(lambda self: self, cached=True)
