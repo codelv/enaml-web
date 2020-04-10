@@ -1,3 +1,8 @@
+# 0.9.1
+
+Allow passing keyword arguments to proxy.render and change encoding to 'unicode'
+by default (tests show it's faster) and don't pretty print by default.
+
 # 0.9.0
 
 Remove `ref` and just use `id` instead

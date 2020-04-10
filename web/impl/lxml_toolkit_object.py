@@ -205,10 +205,9 @@ class WebComponent(ProxyTag):
     # -------------------------------------------------------------------------
     # Public API
     # -------------------------------------------------------------------------
-    def render(self):
+    def render(self, method='html', encoding='unicode', **kwargs):
         """ Render the widget tree into a string """
-        return tostring(self.widget, pretty_print=True,
-                        encoding='utf-8', method='html')
+        return tostring(self.widget, method=method, encoding=encoding, **kwargs)
 
     def xpath(self, query, **kwargs):
         """ Get the node(s) matching the query"""

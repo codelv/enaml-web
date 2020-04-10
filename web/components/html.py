@@ -27,7 +27,7 @@ class ProxyTag(ProxyToolkitObject):
         """ Perform an xpath lookup on the node """
         raise NotImplementedError
 
-    def render(self):
+    def render(self, *args, **kwargs):
         """ Render the node and all children """
         raise NotImplementedError
 
