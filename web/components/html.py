@@ -137,7 +137,7 @@ class Tag(ToolkitObject):
                 'id': self.id,
                 'type': 'added',
                 'name': 'children',
-                'value': child.render().decode()
+                'value': child.render()
             }
 
             # Indicate where it was added
