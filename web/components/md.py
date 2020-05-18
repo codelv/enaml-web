@@ -44,6 +44,7 @@ class Markdown(Raw):
     extensions = d_(List(default=[
         "markdown.extensions.codehilite",
         "markdown.extensions.fenced_code",
+        "markdown.extensions.tables",
     ])).tag(attr=False)
 
     #: Configuration for them
