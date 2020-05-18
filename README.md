@@ -399,3 +399,23 @@ This will then render a `<svg>...</svg>` tag.
 lowercase class name. This is no longer done to eliminate a function call per
 node and to avoid having to explicitly redefine the tag when subclassing.
 
+##### Generic attributes
+
+The [html](https://github.com/codelv/enaml-web/blob/master/web/components/html.py)
+definitions only expose the commonly used attributes of each node,
+such as `cls`, `style`, and those specific to the tag (such as or `href` for a link).
+
+Custom attributes or attributes which can't be set as a name in python
+(such as `data-tooltip`) can defined by assigning `attrs` to a `dict` of
+attr value pairs.
+
+```python
+enamldef Tooltip(Span):
+    attrs = {'data-tooltip': 'Tooltip text'}
+```
+
+This will create a node like:
+
+```html
+<span data-tooltip="Tooltip text"></span>
+```
