@@ -9,7 +9,7 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from atom.api import Enum, Unicode, Typed, ForwardTyped, observe
+from atom.api import Str, Typed, ForwardTyped, observe
 from enaml.core.declarative import d_
 from .raw import Raw, ProxyRawNode
 
@@ -34,10 +34,10 @@ class Code(Raw):
     proxy = Typed(ProxyCode)
 
     #: Language to parse if none is given it will guess which to use
-    language = d_(Unicode())
+    language = d_(Str())
 
     #: Highlighter style to use
-    highlight_style = d_(Unicode()).tag(attr=False)
+    highlight_style = d_(Str()).tag(attr=False)
 
     @observe('language', 'highlight_style')
     def _update_proxy(self, change):

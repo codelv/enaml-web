@@ -12,7 +12,7 @@ Created on Apr 2, 2017
 
 from __future__ import print_function
 from atom.api import (
-    Atom, Event, Enum, ContainerList, Value, Int, Unicode, Dict, Instance,
+    Atom, Event, Enum, ContainerList, Value, Int, Str, Dict, Instance,
     ForwardTyped, Typed, Coerced, observe, set_default
 )
 
@@ -37,10 +37,10 @@ class Tag(ToolkitObject):
     proxy = Typed(ProxyTag)
 
     #: Object ID
-    id = d_(Unicode())
+    id = d_(Str())
 
     #: Tag name
-    tag = d_(Unicode()).tag(attr=False)
+    tag = d_(Str()).tag(attr=False)
 
     #: CSS classes
     cls = d_(Instance((list, object))).tag(attr=False)
@@ -49,19 +49,19 @@ class Tag(ToolkitObject):
     style = d_(Instance((dict, object))).tag(attr=False)
 
     #: Node text
-    text = d_(Unicode()).tag(attr=False)
+    text = d_(Str()).tag(attr=False)
 
     #: Node tail text
-    tail = d_(Unicode()).tag(attr=False)
+    tail = d_(Str()).tag(attr=False)
 
     #: Alt attribute
-    alt = d_(Unicode())
+    alt = d_(Str())
 
     #: Custom attributes not explicitly defined
     attrs = d_(Dict()).tag(attr=False)
 
     #: JS onclick definition
-    onclick = d_(Unicode())
+    onclick = d_(Str())
 
     #: Used to tell js to send click events back to the server
     clickable = d_(Coerced(bool))
@@ -74,13 +74,13 @@ class Tag(ToolkitObject):
     draggable = d_(Coerced(bool)).tag(attr=False)
 
     #: JS ondragstart definition
-    ondragstart = d_(Unicode())
+    ondragstart = d_(Str())
 
     #: JS ondragover definition
-    ondragover = d_(Unicode())
+    ondragover = d_(Str())
 
     #: JS ondrop definition
-    ondrop = d_(Unicode())
+    ondrop = d_(Str())
 
     #: Event triggered when a drop occurs
     dropped = d_(Event(ToolkitObject))
@@ -352,7 +352,7 @@ class A(Tag):
     tag = set_default('a')
 
     #: Set the url
-    href = d_(Unicode())
+    href = d_(Str())
 
     #: Set the target options
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
@@ -421,7 +421,7 @@ class Blockquote(Tag):
     #: Set the tag name
     tag = set_default('blockquote')
 
-    cite = d_(Unicode())
+    cite = d_(Str())
 
     @observe('cite')
     def _update_proxy(self, change):
@@ -447,16 +447,16 @@ class Bdo(Tag):
     #: Set the tag name
     tag = set_default('bdo')
 
-    dir = d_(Unicode())
+    dir = d_(Str())
 
 
 class Img(Tag):
     #: Set the tag name
     tag = set_default('img')
 
-    src = d_(Unicode())
-    width = d_(Unicode())
-    height = d_(Unicode())
+    src = d_(Str())
+    width = d_(Str())
+    height = d_(Str())
 
     @observe('src', 'width', 'height')
     def _update_proxy(self, change):
@@ -472,10 +472,10 @@ class Link(Tag):
     #: Set the tag name
     tag = set_default('link')
 
-    type = d_(Unicode())
-    rel = d_(Unicode())
-    href = d_(Unicode())
-    media = d_(Unicode())
+    type = d_(Str())
+    rel = d_(Str())
+    href = d_(Str())
+    media = d_(Str())
 
     @observe('type', 'rel', 'href', 'media')
     def _update_proxy(self, change):
@@ -486,7 +486,7 @@ class Map(Tag):
     #: Set the tag name
     tag = set_default('map')
 
-    name = d_(Unicode())
+    name = d_(Str())
 
     @observe('name')
     def _update_proxy(self, change):
@@ -497,9 +497,9 @@ class Area(Tag):
     #: Set the tag name
     tag = set_default('area')
 
-    shape = d_(Unicode())
-    coords = d_(Unicode())
-    href = d_(Unicode())
+    shape = d_(Str())
+    coords = d_(Str())
+    href = d_(Str())
 
     @observe('shape', 'coords', 'href')
     def _update_proxy(self, change):
@@ -520,8 +520,8 @@ class Td(Tag):
     #: Set the tag name
     tag = set_default('td')
 
-    colspan = d_(Unicode())
-    rowspan = d_(Unicode())
+    colspan = d_(Str())
+    rowspan = d_(Str())
 
     @observe('colspan', 'rowspan')
     def _update_proxy(self, change):
@@ -532,8 +532,8 @@ class Th(Tag):
     #: Set the tag name
     tag = set_default('th')
 
-    colspan = d_(Unicode())
-    rowspan = d_(Unicode())
+    colspan = d_(Str())
+    rowspan = d_(Str())
 
     @observe('colspan', 'rowspan')
     def _update_proxy(self, change):
@@ -600,10 +600,10 @@ class IFrame(Tag):
     #: Set the tag name
     tag = set_default('iframe')
 
-    src = d_(Unicode())
-    height = d_(Unicode())
-    width = d_(Unicode())
-    target = d_(Unicode())
+    src = d_(Str())
+    height = d_(Str())
+    width = d_(Str())
+    target = d_(Str())
 
     @observe('src', 'height', 'width', 'target')
     def _update_proxy(self, change):
@@ -613,8 +613,8 @@ class IFrame(Tag):
 class Script(Tag):
     #: Set the tag name
     tag = set_default('script')
-    src = d_(Unicode())
-    type = d_(Unicode())
+    src = d_(Str())
+    type = d_(Str())
 
     @observe('type', 'src')
     def _update_proxy(self, change):
@@ -630,8 +630,8 @@ class Meta(Tag):
     #: Set the tag name
     tag = set_default('meta')
 
-    name = d_(Unicode())
-    content = d_(Unicode())
+    name = d_(Str())
+    content = d_(Str())
 
     @observe('name', 'content')
     def _update_proxy(self, change):
@@ -642,7 +642,7 @@ class Base(Tag):
     #: Set the tag name
     tag = set_default('base')
 
-    href = d_(Unicode())
+    href = d_(Str())
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
     @observe('href', 'target')
@@ -694,7 +694,7 @@ class Form(Tag):
     #: Set the tag name
     tag = set_default('form')
 
-    action = d_(Unicode())
+    action = d_(Str())
     method = d_(Enum("post", "get"))
 
     @observe('action', 'method')
@@ -721,8 +721,8 @@ class Select(Tag):
     #: Set the tag name
     tag = set_default('select')
 
-    name = d_(Unicode())
-    value = d_(Unicode())
+    name = d_(Str())
+    value = d_(Str())
 
     def _default_name(self):
         return u'{}'.format(self.id)
@@ -736,7 +736,7 @@ class Option(Tag):
     #: Set the tag name
     tag = set_default('option')
 
-    value = d_(Unicode())
+    value = d_(Str())
     selected = d_(Coerced(bool))
 
     @observe('value', 'selected')
@@ -748,7 +748,7 @@ class OptGroup(Tag):
     #: Set the tag name
     tag = set_default('optgroup')
 
-    label = d_(Unicode())
+    label = d_(Str())
     disabled = d_(Coerced(bool))
 
     @observe('label', 'disabled')
@@ -760,9 +760,9 @@ class Input(Tag):
     #: Set the tag name
     tag = set_default('input')
 
-    name = d_(Unicode())
-    type = d_(Unicode())
-    placeholder = d_(Unicode())
+    name = d_(Str())
+    type = d_(Str())
+    placeholder = d_(Str())
     disabled = d_(Coerced(bool))
     checked = d_(Coerced(bool))
     value = d_(Value())
@@ -779,9 +779,9 @@ class Textarea(Tag):
     #: Set the tag name
     tag = set_default('textarea')
 
-    name = d_(Unicode())
-    rows = d_(Unicode())
-    cols = d_(Unicode())
+    name = d_(Str())
+    rows = d_(Str())
+    cols = d_(Str())
 
     def _default_name(self):
         return u'{}'.format(self.id)
@@ -795,9 +795,9 @@ class Button(Tag):
     #: Set the tag name
     tag = set_default('button')
 
-    name = d_(Unicode())
-    type = d_(Unicode())
-    value = d_(Unicode('1'))
+    name = d_(Str())
+    type = d_(Str())
+    value = d_(Str('1'))
 
     def _default_name(self):
         return u'{}'.format(self.id)
@@ -822,8 +822,8 @@ class Source(Tag):
     #: Set the tag name
     tag = set_default('source')
 
-    src = d_(Unicode())
-    type = d_(Unicode())
+    src = d_(Str())
+    type = d_(Str())
 
     @observe('src', 'type')
     def _update_proxy(self, change):

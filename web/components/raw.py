@@ -9,7 +9,7 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from atom.api import Unicode, Typed, ForwardTyped, set_default, observe
+from atom.api import Str, Typed, ForwardTyped, set_default, observe
 from enaml.core.declarative import d_
 from .html import Tag, ProxyTag
 
@@ -35,7 +35,7 @@ class Raw(Tag):
     tag = set_default("div")
 
     #: Raw source to parse and display
-    source = d_(Unicode()).tag(attr=False)
+    source = d_(Str()).tag(attr=False)
 
     @observe('source')
     def _update_proxy(self, change):
