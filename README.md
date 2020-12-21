@@ -350,7 +350,7 @@ Breadcrumbs:
 ```
 
 
-### Gotachas
+### Gotchas
 
 ##### Text and tail nodes
 
