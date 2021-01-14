@@ -24,6 +24,11 @@ See the examples folder
 - [www.codelv.com](https://www.codelv.com/) - Built entirely using enaml-web
 - [SMD Component search](https://github.com/frmdstryr/smd-search) - View and search a pandas dataframe
 
+Have a site? Feel free to share it!
+
+### Why?
+
+It makes it easy to build websites without a lot of javascript. 
 
 ### Short intro
 
@@ -110,57 +115,55 @@ python template frameworks can do (to my knowledge).
 
 ### How it works
 
-It generates a dom of [lxml](http://lxml.de/) elements.
+It simply generates a tree of [lxml](http://lxml.de/) elements.
 
-##### Inherently secure
+#### Advantages
 
-Since an lxml dom is generated it means that your code is inherently secure from
-injection as it automatically escapes all attributes. Also a closing tag cannot
-be accidentally missed.
+1. Inherently secure 
+
+Since it's using lxml elements instead of text, your template code is inherently secure from
+injection as lxml automatically escapes all attributes. A closing tag cannot be accidentally missed.
 
 The atom framework provides additional security by enforcing runtime type
 checking and optional validation.
 
+2. Minified by default
 
-##### Extendable via templates and blocks
+Other templates engines often render a lot of useless whitespace. This does not. The response is always minified.
 
-Like other template engines, enaml-web provides a "Block" node that allows
-you to define a part of a template that can be overridden or extended.
+3. No template tags needed
 
-Enaml also provides pattern nodes for handling conditional statements, loops,
-dynamic nodes based on lists or models, and nodes generated from more complex
-templates (ex automatic form generation).
-
-
-##### No template tags needed
-
-Many template engines require the use of "template tags" wrapped in `{% %}`
+Some template engines require the use of "template tags" wrapped in `{% %}`
 or similar to allow the use of python code to transform variables.
 
 Since enaml _is_ python, you can use any python code directly in
 your enaml components and templates. You don't need any template tags.
 
+4. Templates can be modified
 
-##### Testing is easier
+The tree can be modified after it's rendered to react to events or data changes. These
+changes can be propogated out to clients (see the data binding section).
 
-Since the internal representation is lxml nodes, you can use lxml's xpath
-queries on the dom for e2e view testing. No need to use headless browsers and
-that complicated stuff (unless you're using a lot of js).
-
-
-##### Component based
+5. Component based
 
 Since enaml views are like python classes, you can "subclass" and extend any
 component and extend it's functionality. This enables you to quickly build
-reusable components.
+reusable components. This is like "web components" but it's rendered server side
+so it's not slow. See [materialize-ui](https://github.com/frmdstryr/materialize) for an example.
 
-I'm working on components for several common css frameworks so they can simply
-be installed and used.
+#### Disadvantages
 
-1. [materialize-ui](https://github.com/frmdstryr/materialize)
-2. semantic-ui (coming soon)
-3. bootstrap (coming soon)
+1. Memory usage
 
+Even though lxml is written in c and enaml uses atom objects, the memory usage may still
+be more than plain string templates. 
+
+2. HTML only
+
+It only works with html.
+
+
+## Notes
 
 ### Data binding
 
@@ -237,28 +240,30 @@ For working with a database using atom see [atom-db](https://github.com/codelv/a
 The`Raw` node parses text into dom nodes (using lxml's html parser). Similarly
 `Markdown` and `Code` nodes parse markdown and highlight code respectively.
 
-For example, you can use wagtal's richtext tag to render to a dom via:
+For example, you can show content from a database like tihs:
 
 ```python
 
 from web.components.api import *
 from web.core.api import *
-from wagtail.core.templatetags.wagtailcore_tags import richtext
 from myapp.views.base import Page
 
 enamldef BlogPage(Page):
+    attr page_model: SomeModel # Page model
     body.cls = 'template-blogpage'
     Block:
         block = parent.content
         Raw:
-            source << richtext(page.body)
+            # Render source from database
+            source << page_model.body
 
 ```
 
-This let's you use web wysiwyg editors to insert content into the dom.
+This let's you use web wysiwyg editors to insert content into the dom. If the content
+is not valid it will not mess up the rest of the page.
 
 
-#### Block node
+### Block nodes
 
 You can define a base template, then overwrite parts using the `Block` node.
 
@@ -304,50 +309,6 @@ enamldef Page(Base): page:
 ```
 
 Blocks let you either replace, append, or prepend to the content.
-
-#### Custom Components
-
-With enaml you can easily create reusable components and share them through
-the views as you would any python class using regular python imports.
-
-For instance, to create a
-[materalize breadcrumbs component](http://materializecss.com/breadcrumbs.html)
-that automatically follows the current request path, simply include the required
-css/scripts in your base template, define the component as shown below:
-
-```python
-
-from web.components.api import *
-from web.core.api import Looper
-
-enamldef Breadcrumbs(Nav): nav:
-    attr path # ex. pass in a tornado request.path
-    attr color = ""
-    attr breadcrumbs << path[1:-1].split("/")
-    tag = 'nav'
-    Div:
-        cls = 'nav-wrapper {}'.format(nav.color)
-        Div:
-            cls = 'container'
-            Div:
-                cls = 'col s12'
-                Looper:
-                    iterable << breadcrumbs
-                    A:
-                        href = "/{}/".format("/".join(breadcrumbs[:loop_index+1]))
-                        cls = "breadcrumb"
-                        text = loop_item.title()
-```
-
-then use it it as follows
-
-```python
-
-# in your template add
-Breadcrumbs:
-    path << request.path
-
-```
 
 
 ### Gotchas
