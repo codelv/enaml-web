@@ -1,3 +1,7 @@
+# 0.10.1
+
+Fix bug where Block with replace mode did not replace all child nodes
+
 # 0.9.1
 
 Allow passing keyword arguments to proxy.render and change encoding to 'unicode'

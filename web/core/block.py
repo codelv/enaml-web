@@ -14,23 +14,23 @@ from enaml.core.declarative import Declarative, d_
 
 
 class Block(Declarative):
-    """ An object which dynamically insert's its children into another block's 
+    """ An object which dynamically insert's its children into another block's
     parent object.
-    
+
     The 'Block' object is used to cleanly and easily insert it's children
     into the children of another object. The 'Object' instance assigned to the
     'block' property of the 'Block' will be parented with the parent of
     the 'Block'. Creating a 'Block' with no parent is a programming
     error.
-    
+
     """
-    
-    #: The Block to which this blocks children should be inserted into 
+
+    #: The Block to which this blocks children should be inserted into
     block = d_(ForwardInstance(lambda: Block))
-    
-    #: If replace, replace all parent's children (except the block of course) 
+
+    #: If replace, replace all parent's children (except the block of course)
     mode = d_(Enum('replace', 'append', 'prepend'))
-    
+
     def initialize(self):
         """ A reimplemented initializer.
 
@@ -46,27 +46,27 @@ class Block(Declarative):
         if block:
             # This block is setting the content of another block
             before = None
-            
+
             # Remove the existing blocks children
             if self.mode == 'replace':
                 # Clear the blocks children
-                for c in block.children:
+                for c in block.children[:]:
                     block.children.remove(c)
                     if not c.is_destroyed:
                         c.destroy()
             # Add this blocks children to the other block
             elif self.mode == 'prepend' and block.children:
                 before = block.children[0]
-                
+
             block.insert_children(before, self.children)
-            
+
         else:
             # This block is inserting it's children into it's parent
             self.parent.insert_children(self, self.children)
-    
+
     def _observe_mode(self, change):
         """ If the mode changes. Refresh the items.
-        
+
         """
         block = self.block
         if block and self.is_initialized and change['type'] == 'update':
@@ -76,7 +76,7 @@ class Block(Declarative):
                 block.children.remove(c)
                 c.set_parent(None)
             self.refresh_items()
-    
+
     def _observe_block(self, change):
         """ A change handler for the 'objects' list of the Include.
 
@@ -91,11 +91,11 @@ class Block(Declarative):
                 old_block.children.remove(c)
                 c.set_parent(None)
             self.refresh_items()
-                
+
     def _observe__children(self, change):
         """ When the children of the block change. Update the referenced
         block.
-        
+
         """
         if not self.is_initialized or change['type'] != 'update':
             return
@@ -108,7 +108,7 @@ class Block(Declarative):
                 c.destroy()
             else:
                 c.set_parent(None)
-                
+
         if block:
             # This block is inserting into another block
             before = None

@@ -8,14 +8,14 @@ from web.core.app import WebApplication
 def app():
     app = WebApplication.instance() or WebApplication()
     yield app
-    
+
 
 def test_block(app):
     # Test that a block's content is replaced
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -24,13 +24,13 @@ def test_block(app):
         Body:
             Block: content:
                 pass
-    
+
     enamldef Page(Template):
         Block:
             block = parent.content
             H2:
                 text = "It worked!"
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
@@ -42,7 +42,7 @@ def test_block_unused(app):
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -52,10 +52,10 @@ def test_block_unused(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+
     enamldef Page(Template):
         pass
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
@@ -67,7 +67,7 @@ def test_block_replace(app):
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -77,27 +77,30 @@ def test_block_replace(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+                P:
+                    text = "Foo"
+
     enamldef Page(Template):
         Block:
             block = parent.content
             H2:
                 text = "It worked!"
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
     assert len(view.xpath('/html/body/h1')) == 0
+    assert len(view.xpath('/html/body/p')) == 0
     assert len(view.xpath('/html/body/h2')) == 1
-    
-    
+
+
 def test_block_append(app):
     # Test that a block's content is retained and new content is appended in
     # append mode
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -107,14 +110,14 @@ def test_block_append(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+
     enamldef Page(Template):
         Block:
             block = parent.content
             mode = 'append'
             H1:
                 text = "Appended"
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
@@ -122,15 +125,15 @@ def test_block_append(app):
     assert len(nodes) == 2
     assert nodes[0].text == "Default"
     assert nodes[1].text == "Appended"
-    
-    
+
+
 def test_block_prepend(app):
-    # Test that a block's content is retained and new content is inserted 
+    # Test that a block's content is retained and new content is inserted
     # before the default content in prepend mode.
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -140,14 +143,14 @@ def test_block_prepend(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+
     enamldef Page(Template):
         Block:
             block = parent.content
             mode = 'prepend'
             H1:
                 text = "Prepended"
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
@@ -155,14 +158,14 @@ def test_block_prepend(app):
     assert len(nodes) == 2
     assert nodes[0].text == "Prepended"
     assert nodes[1].text == "Default"
-    
-    
+
+
 def test_block_replace_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -172,7 +175,7 @@ def test_block_replace_changed(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+
     enamldef Page(Template):
         attr names = ['alice']
         Block:
@@ -181,31 +184,31 @@ def test_block_replace_changed(app):
                 iterable << names
                 H2:
                     text = loop_item
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
     assert len(view.xpath('/html/body/h1')) == 0
     assert len(view.xpath('/html/body/h2')) == 1
-    
+
     # Update
     print(view.render(names=['alice', 'bob']))
     assert len(view.xpath('/html/body/h1')) == 0
     assert len(view.xpath('/html/body/h2')) == 2
-    
+
     print(view.render(names=['tom']))
     assert len(view.xpath('/html/body/h1')) == 0
     nodes = view.xpath('/html/body/h2')
     assert len(nodes) == 1
     assert nodes[0].text == 'tom'
-    
+
 
 def test_block_append_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -215,7 +218,7 @@ def test_block_append_changed(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+
     enamldef Page(Template):
         attr names = ['alice']
         Block:
@@ -225,7 +228,7 @@ def test_block_append_changed(app):
                 iterable << names
                 H1:
                     text = loop_item
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
@@ -233,7 +236,7 @@ def test_block_append_changed(app):
     assert len(nodes) == 2
     assert nodes[0].text == 'Default'
     assert nodes[1].text == 'alice'
-    
+
     # Update
     print(view.render(names=['alice', 'bob']))
     nodes = view.xpath('/html/body/h1')
@@ -241,7 +244,7 @@ def test_block_append_changed(app):
     assert nodes[0].text == 'Default'
     assert nodes[1].text == 'alice'
     assert nodes[2].text == 'bob'
-    
+
     # Update
     print(view.render(names=['bob']))
     nodes = view.xpath('/html/body/h1')
@@ -255,7 +258,7 @@ def test_block_prepend_changed(app):
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -265,7 +268,7 @@ def test_block_prepend_changed(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+
     enamldef Page(Template):
         attr names = ['alice']
         Block:
@@ -275,7 +278,7 @@ def test_block_prepend_changed(app):
                 iterable << names
                 H1:
                     text = loop_item
-    
+
     """), 'Page')
     view = Page()
     print(view.render())
@@ -283,7 +286,7 @@ def test_block_prepend_changed(app):
     assert len(nodes) == 2
     assert nodes[0].text == 'alice'
     assert nodes[1].text == 'Default'
-    
+
     # Update
     print(view.render(names=['alice', 'bob']))
     nodes = view.xpath('/html/body/h1')
@@ -291,21 +294,21 @@ def test_block_prepend_changed(app):
     assert nodes[0].text == 'alice'
     assert nodes[1].text == 'bob'
     assert nodes[2].text == 'Default'
-    
+
     # Update
     print(view.render(names=['bob']))
     nodes = view.xpath('/html/body/h1')
     assert len(nodes) == 2
     assert nodes[0].text == 'bob'
     assert nodes[1].text == 'Default'
-    
-    
+
+
 def test_block_mode_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias content
         Head:
@@ -315,7 +318,7 @@ def test_block_mode_changed(app):
             Block: content:
                 H1:
                     text = "Default"
-    
+
     enamldef Page(Template): view:
         attr mode = 'append'
         Block:
@@ -323,10 +326,10 @@ def test_block_mode_changed(app):
             mode << view.mode
             H1:
                 text = 'Mode'
-    
+
     """), 'Page')
     view = Page()
-    
+
     for mode in ('append', 'prepend', 'append', 'prepend'):
         print(view.render(mode=mode))
         nodes = view.xpath('/html/body/h1')
@@ -334,14 +337,14 @@ def test_block_mode_changed(app):
         i, j = (0, 1) if mode == 'append' else (1, 0)
         assert nodes[i].text == 'Default'
         assert nodes[j].text == 'Mode'
-        
-        
+
+
 def test_block_ref_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(dedent("""
     from web.components.api import *
     from web.core.api import *
-    
+
     enamldef Template(Html):
         alias header
         alias footer
@@ -356,7 +359,7 @@ def test_block_ref_changed(app):
                 H1:
                     text = "Footer"
 
-    
+
     enamldef Page(Template): view:
         attr block = 'header'
         Block:
@@ -364,7 +367,7 @@ def test_block_ref_changed(app):
             mode = 'append'
             H1:
                 text = 'Added'
-    
+
     """), 'Page')
     view = Page()
     print(view.render(block='header'))
@@ -373,7 +376,7 @@ def test_block_ref_changed(app):
     assert nodes[0].text == 'Header'
     assert nodes[1].text == 'Added'
     assert nodes[2].text == 'Footer'
-    
+
     print(view.render(block='footer'))
     nodes = view.xpath('/html/body/h1')
     assert len(nodes) == 3
