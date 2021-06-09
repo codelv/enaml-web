@@ -17,7 +17,7 @@ from web.components.raw import ProxyRawNode
 
 class RawComponent(WebComponent, ProxyRawNode):
     """ A block for rendering raw html source. """
-    
+
     def init_widget(self):
         """ Initialize the widget with the source. """
         d = self.declaration
@@ -27,8 +27,8 @@ class RawComponent(WebComponent, ProxyRawNode):
             super(RawComponent, self).init_widget()
 
     def set_source(self, source):
-        """ Set the source by parsing the source and inserting it into the 
-        component. 
+        """ Set the source by parsing the source and inserting it into the
+        component.
         """
         self.widget.clear()
         html = etree.HTML(source)

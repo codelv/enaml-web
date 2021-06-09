@@ -1,3 +1,7 @@
+# 0.10.2
+
+Make markdown source modified event return the rendered value
+
 # 0.10.1
 
 Fix bug where Block with replace mode did not replace all child nodes

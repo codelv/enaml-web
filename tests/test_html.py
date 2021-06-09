@@ -5,6 +5,12 @@ from textwrap import dedent
 from utils import compile_source
 from web.core.app import WebApplication
 
+try:
+    import nbformat
+    SKIP_NBFORMAT = False
+except ImportError as e:
+    SKIP_NBFORMAT = True
+
 
 @pytest.fixture
 def app():
@@ -179,11 +185,12 @@ def test_markdown(app):
 
     enamldef Page(Html): view:
         attr source
+        alias md
         Head:
             Title:
                 text = "Test"
         Body:
-            Markdown:
+            Markdown: md:
                 source << view.source
     """), 'Page')
     view = Page()
@@ -191,8 +198,19 @@ def test_markdown(app):
     # Use xpath the widget directly
     assert len(view.proxy.widget.xpath('/html/body/div/h1')) == 1
 
+    evts = []
+    def on_modified(change):
+        evts.append(change)
+    view.observe('modified', on_modified)
+
     print(view.render(source="\n- Item 1\n- Item 2\n"))
     assert len(view.proxy.widget.xpath('/html/body/div/ul/li')) == 2
+
+    for e in evts:
+        print(e)
+    e = evts[-1]['value']
+    assert e['name'] == 'source'
+    assert e['value'] == view.md.render()
 
 
 def test_markdown_proxy(app):
@@ -245,6 +263,7 @@ def test_code_proxy(app):
             getattr(proxy, 'set_%s' % attr)(None)
 
 
+@pytest.mark.skipif(SKIP_NBFORMAT, reason="nbformat is required")
 def test_notebook(app):
     # Test that raw content is rendered
     Page = compile_source(dedent("""
@@ -271,6 +290,7 @@ def test_notebook(app):
             view.render(version=3)
 
 
+@pytest.mark.skipif(SKIP_NBFORMAT, reason="nbformat is required")
 def test_notebook_proxy(app):
     # To make cov happy
     from web.components.ipynb import ProxyNotebook

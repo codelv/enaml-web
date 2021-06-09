@@ -69,3 +69,9 @@ class Markdown(Raw):
     def _update_proxy(self, change):
         """ The superclass implementation is sufficient. """
         super(Markdown, self)._update_proxy(change)
+
+    def _notify_modified(self, change):
+        """ Update the notification """
+        if change.get('type') == 'update' and change.get('name') == 'source':
+            change['value'] = self.render()
+        super(Raw, self)._notify_modified(change)
