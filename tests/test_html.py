@@ -11,6 +11,12 @@ try:
 except ImportError as e:
     SKIP_NBFORMAT = True
 
+try:
+    import markdown
+    MARKDOWN_UNAVAILABLE = False
+except ImportError as e:
+    MARKDOWN_UNAVAILABLE = True
+
 
 @pytest.fixture
 def app():
@@ -177,6 +183,7 @@ def test_raw_proxy(app):
         proxy.set_source("")
 
 
+@pytest.mark.skipif(MARKDOWN_UNAVAILABLE, reason="markdown is not installed")
 def test_markdown(app):
     # Test that raw content is rendered
     Page = compile_source(dedent("""
