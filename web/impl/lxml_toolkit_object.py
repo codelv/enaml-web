@@ -16,6 +16,42 @@ from web.components.html import ProxyTag
 from web.core.app import WebApplication
 
 
+#: Cache mapping the ToolkitObject to list of members that must be
+#: set during initialization.
+COMPONENT_FIELDS = {}
+
+
+def get_fields(cls):
+    """ Determine the list of attributes to convert to html and cache them.
+
+    Any member tagged with "attr=False" will be ignored any enaml attrs will
+    also be ignored.
+
+    """
+    if cls in COMPONENT_FIELDS:
+        return COMPONENT_FIELDS[cls]
+    web_members = []
+    for name, member in cls.members().items():
+        meta = member.metadata
+        if not meta:
+            continue
+
+        # Exclude any attr tags
+        if not (meta.get('d_member') and meta.get('d_final')):
+            continue
+
+        # Skip any items tagged with attr=false
+        elif not meta.get('attr', True):
+            continue
+
+        elif isinstance(member, Event):
+            continue
+        web_members.append(member)
+    COMPONENT_FIELDS[cls] = web_members
+
+    return web_members
+
+
 class WebComponent(ProxyTag):
     """ An lxml implementation of an Enaml ProxyToolkitObject.
 
@@ -54,61 +90,29 @@ class WebComponent(ProxyTag):
 
         #: Save ref id
         self.root.cache[d.id] = atomref(self)
-        widget.set('id', d.id)
+        set_attr = widget.set
+        set_attr('id', d.id)
 
         if d.text:
-            self.set_text(d.text)
+            widget.text = d.text
         if d.tail:
-            self.set_tail(d.tail)
+            widget.tail = d.tail
         if d.style:
             self.set_style(d.style)
         if d.cls:
             self.set_cls(d.cls)
         if d.attrs:
-            self.set_attrs(d.attrs)
+            widget.attrib.update(d.attrs)
         if d.draggable:
-            self.set_draggable(d.draggable)
+            set_attr("draggable", "true")
 
-        # Set any attributes that may be defined
-        for name, member in d.members().items():
-            meta = member.metadata
-            if not meta:
-                continue
-
-            # Exclude any attr tags
-            if not (meta.get('d_member') and meta.get('d_final')):
-                continue
-
-            # Skip any items tagged with attr=false
-            elif not meta.get('attr', True):
-                continue
-
-            elif isinstance(member, Event):
-                continue
-
+        for m in get_fields(d.__class__):
+            name = m.name
             value = getattr(d, name)
-            if value:
-                self.set_attribute(name, value)
-
-    def init_layout(self):
-        """ Initialize the layout of the toolkit widget.
-
-        This method is called during the bottom-up pass. This method
-        should initialize the layout of the widget. The child widgets
-        will be fully initialized and layed out when this is called.
-
-        """
-        pass
-
-    def init_events(self):
-        """ Initialize the event handlers of the toolkit widget.
-
-        This method is called during the bottom-up pass. This method
-        should initialize the event handlers for the widget. The child widgets
-        will be fully initialized and layed out when this is called.
-
-        """
-        pass
+            if value is True:
+                set_attr(name, name)
+            elif value:
+                set_attr(name, str(value))
 
     # -------------------------------------------------------------------------
     # ProxyToolkitObject API
@@ -119,13 +123,6 @@ class WebComponent(ProxyTag):
         """
         self.create_widget()
         self.init_widget()
-
-    def activate_bottom_up(self):
-        """ Activate the proxy tree for the bottom-up pass.
-
-        """
-        self.init_layout()
-        self.init_events()
 
     def destroy(self):
         """ A reimplemented destructor.
@@ -215,9 +212,9 @@ class WebComponent(ProxyTag):
         if not nodes:
             return []
         matches = []
-        cache = self.root.cache
+        lookup = self.root.cache.get
         for node in nodes:
-            aref = cache.get(node.attrib.get('id'))
+            aref = lookup(node.attrib.get('id'))
             obj = aref() if aref else None
             if obj is None:
                 continue

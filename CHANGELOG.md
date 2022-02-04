@@ -1,3 +1,8 @@
+# 0.11.0
+
+- Slightly speed up init_widget
+- Remove unused init functions
+
 # 0.10.2
 
 Make markdown source modified event return the rendered value
