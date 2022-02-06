@@ -9,18 +9,15 @@ Created on Apr 12, 2017
 
 @author: jrm
 """
-from atom.api import Typed,  Constant, Event, Property, Dict, atomref
+from atom.api import Typed,  Constant, Event, ForwardTyped, Dict, atomref
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
 from web.components.html import ProxyTag
 from web.core.app import WebApplication
+from functools import lru_cache
 
 
-#: Cache mapping the ToolkitObject to list of members that must be
-#: set during initialization.
-COMPONENT_FIELDS = {}
-
-
+@lru_cache(1024)
 def get_fields(cls):
     """ Determine the list of attributes to convert to html and cache them.
 
@@ -28,8 +25,6 @@ def get_fields(cls):
     also be ignored.
 
     """
-    if cls in COMPONENT_FIELDS:
-        return COMPONENT_FIELDS[cls]
     web_members = []
     for name, member in cls.members().items():
         meta = member.metadata
@@ -47,9 +42,7 @@ def get_fields(cls):
         elif isinstance(member, Event):
             continue
         web_members.append(member)
-    COMPONENT_FIELDS[cls] = web_members
-
-    return web_members
+    return tuple(web_members)
 
 
 class WebComponent(ProxyTag):
@@ -62,7 +55,7 @@ class WebComponent(ProxyTag):
 
     #: A cached reference to the root element.
     #: WARNING: If the root is changed this becomes invalid
-    root = Property(lambda self: self.parent().root, cached=True)
+    root = ForwardTyped(lambda: RootWebComponent)
 
     # -------------------------------------------------------------------------
     # Initialization API
@@ -75,7 +68,10 @@ class WebComponent(ProxyTag):
         toolkit widget and assign it to the 'widget' attribute.
 
         """
-        self.widget = SubElement(self.parent_widget(), self.declaration.tag)
+        d = self.declaration
+        parent = d.parent.proxy
+        self.root = parent.root
+        self.widget = SubElement(parent.widget, d.tag)
 
     def init_widget(self):
         """ Initialize the state of the toolkit widget.
@@ -90,29 +86,40 @@ class WebComponent(ProxyTag):
 
         #: Save ref id
         self.root.cache[d.id] = atomref(self)
-        set_attr = widget.set
-        set_attr('id', d.id)
-
+        attrib = widget.attrib
+        attrib['id'] = d.id
         if d.text:
             widget.text = d.text
         if d.tail:
             widget.tail = d.tail
+        if d.alt:
+            attrib["alt"] = d.alt
         if d.style:
             self.set_style(d.style)
         if d.cls:
             self.set_cls(d.cls)
         if d.attrs:
-            widget.attrib.update(d.attrs)
+            attrib.update(d.attrs)
+        if d.clickable:
+            attrib["clickable"] = "clickable"
+        if d.onclick:
+            attrib["onclick"] = d.onclick
         if d.draggable:
-            set_attr("draggable", "true")
+            attrib["draggable"] = "draggable"
+        if d.ondragstart:
+            attrib["ondragstart"] = d.ondragstart
+        if d.ondragover:
+            attrib["ondragover"] = d.ondragover
+        if d.ondrop:
+            attrib["ondrop"] = d.ondrop
 
         for m in get_fields(d.__class__):
             name = m.name
             value = getattr(d, name)
             if value is True:
-                set_attr(name, name)
+                attrib[name] = name
             elif value:
-                set_attr(name, str(value))
+                attrib[name] = f"{value}"
 
     # -------------------------------------------------------------------------
     # ProxyToolkitObject API
@@ -141,7 +148,7 @@ class WebComponent(ProxyTag):
             # Remove from cache
             self.root.cache.pop(self.declaration.id, None)
 
-        super(WebComponent, self).destroy()
+        super().destroy()
 
     def child_added(self, child):
         """ Handle the child added event from the declaration.
@@ -151,13 +158,9 @@ class WebComponent(ProxyTag):
         method.
 
         """
-        super(WebComponent, self).child_added(child)
-        if isinstance(child, WebComponent):
-            # Use insert to put in the correct spot
-            for i, c in enumerate(self.children()):
-                if c is child:
-                    self.widget.insert(i, child.widget)
-                    break
+        # Use insert to put in the correct spot
+        i = self.declaration.children.index(child.declaration)
+        self.widget.insert(i, child.widget)
 
     def child_moved(self, child):
         """ Handle the child moved event from the declaration.
@@ -173,20 +176,16 @@ class WebComponent(ProxyTag):
             Whether a move was performed or not
 
         """
-        # There is no super child_moved method
-        if isinstance(child, WebComponent):
-            # Determine the new index
-            for i, c in enumerate(self.children()):
-                if c is child:
-                    w = self.widget
-                    j = w.index(child.widget)
-                    if j != i:
-                        # Delete and re-insert at correct position
-                        del w[j]
-                        w.insert(i, child.widget)
-                        return True
-                    break
-        return False
+        # Determine the new index
+        i = self.declaration.children.index(child.declaration)
+        widget = self.widget
+        j = widget.index(child.widget)
+        if j == i:
+            return False  # Already in the correct spot
+        # Delete and re-insert at correct position
+        del widget[j]
+        widget.insert(i, child.widget)
+        return True
 
     def child_removed(self, child):
         """ Handle the child removed event from the declaration.
@@ -195,9 +194,7 @@ class WebComponent(ProxyTag):
         which need more control should reimplement this method.
 
         """
-        super(WebComponent, self).child_removed(child)
-        if isinstance(child, WebComponent):
-            self.widget.remove(child.widget)
+        self.widget.remove(child.widget)
 
     # -------------------------------------------------------------------------
     # Public API
@@ -268,29 +265,28 @@ class WebComponent(ProxyTag):
     def set_cls(self, cls):
         if isinstance(cls, (tuple, list)):
             cls = " ".join(cls)
-        else:
-            cls = str(cls)
-        self.widget.set('class', cls)
+        self.widget.attrib['class'] = cls
 
     def set_style(self, style):
         if isinstance(style, dict):
-            style = ";".join("%s:%s" % s for s in style.items())
-        else:
-            style = str(style)
-        self.widget.set('style', style)
+            style = ";".join(f"{k}:{v}" for k, v in style.items())
+        self.widget.attrib['style'] = style
 
     def set_attribute(self, name, value):
         """ Default handler for those not explicitly defined """
         if value is True:
-            self.widget.set(name, name)
+            self.widget.attrib[name] = name
         elif value is False:
             del self.widget.attrib[name]
         else:
-            self.widget.set(name, str(value))
+            self.widget.attrib[name] = f"{value}"
 
     def set_draggable(self, draggable):
         """ The draggable attr must be explicitly set to true or false """
-        self.widget.set('draggable', 'true' if draggable else 'false')
+        if draggable:
+            self.widget.attrib['draggable'] = 'draggable'
+        else:
+            del self.widget.attrib['draggable']
 
 
 class RootWebComponent(WebComponent):
@@ -300,8 +296,6 @@ class RootWebComponent(WebComponent):
     #: can retrieve their declaration component
     cache = Dict()
 
-    #: Return a reference to self since this is the root
-    root = Property(lambda self: self, cached=True)
-
     def create_widget(self):
+        self.root = self  # This is the root
         self.widget = Element(self.declaration.tag)

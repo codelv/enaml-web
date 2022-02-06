@@ -37,16 +37,16 @@ class Tag(ToolkitObject):
     proxy = Typed(ProxyTag)
 
     #: Object ID
-    id = d_(Str())
+    id = d_(Str()).tag(attr=False)
 
     #: Tag name
     tag = d_(Str()).tag(attr=False)
 
     #: CSS classes
-    cls = d_(Instance((list, object))).tag(attr=False)
+    cls = d_(Instance((list, tuple, str))).tag(attr=False)
 
     #: CSS styles
-    style = d_(Instance((dict, object))).tag(attr=False)
+    style = d_(Instance((dict, str))).tag(attr=False)
 
     #: Node text
     text = d_(Str()).tag(attr=False)
@@ -55,16 +55,16 @@ class Tag(ToolkitObject):
     tail = d_(Str()).tag(attr=False)
 
     #: Alt attribute
-    alt = d_(Str())
+    alt = d_(Str()).tag(attr=False)
 
     #: Custom attributes not explicitly defined
     attrs = d_(Dict()).tag(attr=False)
 
     #: JS onclick definition
-    onclick = d_(Str())
+    onclick = d_(Str()).tag(attr=False)
 
     #: Used to tell js to send click events back to the server
-    clickable = d_(Coerced(bool))
+    clickable = d_(Coerced(bool)).tag(attr=False)
 
     #: Event triggered on click
     clicked = d_(Event())
@@ -74,13 +74,13 @@ class Tag(ToolkitObject):
     draggable = d_(Coerced(bool)).tag(attr=False)
 
     #: JS ondragstart definition
-    ondragstart = d_(Str())
+    ondragstart = d_(Str()).tag(attr=False)
 
     #: JS ondragover definition
-    ondragover = d_(Str())
+    ondragover = d_(Str()).tag(attr=False)
 
     #: JS ondrop definition
-    ondrop = d_(Str())
+    ondrop = d_(Str()).tag(attr=False)
 
     #: Event triggered when a drop occurs
     dropped = d_(Event(ToolkitObject))

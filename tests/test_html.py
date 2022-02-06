@@ -49,7 +49,7 @@ def test_hello_world(app):
         '//span[(@style="background:#fff;color:blue" or '
                 '@style="color:blue;background:#fff")]'),
     ('Li', 'clickable = True', '//li[@clickable="clickable"]'),
-    ('Li', 'draggable = True', '//li[@draggable="true"]'),
+    ('Li', 'draggable = True', '//li[@draggable="draggable"]'),
     ('Img', 'id = "logo"', '//img[@id="logo"]'),
 
     # Use attrs for special or non-python html attributes
