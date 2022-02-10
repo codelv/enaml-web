@@ -1,8 +1,8 @@
 # Enaml Web #
 
-[![Build Status](https://travis-ci.org/codelv/enaml-web.svg?branch=master)](https://travis-ci.org/codelv/enaml-web)
+[![status](https://github.com/codelv/enaml-web/actions/workflows/ci.yml/badge.svg)](https://github.com/codelv/enaml-web/actions)
 [![codecov](https://codecov.io/gh/codelv/enaml-web/branch/master/graph/badge.svg)](https://codecov.io/gh/codelv/enaml-web)
-[![Downloads](https://pepy.tech/badge/enaml-web/month)](https://pepy.tech/project/enaml-web/month)
+[![Downloads](https://pepy.tech/badge/enaml-web/month)](https://pepy.tech/project/enaml-web/)
 
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
 let's you build websites in python declaratively.
@@ -28,7 +28,7 @@ Have a site? Feel free to share it!
 
 ### Why?
 
-It makes it easy to build websites without a lot of javascript. 
+It makes it easy to build websites without a lot of javascript.
 
 ### Short intro
 
@@ -119,7 +119,7 @@ It simply generates a tree of [lxml](http://lxml.de/) elements.
 
 #### Advantages
 
-1. Inherently secure 
+1. Inherently secure
 
 Since it's using lxml elements instead of text, your template code is inherently secure from
 injection as lxml automatically escapes all attributes. A closing tag cannot be accidentally missed.
@@ -156,7 +156,7 @@ so it's not slow. See [materialize-ui](https://github.com/frmdstryr/materialize)
 1. Memory usage
 
 Even though lxml is written in c and enaml uses atom objects, the memory usage may still
-be more than plain string templates. 
+be more than plain string templates.
 
 2. HTML only
 
@@ -226,9 +226,6 @@ enamldef AddMessageView(Base): page:
             model << message
 
 ```
-
-![Rendered Form](https://ibin.co/3Je5OwatJAGz.png)
-
 
 ### Database ORM with Atom
 
