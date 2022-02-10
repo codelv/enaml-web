@@ -36,7 +36,6 @@ jobs:
         run: pip install -U codecov pytest pytest-cov pytest-benchmark pygments markdown nbconvert faker jinja2 requests mypy isort black
       - name: Run checks
         run: |
-            mypy --install-types
-            mypy web --ignore-missing-imports
+            mypy web --ignore-missing-imports --install-types
             black web --check --diff
             isort web --check --diff
