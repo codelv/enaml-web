@@ -16,6 +16,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     requires=['enaml'],
+    python_requires='>=3.9',
     install_requires=['enaml >= 0.9.8', 'lxml>=3.4.0'],
     optional_requires=[
         'Pygments', 'Markdown', 'nbconvert',  # extra components

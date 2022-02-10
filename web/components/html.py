@@ -10,7 +10,6 @@ Created on Apr 2, 2017
 @author: jrm
 """
 
-from __future__ import annotations
 
 from typing import Any, Generator
 from atom.api import (
@@ -50,14 +49,12 @@ class ProxyTag(ProxyToolkitObject):
         raise NotImplementedError
 
 
-def gen_id(tag: ToolkitObject, id=id, mod=divmod):
+def gen_id(tag, id=id, mod=divmod):
     """Generate a short id for the tag"""
     number = id(tag)
     output = ""
     alpha = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
     while number:
-        number, digit = mod(number, 59)
-        output += alpha[digit]
         number, digit = mod(number, 59)
         output += alpha[digit]
     return output

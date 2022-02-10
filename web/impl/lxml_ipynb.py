@@ -23,7 +23,7 @@ class NotebookComponent(RawComponent, ProxyNotebook):
     exporter = Instance(HTMLExporter, ())
 
     #: Resources from the node
-    resource = Value()
+    resources = Value()
 
     def set_source(self, source: str):
         # Parse md and put in a root node
