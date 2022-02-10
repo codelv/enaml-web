@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: pip install -U pytest pytest-cov pytest-benchmark pygments markdown nbconvert faker jinja2 requests
+        run: pip install -U codecov pytest pytest-cov pytest-benchmark pygments markdown nbconvert faker jinja2 requests
       - name: Install atom-db
         run: pip install -e ./
       - name: Run tests
@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: pip install -U pytest pytest-cov pytest-benchmark pygments markdown nbconvert faker jinja2 requests
+        run: pip install -U codecov pytest pytest-cov pytest-benchmark pygments markdown nbconvert faker jinja2 requests
       - name: Run checks
         run: |
             mypy web --ignore-missing-imports
