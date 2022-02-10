@@ -15,26 +15,26 @@ from web.core.http import Handler
 cleanup_on_sigterm()
 
 BASE = os.path.dirname(__file__)
-HELLO_WORLD = 'Hello World!'
-with open(os.path.join(BASE, 'templates', 'landing.html'), 'r') as f:
+HELLO_WORLD = "Hello World!"
+with open(os.path.join(BASE, "templates", "landing.html"), "r") as f:
     LANDING_PAGE = f.read()
 
 
-STATIC_PATH = os.path.join(BASE, '..', 'docs')
-with open(os.path.join(STATIC_PATH, 'data-binding.gif'), 'rb') as f:
+STATIC_PATH = os.path.join(BASE, "..", "docs")
+with open(os.path.join(STATIC_PATH, "data-binding.gif"), "rb") as f:
     STATIC_FILE = f.read()
 
 # Expected responses
 RESPONSES = {
-    '/': HELLO_WORLD,
-    '/landing': LANDING_PAGE,
-    '/static/data-binding.gif':  STATIC_FILE
+    "/": HELLO_WORLD,
+    "/landing": LANDING_PAGE,
+    "/static/data-binding.gif": STATIC_FILE,
 }
 
 
 def aiohttp_app(port):
-    """ Without logging...
-    
+    """Without logging...
+
     Running 30s test @ http://127.0.0.1:8888/
       12 threads and 400 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -45,7 +45,7 @@ def aiohttp_app(port):
     Transfer/sec:    701.81KB
     """
     from web.apps.aiohttp_app import AiohttpApplication
-    
+
     class Home(Handler):
         async def get(self, request, response):
             response.body = HELLO_WORLD
@@ -57,16 +57,16 @@ def aiohttp_app(port):
             return response
 
     app = AiohttpApplication()
-    app.add_route('/', Home())
-    app.add_route('/landing', Landing())
-    app.add_static_route('/static/', STATIC_PATH)
+    app.add_route("/", Home())
+    app.add_route("/landing", Landing())
+    app.add_static_route("/static/", STATIC_PATH)
     app.timed_call(31000, app.stop)
     app.start(port=port)
 
 
 def sanic_app(port):
-    """ With logging
-    
+    """With logging
+
     Running 30s test @ http://127.0.0.1:8888/
       12 threads and 400 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -78,30 +78,29 @@ def sanic_app(port):
     """
     from web.apps.sanic_app import SanicApplication
     from sanic import Sanic, response
-    
+
     app = SanicApplication()
 
     class Home(Handler):
         async def get(self, request, response):
             response.body = HELLO_WORLD.encode()
             return response
-    
+
     class Landing(Handler):
         async def get(self, request, response):
             response.body = LANDING_PAGE.encode()
             return response
-    
-    app.add_route('/', Home())
-    app.add_route('/landing', Landing())
-    app.add_static_route('/static', STATIC_PATH)
+
+    app.add_route("/", Home())
+    app.add_route("/landing", Landing())
+    app.add_static_route("/static", STATIC_PATH)
     app.timed_call(31000, app.stop)
     app.start(port=port)
-    
 
 
 def falcon_app(port):
-    """ With logging
-    
+    """With logging
+
     Running 30s test @ http://127.0.0.1:8888/
       12 threads and 400 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -118,21 +117,21 @@ def falcon_app(port):
     class Home(Handler):
         def get(self, req, resp):
             resp.body = HELLO_WORLD
-    
+
     class Landing(Handler):
         def get(self, req, resp):
             resp.body = LANDING_PAGE
-    
-    app.add_route('/', Home())
-    app.add_route('/landing', Landing())
-    app.add_static_route('/static', STATIC_PATH)
-    #app.timed_call(31000, app.stop) # Does not work
+
+    app.add_route("/", Home())
+    app.add_route("/landing", Landing())
+    app.add_static_route("/static", STATIC_PATH)
+    # app.timed_call(31000, app.stop) # Does not work
     app.start(port=port)
 
 
 def flask_app(port):
-    """ With logging
-    
+    """With logging
+
     Running 30s test @ http://127.0.0.1:8888/
       12 threads and 400 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -149,20 +148,20 @@ def flask_app(port):
 
     def home():
         return HELLO_WORLD
-    
+
     def landing():
         return LANDING_PAGE
-    
-    app.add_route('/', home)
-    app.add_route('/landing', landing)
-    app.add_static_route('/static', STATIC_PATH)
+
+    app.add_route("/", home)
+    app.add_route("/landing", landing)
+    app.add_static_route("/static", STATIC_PATH)
     app.timed_call(31000, app.stop)
     app.start(port=port)
 
 
 def tornado_app(port):
-    """ Even without logging it's slower!
-    
+    """Even without logging it's slower!
+
     Running 30s test @ http://127.0.0.1:8888/
       12 threads and 400 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -171,9 +170,9 @@ def tornado_app(port):
       64871 requests in 30.10s, 12.87MB read
     Requests/sec:   2155.42
     Transfer/sec:    437.82KB
-    
+
     with logging
-    
+
     Running 30s test @ http://127.0.0.1:8888/
       12 threads and 400 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -188,30 +187,31 @@ def tornado_app(port):
     import tornado.web
     from web.apps.tornado_app import TornadoApplication
     from tornado.log import enable_pretty_logging
+
     enable_pretty_logging()
-    
+
     app = TornadoApplication()
 
     class Home(Handler):
         def get(self, req, resp):
             resp.write(HELLO_WORLD)
             resp.finish()
-    
+
     class Landing(Handler):
         def get(self, req, resp):
             resp.write(LANDING_PAGE)
             resp.finish()
-    
-    app.add_route('/', Home())
-    app.add_route('/landing', Landing())
-    app.add_static_route('/static', STATIC_PATH)
+
+    app.add_route("/", Home())
+    app.add_route("/landing", Landing())
+    app.add_static_route("/static", STATIC_PATH)
     app.timed_call(31000, app.stop)
     app.start(port=port)
 
 
 def twisted_app(port):
-    """ With logging
-    
+    """With logging
+
     Running 30s test @ http://127.0.0.1:8888/
       12 threads and 400 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -230,7 +230,7 @@ def twisted_app(port):
     class Main(Resource):
         def getChild(self, name, request):
             name = name.decode()
-            if name == '':
+            if name == "":
                 return self
             return self.children[name]
 
@@ -239,12 +239,13 @@ def twisted_app(port):
 
     class Landing(Resource):
         isLeaf = True
+
         def render_GET(self, request):
             return LANDING_PAGE.encode()
 
     root = Main()
-    root.putChild('landing', Landing())
-    root.putChild('static', File(STATIC_PATH))
+    root.putChild("landing", Landing())
+    root.putChild("static", File(STATIC_PATH))
 
     site = server.Site(root)
     app = TwistedApplication(port=port, site=site)
@@ -253,13 +254,12 @@ def twisted_app(port):
 
 
 def vibora_app(port):
-    """ With logging
-    
-    """
+    """With logging"""
     from web.apps.vibora_app import ViboraApplication
     from vibora import Request, Response
+
     app = ViboraApplication()
-    
+
     class AsyncHandler(Handler):
         async def __call__(self, request: Request) -> Response:
             return super().__call__(request)
@@ -267,15 +267,15 @@ def vibora_app(port):
     class Home(AsyncHandler):
         async def get(self, request, response):
             return Response(HELLO_WORLD.encode())
-    
+
     class Landing(AsyncHandler):
         async def get(self, request, response):
             return Response(LANDING_PAGE.encode())
-    
-    app.add_static_route('/static', STATIC_PATH)
-    app.add_route('/', Home())
-    app.add_route('/landing', Landing())
-    
+
+    app.add_static_route("/static", STATIC_PATH)
+    app.add_route("/", Home())
+    app.add_route("/landing", Landing())
+
     app.timed_call(31000, app.stop)
     app.start(port=port)
 
@@ -286,23 +286,26 @@ def clip(s, n=100):
     return s[:n]
 
 
-@pytest.mark.parametrize('server, route', [
-    (server, route)
+@pytest.mark.parametrize(
+    "server, route",
+    [
+        (server, route)
         for server in (
-                #aiohttp_app,
-                #sanic_app, # Sanic is a memory hog and keeps killing my laptop
-                #falcon_app,
-                #tornado_app,
-                #twisted_app,
-                vibora_app,
+            # aiohttp_app,
+            # sanic_app, # Sanic is a memory hog and keeps killing my laptop
+            # falcon_app,
+            # tornado_app,
+            # twisted_app,
+            vibora_app,
         )
-            for route in RESPONSES.keys()
-])
+        for route in RESPONSES.keys()
+    ],
+)
 def test_benchmarks(capsys, server, route):
     port = 8888
-    url = 'http://127.0.0.1:{}{}'.format(port, route)
-    benchmark = 'wrk -t12 -c400 -d30s {}'.format(url)
-    
+    url = "http://127.0.0.1:{}{}".format(port, route)
+    benchmark = "wrk -t12 -c400 -d30s {}".format(url)
+
     p = Process(target=server, args=(port,))
     p.start()
     try:
@@ -314,7 +317,7 @@ def test_benchmarks(capsys, server, route):
             with capsys.disabled():
                 print(clip(r.content, 100))
             assert r.ok
-        if 'static' in route:
+        if "static" in route:
             assert r.content == RESPONSES[route]
         else:
             assert r.content.decode() == RESPONSES[route]
@@ -332,8 +335,7 @@ def test_benchmarks(capsys, server, route):
             p.terminate()
         p.join(1)
     time.sleep(2)
-    
 
-if __name__ == '__main__':
-  vibora_app(8888)
-  
+
+if __name__ == "__main__":
+    vibora_app(8888)

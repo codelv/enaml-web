@@ -9,9 +9,11 @@ try:
 except ImportError:
     if sys.version_info.major == 3:
         import builtins
+
         exec_ = getattr(builtins, "exec")
 
     else:
+
         def exec_(code, globs=None, locs=None):
             """Execute code in a namespace."""
             if globs is None:
@@ -28,8 +30,8 @@ except ImportError:
 faker = Faker()
 
 
-def compile_source(source, item, filename='<test>', namespace=None):
-    """ Compile Enaml source code and return the target item.
+def compile_source(source, item, filename="<test>", namespace=None):
+    """Compile Enaml source code and return the target item.
     Parameters
     ----------
     source : str

@@ -9,17 +9,20 @@ Created on Apr 12, 2017
 
 @author: jrm
 """
-from atom.api import Typed,  Constant, Event, ForwardTyped, Dict, atomref
+from __future__ import annotations
+
+from functools import lru_cache
+from typing import Any, Type, Union, Optional, Generator
+from atom.api import Atom, Member, Typed, Event, ForwardTyped, Dict, atomref
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
-from web.components.html import ProxyTag
+from web.components.html import ProxyTag, Tag
 from web.core.app import WebApplication
-from functools import lru_cache
 
 
 @lru_cache(1024)
-def get_fields(cls):
-    """ Determine the list of attributes to convert to html and cache them.
+def get_fields(cls: Type[Atom]) -> tuple[Member, ...]:
+    """Determine the list of attributes to convert to html and cache them.
 
     Any member tagged with "attr=False" will be ignored any enaml attrs will
     also be ignored.
@@ -32,11 +35,11 @@ def get_fields(cls):
             continue
 
         # Exclude any attr tags
-        if not (meta.get('d_member') and meta.get('d_final')):
+        if not (meta.get("d_member") and meta.get("d_final")):
             continue
 
         # Skip any items tagged with attr=false
-        elif not meta.get('attr', True):
+        elif not meta.get("attr", True):
             continue
 
         elif isinstance(member, Event):
@@ -46,9 +49,7 @@ def get_fields(cls):
 
 
 class WebComponent(ProxyTag):
-    """ An lxml implementation of an Enaml ProxyToolkitObject.
-
-    """
+    """An lxml implementation of an Enaml ProxyToolkitObject."""
 
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
@@ -61,7 +62,7 @@ class WebComponent(ProxyTag):
     # Initialization API
     # -------------------------------------------------------------------------
     def create_widget(self):
-        """ Create the toolkit widget for the proxy object.
+        """Create the toolkit widget for the proxy object.
 
         This method is called during the top-down pass, just before the
         'init_widget()' method is called. This method should create the
@@ -74,7 +75,7 @@ class WebComponent(ProxyTag):
         self.widget = SubElement(parent.widget, d.tag)
 
     def init_widget(self):
-        """ Initialize the state of the toolkit widget.
+        """Initialize the state of the toolkit widget.
 
         This method is called during the top-down pass, just after the
         'create_widget()' method is called. This method should init the
@@ -87,7 +88,7 @@ class WebComponent(ProxyTag):
         #: Save ref id
         self.root.cache[d.id] = atomref(self)
         attrib = widget.attrib
-        attrib['id'] = d.id
+        attrib["id"] = d.id
         if d.text:
             widget.text = d.text
         if d.tail:
@@ -125,14 +126,12 @@ class WebComponent(ProxyTag):
     # ProxyToolkitObject API
     # -------------------------------------------------------------------------
     def activate_top_down(self):
-        """ Activate the proxy for the top-down pass.
-
-        """
+        """Activate the proxy for the top-down pass."""
         self.create_widget()
         self.init_widget()
 
     def destroy(self):
-        """ A reimplemented destructor.
+        """A reimplemented destructor.
 
         This destructor will clear the reference to the toolkit widget
         and set its parent to None.
@@ -150,8 +149,8 @@ class WebComponent(ProxyTag):
 
         super().destroy()
 
-    def child_added(self, child):
-        """ Handle the child added event from the declaration.
+    def child_added(self, child: WebComponent):
+        """Handle the child added event from the declaration.
 
         This handler will insert the child toolkit widget in the correct.
         position. Subclasses which need more control should reimplement this
@@ -159,11 +158,16 @@ class WebComponent(ProxyTag):
 
         """
         # Use insert to put in the correct spot
-        i = self.declaration.children.index(child.declaration)
-        self.widget.insert(i, child.widget)
+        d = self.declaration
+        assert d is not None
+        i = d.children.index(child.declaration)
+        widget = self.widget
+        if widget is None:
+            return False
+        widget.insert(i, child.widget)
 
-    def child_moved(self, child):
-        """ Handle the child moved event from the declaration.
+    def child_moved(self, child: WebComponent):
+        """Handle the child moved event from the declaration.
 
         This handler will pop the child and insert it in the correct position
         if it isn't already there.
@@ -177,49 +181,59 @@ class WebComponent(ProxyTag):
 
         """
         # Determine the new index
-        i = self.declaration.children.index(child.declaration)
-        widget = self.widget
-        j = widget.index(child.widget)
+        d = self.declaration
+        assert d is not None
+        i = d.children.index(child.declaration)
+        w = self.widget
+        if w is None:
+            return False
+        j = w.index(child.widget)
         if j == i:
             return False  # Already in the correct spot
         # Delete and re-insert at correct position
-        del widget[j]
-        widget.insert(i, child.widget)
+        del w[j]
+        w.insert(i, child.widget)
         return True
 
-    def child_removed(self, child):
-        """ Handle the child removed event from the declaration.
+    def child_removed(self, child: WebComponent):
+        """Handle the child removed event from the declaration.
 
         This handler will unparent the child toolkit widget. Subclasses
         which need more control should reimplement this method.
 
         """
-        self.widget.remove(child.widget)
+        w = self.widget
+        if w is not None:
+            w.remove(child.widget)
 
     # -------------------------------------------------------------------------
     # Public API
     # -------------------------------------------------------------------------
-    def render(self, method='html', encoding='unicode', **kwargs):
-        """ Render the widget tree into a string """
+    def render(self, method: str = "html", encoding: str = "unicode", **kwargs) -> str:
+        """Render the widget tree into a string"""
         return tostring(self.widget, method=method, encoding=encoding, **kwargs)
 
-    def xpath(self, query, **kwargs):
-        """ Get the node(s) matching the query"""
-        nodes = self.widget.xpath(query, **kwargs)
+    def xpath(self, query: str, **kwargs) -> Generator[WebComponent, None, None]:
+        """Get the node(s) matching the query"""
+        w = self.widget
+        if w is None:
+            return None
+        nodes = w.xpath(query, **kwargs)
         if not nodes:
-            return []
-        matches = []
-        lookup = self.root.cache.get
+            return None
+
+        root = self.root
+        assert root is not None
+        lookup = root.cache.get
         for node in nodes:
-            aref = lookup(node.attrib.get('id'))
+            aref = lookup(node.attrib.get("id"))
             obj = aref() if aref else None
             if obj is None:
                 continue
-            matches.append(obj)
-        return matches
+            yield obj
 
-    def parent_widget(self):
-        """ Get the parent toolkit widget for this object.
+    def parent_widget(self) -> Optional[_Element]:
+        """Get the parent toolkit widget for this object.
 
         Returns
         -------
@@ -231,9 +245,10 @@ class WebComponent(ProxyTag):
         parent = self.parent()
         if parent is not None:
             return parent.widget
+        return None
 
-    def child_widgets(self):
-        """ Get the child toolkit widgets for this object.
+    def child_widgets(self) -> Generator[_Element, None, None]:
+        """Get the child toolkit widgets for this object.
 
         Returns
         -------
@@ -249,48 +264,64 @@ class WebComponent(ProxyTag):
     # -------------------------------------------------------------------------
     # Change handlers
     # -------------------------------------------------------------------------
-    def set_text(self, text):
-        self.widget.text = text
+    def set_text(self, text: str):
+        w = self.widget
+        assert w is not None
+        w.text = text
 
-    def set_tail(self, text):
-        self.widget.tail = text
+    def set_tail(self, text: str):
+        w = self.widget
+        assert w is not None
+        w.tail = text
 
-    def set_tag(self, tag):
-        self.widget.tag = tag
+    def set_tag(self, tag: str):
+        w = self.widget
+        assert w is not None
+        w.tag = tag
 
-    def set_attrs(self, attrs):
-        """ Set any attributes not explicitly defined """
-        self.widget.attrib.update(attrs)
+    def set_attrs(self, attrs: dict[str, Any]):
+        """Set any attributes not explicitly defined"""
+        w = self.widget
+        assert w is not None
+        w.attrib.update(attrs)
 
-    def set_cls(self, cls):
+    def set_cls(self, cls: Union[tuple[str], list[str], str]):
         if isinstance(cls, (tuple, list)):
             cls = " ".join(cls)
-        self.widget.attrib['class'] = cls
+        w = self.widget
+        assert w is not None
+        w.attrib["class"] = cls
 
-    def set_style(self, style):
+    def set_style(self, style: Union[dict, str]):
         if isinstance(style, dict):
             style = ";".join(f"{k}:{v}" for k, v in style.items())
-        self.widget.attrib['style'] = style
+        w = self.widget
+        assert w is not None
+        w.attrib["style"] = style
 
-    def set_attribute(self, name, value):
-        """ Default handler for those not explicitly defined """
+    def set_attribute(self, name: str, value: Any):
+        """Default handler for those not explicitly defined"""
+        w = self.widget
+        assert w is not None
         if value is True:
-            self.widget.attrib[name] = name
+            w.attrib[name] = name
         elif value is False:
-            del self.widget.attrib[name]
+            del w.attrib[name]
         else:
-            self.widget.attrib[name] = f"{value}"
+            w.attrib[name] = f"{value}"
 
-    def set_draggable(self, draggable):
-        """ The draggable attr must be explicitly set to true or false """
+    def set_draggable(self, draggable: bool):
+        """The draggable attr must be explicitly set to true or false"""
+        w = self.widget
+        assert w is not None
         if draggable:
-            self.widget.attrib['draggable'] = 'draggable'
+            w.attrib["draggable"] = "draggable"
         else:
-            del self.widget.attrib['draggable']
+            del w.attrib["draggable"]
 
 
 class RootWebComponent(WebComponent):
-    """ A root component """
+    """A root component"""
 
     #: Components are cached for lookup by id so xpath queries from lxml
     #: can retrieve their declaration component

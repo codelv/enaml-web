@@ -9,11 +9,11 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from atom.api import (
-    Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
-)
+from __future__ import annotations
 
+from atom.api import Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
 from enaml.core.declarative import d_
+from .html import ChangeDict
 from .raw import Raw, ProxyRawNode
 
 
@@ -21,36 +21,44 @@ class ProxyMarkdown(ProxyRawNode):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Markdown)
 
-    def set_safe_mode(self, mode):
+    def set_safe_mode(self, mode: bool):
         raise NotImplementedError
 
-    def set_output_format(self, output_format):
+    def set_output_format(self, output_format: str):
         raise NotImplementedError
 
-    def set_tab_length(self, length):
+    def set_tab_length(self, length: int):
         raise NotImplementedError
 
-    def set_extensions(self, extensions):
+    def set_extensions(self, extensions: list[str]):
         raise NotImplementedError
 
-    def set_extensions_config(self, config):
+    def set_extensions_config(self, config: dict[str, dict]):
         raise NotImplementedError
 
 
 class Markdown(Raw):
-    """ A block for rendering Markdown source. """
+    """A block for rendering Markdown source."""
 
     #: Extensions to use when rendering
-    extensions = d_(List(default=[
-        "markdown.extensions.codehilite",
-        "markdown.extensions.fenced_code",
-        "markdown.extensions.tables",
-    ])).tag(attr=False)
+    extensions = d_(
+        List(
+            default=[
+                "markdown.extensions.codehilite",
+                "markdown.extensions.fenced_code",
+                "markdown.extensions.tables",
+            ]
+        )
+    ).tag(attr=False)
 
     #: Configuration for them
-    extension_configs = d_(Dict(default={
-        'markdown.extensions.codehilite': {'css_class': 'highlight'},
-    })).tag(attr=False)
+    extension_configs = d_(
+        Dict(
+            default={
+                "markdown.extensions.codehilite": {"css_class": "highlight"},
+            }
+        )
+    ).tag(attr=False)
 
     #: Disallow raw HTMl
     safe_mode = d_(Bool()).tag(attr=False)
@@ -64,14 +72,15 @@ class Markdown(Raw):
     #: Reference to the proxy
     proxy = Typed(ProxyMarkdown)
 
-    @observe('extensions', 'extension_configs', 'safe_mode', 'output_format',
-             'tab_length')
-    def _update_proxy(self, change):
-        """ The superclass implementation is sufficient. """
-        super(Markdown, self)._update_proxy(change)
+    @observe(
+        "extensions", "extension_configs", "safe_mode", "output_format", "tab_length"
+    )
+    def _update_proxy(self, change: ChangeDict):
+        """The superclass implementation is sufficient."""
+        super()._update_proxy(change)
 
-    def _notify_modified(self, change):
-        """ Update the notification """
-        if change.get('type') == 'update' and change.get('name') == 'source':
-            change['value'] = self.render()
-        super(Raw, self)._notify_modified(change)
+    def _notify_modified(self, change: ChangeDict):
+        """Update the notification"""
+        if change["type"] == "update" and change["name"] == "source":
+            change["value"] = self.render()
+        super()._notify_modified(change)

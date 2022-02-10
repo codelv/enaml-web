@@ -14,3 +14,5 @@ build/
 .directory
 .pytest_cache/
 htmlcov/
+*.kate-swp
+

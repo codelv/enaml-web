@@ -2,15 +2,15 @@ docs:
 	cd docs
 	make html
 isort:
-	isort atomdb
+	isort web
 typecheck:
-	mypy atomdb --ignore-missing-imports
+	mypy web --ignore-missing-imports
 
 reformat:
-	black atomdb
+	black web
 	black tests
 
 test:
-	pytest -v tests --cov atomdb --cov-report xml --asyncio-mode auto
+	pytest -v tests --cov web --cov-report xml --asyncio-mode auto
 
 precommit: isort reformat typecheck

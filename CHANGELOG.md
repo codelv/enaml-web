@@ -1,11 +1,22 @@
 # 0.11.0
 
-- Slightly speed up init_widget
+- Move to python 3 only syntax and add typing annotations
+- Reformat with black
+- Add `dragstart` and `dragover` events to `Tag`
+- Slightly speed up init_widget and use lru cache for determining attributes
+- Use lru cache for proxy resolve class
 - Remove unused init functions
+- Remove logger and database from WebApplication, if you want those add them
+in a subclass.
+- Change id generator to use a shorter (but slightly slower) version
+
+
 
 # 0.10.2
 
 Make markdown source modified event return the rendered value
+
+> This is the last version that works on python 2.7
 
 # 0.10.1
 

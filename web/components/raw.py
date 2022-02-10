@@ -9,25 +9,28 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
+from __future__ import annotations
+
 from atom.api import Str, Typed, ForwardTyped, set_default, observe
 from enaml.core.declarative import d_
-from .html import Tag, ProxyTag
+from .html import Tag, ProxyTag, ChangeDict
 
 
 class ProxyRawNode(ProxyTag):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Raw)
 
-    def set_source(self, source):
+    def set_source(self, source: str):
         raise NotImplementedError
 
 
 class Raw(Tag):
-    """ A block that renders it's text as HTML.
+    """A block that renders it's text as HTML.
 
     Note: This will ERASE any child elements the the source content!
 
     """
+
     #: Reference to the proxy
     proxy = Typed(ProxyRawNode)
 
@@ -37,7 +40,7 @@ class Raw(Tag):
     #: Raw source to parse and display
     source = d_(Str()).tag(attr=False)
 
-    @observe('source')
-    def _update_proxy(self, change):
-        """ The superclass implementation is sufficient. """
-        super(Raw, self)._update_proxy(change)
+    @observe("source")
+    def _update_proxy(self, change: ChangeDict):
+        """The superclass implementation is sufficient."""
+        super()._update_proxy(change)

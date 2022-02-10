@@ -10,26 +10,57 @@ Created on Apr 2, 2017
 @author: jrm
 """
 
-from __future__ import print_function
-from atom.api import (
-    Atom, Event, Enum, ContainerList, Value, Int, Str, Dict, Instance,
-    ForwardTyped, Typed, Coerced, observe, set_default
-)
+from __future__ import annotations
 
-from enaml.core.declarative import d_
+from typing import Any, Generator
+from atom.api import (
+    Atom,
+    Event,
+    Enum,
+    ContainerList,
+    Value,
+    Int,
+    Str,
+    Dict,
+    Instance,
+    ForwardTyped,
+    Typed,
+    Coerced,
+    observe,
+    set_default,
+)
+from enaml.core.declarative import d_, Declarative
 from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
+
+ChangeDict = dict[str, Any]
 
 
 class ProxyTag(ProxyToolkitObject):
     declaration = ForwardTyped(lambda: Tag)
 
-    def xpath(self, *args, **kwargs):
-        """ Perform an xpath lookup on the node """
+    def xpath(self, query: str, **kwargs) -> Generator[ProxyToolkitObject, None, None]:
+        """Perform an xpath lookup on the node"""
         raise NotImplementedError
 
-    def render(self, *args, **kwargs):
-        """ Render the node and all children """
+    def render(self, method: str = "html", encoding: str = "unicode", **kwargs) -> str:
+        """Render the node and all children"""
         raise NotImplementedError
+
+    def set_attribute(self, name: str, value: Any):
+        raise NotImplementedError
+
+
+def gen_id(tag: ToolkitObject, id=id, mod=divmod):
+    """Generate a short id for the tag"""
+    number = id(tag)
+    output = ""
+    alpha = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+    while number:
+        number, digit = mod(number, 59)
+        output += alpha[digit]
+        number, digit = mod(number, 59)
+        output += alpha[digit]
+    return output
 
 
 class Tag(ToolkitObject):
@@ -66,9 +97,6 @@ class Tag(ToolkitObject):
     #: Used to tell js to send click events back to the server
     clickable = d_(Coerced(bool)).tag(attr=False)
 
-    #: Event triggered on click
-    clicked = d_(Event())
-
     #: Used to tell js to send drag events back to the server and sets the
     #: draggable attribute. Must be used with ondragstart.
     draggable = d_(Coerced(bool)).tag(attr=False)
@@ -82,40 +110,60 @@ class Tag(ToolkitObject):
     #: JS ondrop definition
     ondrop = d_(Str()).tag(attr=False)
 
+    #: Event triggered on click
+    clicked = d_(Event())
+
+    #: Event triggered when a drag starts
+    dragstart = d_(Event())
+
+    #: Event triggered when a node is dragged over
+    #: The rpoxy sh
+    dragover = d_(Event(ToolkitObject))
+
     #: Event triggered when a drop occurs
     dropped = d_(Event(ToolkitObject))
 
     def _default_id(self):
-        return '%0x' % id(self)
+        return gen_id(self)
 
-    @observe('id', 'tag', 'cls', 'style', 'text', 'tail', 'alt', 'attrs',
-             'onclick', 'clickable', 'ondragstart', 'ondragover', 'ondrop',
-             'draggable')
-    def _update_proxy(self, change):
-        """ Update the proxy widget when the Widget data changes.
+    @observe(
+        "id",
+        "tag",
+        "cls",
+        "style",
+        "text",
+        "tail",
+        "alt",
+        "attrs",
+        "onclick",
+        "clickable",
+        "ondragstart",
+        "ondragover",
+        "ondrop",
+        "draggable",
+    )
+    def _update_proxy(self, change: ChangeDict):
+        """Update the proxy widget when the Widget data changes.
 
         This also notifies the root that the dom has been modified.
 
         """
-        #: Try default handler
-        t = change['type']
-        if t == 'update' and self.proxy_is_active:
-            name = change['name']
-            value = change['value']
-            handler = getattr(self.proxy, 'set_' + name, None)
+        if self.proxy_is_active and change["type"] == "update":
+            name = change["name"]
+            value = change["value"]
+            proxy = self.proxy
+            assert proxy is not None
+            handler = getattr(proxy, f"set_{name}", None)
             if handler is not None:
                 handler(value)
             else:
-                self.proxy.set_attribute(name, value)
-            self._notify_modified({
-                'id': self.id,
-                'type': t,
-                'name': name,
-                'value': value
-            })
+                proxy.set_attribute(name, value)
+            self._notify_modified(
+                {"id": self.id, "type": change["type"], "name": name, "value": value}
+            )
 
-    def _notify_modified(self, change):
-        """  Triggers a modified event on the root node with the given change.
+    def _notify_modified(self, change: ChangeDict):
+        """Triggers a modified event on the root node with the given change.
 
         Parameters
         ----------
@@ -130,14 +178,14 @@ class Tag(ToolkitObject):
     # =========================================================================
     # Object API
     # =========================================================================
-    def child_added(self, child):
-        super(Tag, self).child_added(child)
-        if isinstance(child, Tag) and self.proxy_is_active:
+    def child_added(self, child: Declarative):
+        super().child_added(child)
+        if self.proxy_is_active and isinstance(child, Tag):
             change = {
-                'id': self.id,
-                'type': 'added',
-                'name': 'children',
-                'value': child.render()
+                "id": self.id,
+                "type": "added",
+                "name": "children",
+                "value": child.render(),
             }
 
             # Indicate where it was added
@@ -146,22 +194,24 @@ class Tag(ToolkitObject):
             while i < len(children):
                 c = children[i]
                 if isinstance(c, Tag):  # Ignore pattern nodes
-                    change['before'] = c.id
+                    change["before"] = c.id
                     break
                 else:
                     i += 1
             # else added to the end
             self._notify_modified(change)
 
-    def child_moved(self, child):
-        super(Tag, self).child_moved(child)
-        if isinstance(child, Tag) and self.proxy_is_active:
-            if self.proxy.child_moved(child.proxy):
+    def child_moved(self, child: Declarative):
+        super().child_moved(child)
+        if self.proxy_is_active and isinstance(child, Tag):
+            proxy = self.proxy
+            assert proxy is not None
+            if proxy.child_moved(child.proxy):
                 change = {
-                    'id': self.id,
-                    'type': 'moved',
-                    'name': 'children',
-                    'value': child.id
+                    "id": self.id,
+                    "type": "moved",
+                    "name": "children",
+                    "value": child.id,
                 }
 
                 # Indicate where it was moved to
@@ -170,38 +220,42 @@ class Tag(ToolkitObject):
                 while i < len(children):
                     c = children[i]
                     if isinstance(c, Tag):  # Ignore pattern nodes
-                        change['before'] = c.id
+                        change["before"] = c.id
                         break
                     else:
                         i += 1
                 # else moved to the end
                 self._notify_modified(change)
 
-    def child_removed(self, child):
-        """ Handles the child removed event.
+    def child_removed(self, child: Declarative):
+        """Handles the child removed event.
 
         This will generate a modified event indicating which child was removed.
 
         """
-        super(Tag, self).child_removed(child)
-        if isinstance(child, Tag) and self.proxy_is_active:
-            self._notify_modified({
-                'id': self.id,
-                'type': 'removed',
-                'name': 'children',
-                'value': child.id,
-            })
+        super().child_removed(child)
+        if self.proxy_is_active and isinstance(child, Tag):
+            self._notify_modified(
+                {
+                    "id": self.id,
+                    "type": "removed",
+                    "name": "children",
+                    "value": child.id,
+                }
+            )
 
     # =========================================================================
     # Tag API
     # =========================================================================
-    def xpath(self, query, **kwargs):
-        """ Find nodes matching the given xpath query
+    def xpath(self, query: str, **kwargs) -> list[Tag]:
+        """Find nodes matching the given xpath query
 
         Parameters
         ----------
-        query: String
+        query: str
             The xpath query to run
+        kwargs: dict
+            Parameters to xpath.
 
         Returns
         -------
@@ -209,11 +263,12 @@ class Tag(ToolkitObject):
             List of tags matching the xpath query.
 
         """
-        nodes = self.proxy.xpath(query, **kwargs)
-        return [n.declaration for n in nodes]
+        proxy = self.proxy
+        assert proxy is not None
+        return [n.declaration for n in proxy.xpath(query, **kwargs)]
 
-    def prepare(self, **kwargs):
-        """ Prepare this node for rendering.
+    def prepare(self, **kwargs: dict[str, Any]):
+        """Prepare this node for rendering.
 
         This sets any attributes given, initializes and actives the proxy
         as needed.
@@ -226,8 +281,8 @@ class Tag(ToolkitObject):
         if not self.proxy_is_active:
             self.activate_proxy()
 
-    def render(self, **kwargs):
-        """ Render this tag and all children to a string.
+    def render(self, **kwargs: dict[str, Any]):
+        """Render this tag and all children to a string.
 
         Returns
         -------
@@ -236,120 +291,118 @@ class Tag(ToolkitObject):
 
         """
         self.prepare(**kwargs)
-        return self.proxy.render()
+        proxy = self.proxy
+        assert proxy is not None
+        return proxy.render()
 
 
 class Html(Tag):
-    __slots__ = '__weakref__'
+    __slots__ = "__weakref__"
 
     #: Set the tag name
-    tag = set_default('html')
+    tag = set_default("html")
 
     #: Dom modified event. This will fire when any child node is updated, added
     #: or removed. Observe this event to handle updating websockets.
     modified = d_(Event(dict), writable=False).tag(attr=False)
 
     def _default_tag(self):
-        return 'html'
+        return "html"
 
 
 class Head(Tag):
     #: Set the tag name
-    tag = set_default('head')
+    tag = set_default("head")
 
 
 class Body(Tag):
     #: Set the tag name
-    tag = set_default('body')
+    tag = set_default("body")
 
 
 class Title(Tag):
     #: Set the tag name
-    tag = set_default('title')
+    tag = set_default("title")
 
 
 class P(Tag):
     #: Set the tag name
-    tag = set_default('p')
+    tag = set_default("p")
 
 
 class H1(Tag):
     #: Set the tag name
-    tag = set_default('h1')
+    tag = set_default("h1")
 
 
 class H2(Tag):
     #: Set the tag name
-    tag = set_default('h2')
+    tag = set_default("h2")
 
 
 class H3(Tag):
     #: Set the tag name
-    tag = set_default('h3')
+    tag = set_default("h3")
 
 
 class H4(Tag):
     #: Set the tag name
-    tag = set_default('h4')
+    tag = set_default("h4")
 
 
 class H5(Tag):
     #: Set the tag name
-    tag = set_default('h5')
+    tag = set_default("h5")
 
 
 class H6(Tag):
     #: Set the tag name
-    tag = set_default('h6')
+    tag = set_default("h6")
 
 
 class Hr(Tag):
     #: Set the tag name
-    tag = set_default('hr')
+    tag = set_default("hr")
 
 
 class Br(Tag):
     #: Set the tag name
-    tag = set_default('br')
+    tag = set_default("br")
 
 
 class Pre(Tag):
     #: Set the tag name
-    tag = set_default('pre')
-
-
-#class Code(Tag):
-#    pass
+    tag = set_default("pre")
 
 
 class Kbd(Tag):
     #: Set the tag name
-    tag = set_default('kbd')
+    tag = set_default("kbd")
 
 
 class Samp(Tag):
     #: Set the tag name
-    tag = set_default('samp')
+    tag = set_default("samp")
 
 
 class Var(Tag):
     #: Set the tag name
-    tag = set_default('var')
+    tag = set_default("var")
 
 
 class Div(Tag):
     #: Set the tag name
-    tag = set_default('div')
+    tag = set_default("div")
 
 
 class Span(Tag):
     #: Set the tag name
-    tag = set_default('span')
+    tag = set_default("span")
 
 
 class A(Tag):
     #: Set the tag name
-    tag = set_default('a')
+    tag = set_default("a")
 
     #: Set the url
     href = d_(Str())
@@ -357,408 +410,408 @@ class A(Tag):
     #: Set the target options
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
-    @observe('href', 'target')
-    def _update_proxy(self, change):
-        super(A, self)._update_proxy(change)
+    @observe("href", "target")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class B(Tag):
     #: Set the tag name
-    tag = set_default('b')
+    tag = set_default("b")
 
 
 class I(Tag):
     #: Set the tag name
-    tag = set_default('i')
+    tag = set_default("i")
 
 
 class Strong(Tag):
     #: Set the tag name
-    tag = set_default('strong')
+    tag = set_default("strong")
 
 
 class Em(Tag):
     #: Set the tag name
-    tag = set_default('em')
+    tag = set_default("em")
 
 
 class Mark(Tag):
     #: Set the tag name
-    tag = set_default('mark')
+    tag = set_default("mark")
 
 
 class Small(Tag):
     #: Set the tag name
-    tag = set_default('small')
+    tag = set_default("small")
 
 
 class Del(Tag):
     #: Set the tag name
-    tag = set_default('del')
+    tag = set_default("del")
 
 
 class Ins(Tag):
     #: Set the tag name
-    tag = set_default('ins')
+    tag = set_default("ins")
 
 
 class Sub(Tag):
     #: Set the tag name
-    tag = set_default('sub')
+    tag = set_default("sub")
 
 
 class Sup(Tag):
     #: Set the tag name
-    tag = set_default('sup')
+    tag = set_default("sup")
 
 
 class Q(Tag):
     #: Set the tag name
-    tag = set_default('q')
+    tag = set_default("q")
 
 
 class Blockquote(Tag):
     #: Set the tag name
-    tag = set_default('blockquote')
+    tag = set_default("blockquote")
 
     cite = d_(Str())
 
-    @observe('cite')
-    def _update_proxy(self, change):
-        super(Blockquote, self)._update_proxy(change)
+    @observe("cite")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Abbr(Tag):
     #: Set the tag name
-    tag = set_default('abbr')
+    tag = set_default("abbr")
 
 
 class Address(Tag):
     #: Set the tag name
-    tag = set_default('address')
+    tag = set_default("address")
 
 
 class Cite(Tag):
     #: Set the tag name
-    tag = set_default('cite')
+    tag = set_default("cite")
 
 
 class Bdo(Tag):
     #: Set the tag name
-    tag = set_default('bdo')
+    tag = set_default("bdo")
 
     dir = d_(Str())
 
 
 class Img(Tag):
     #: Set the tag name
-    tag = set_default('img')
+    tag = set_default("img")
 
     src = d_(Str())
     width = d_(Str())
     height = d_(Str())
 
-    @observe('src', 'width', 'height')
-    def _update_proxy(self, change):
-        super(Img, self)._update_proxy(change)
+    @observe("src", "width", "height")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Style(Tag):
     #: Set the tag name
-    tag = set_default('style')
+    tag = set_default("style")
 
 
 class Link(Tag):
     #: Set the tag name
-    tag = set_default('link')
+    tag = set_default("link")
 
     type = d_(Str())
     rel = d_(Str())
     href = d_(Str())
     media = d_(Str())
 
-    @observe('type', 'rel', 'href', 'media')
-    def _update_proxy(self, change):
-        super(Link, self)._update_proxy(change)
+    @observe("type", "rel", "href", "media")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Map(Tag):
     #: Set the tag name
-    tag = set_default('map')
+    tag = set_default("map")
 
     name = d_(Str())
 
-    @observe('name')
-    def _update_proxy(self, change):
-        super(Map, self)._update_proxy(change)
+    @observe("name")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Area(Tag):
     #: Set the tag name
-    tag = set_default('area')
+    tag = set_default("area")
 
     shape = d_(Str())
     coords = d_(Str())
     href = d_(Str())
 
-    @observe('shape', 'coords', 'href')
-    def _update_proxy(self, change):
-        super(Area, self)._update_proxy(change)
+    @observe("shape", "coords", "href")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Table(Tag):
     #: Set the tag name
-    tag = set_default('table')
+    tag = set_default("table")
 
 
 class Tr(Tag):
     #: Set the tag name
-    tag = set_default('tr')
+    tag = set_default("tr")
 
 
 class Td(Tag):
     #: Set the tag name
-    tag = set_default('td')
+    tag = set_default("td")
 
     colspan = d_(Str())
     rowspan = d_(Str())
 
-    @observe('colspan', 'rowspan')
-    def _update_proxy(self, change):
-        super(Td, self)._update_proxy(change)
+    @observe("colspan", "rowspan")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Th(Tag):
     #: Set the tag name
-    tag = set_default('th')
+    tag = set_default("th")
 
     colspan = d_(Str())
     rowspan = d_(Str())
 
-    @observe('colspan', 'rowspan')
-    def _update_proxy(self, change):
-        super(Th, self)._update_proxy(change)
+    @observe("colspan", "rowspan")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class THead(Tag):
     #: Set the tag name
-    tag = set_default('thead')
+    tag = set_default("thead")
 
 
 class TBody(Tag):
     #: Set the tag name
-    tag = set_default('tbody')
+    tag = set_default("tbody")
 
 
 class TFoot(Tag):
     #: Set the tag name
-    tag = set_default('tfoot')
+    tag = set_default("tfoot")
 
 
 class Caption(Tag):
     #: Set the tag name
-    tag = set_default('caption')
+    tag = set_default("caption")
 
 
 class Ul(Tag):
     #: Set the tag name
-    tag = set_default('ul')
+    tag = set_default("ul")
 
 
 class Ol(Tag):
     #: Set the tag name
-    tag = set_default('ol')
+    tag = set_default("ol")
 
     type = d_(Enum("", "1", "A", "a", "I", "i"))
 
-    @observe('type')
-    def _update_proxy(self, change):
-        super(Ol, self)._update_proxy(change)
+    @observe("type")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Li(Tag):
     #: Set the tag name
-    tag = set_default('li')
+    tag = set_default("li")
 
 
 class Dl(Tag):
     #: Set the tag name
-    tag = set_default('dl')
+    tag = set_default("dl")
 
 
 class Dt(Tag):
     #: Set the tag name
-    tag = set_default('dt')
+    tag = set_default("dt")
 
 
 class Dd(Tag):
     #: Set the tag name
-    tag = set_default('dd')
+    tag = set_default("dd")
 
 
 class IFrame(Tag):
     #: Set the tag name
-    tag = set_default('iframe')
+    tag = set_default("iframe")
 
     src = d_(Str())
     height = d_(Str())
     width = d_(Str())
     target = d_(Str())
 
-    @observe('src', 'height', 'width', 'target')
-    def _update_proxy(self, change):
-        super(IFrame, self)._update_proxy(change)
+    @observe("src", "height", "width", "target")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Script(Tag):
     #: Set the tag name
-    tag = set_default('script')
+    tag = set_default("script")
     src = d_(Str())
     type = d_(Str())
 
-    @observe('type', 'src')
-    def _update_proxy(self, change):
-        super(Script, self)._update_proxy(change)
+    @observe("type", "src")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class NoScript(Tag):
     #: Set the tag name
-    tag = set_default('noscript')
+    tag = set_default("noscript")
 
 
 class Meta(Tag):
     #: Set the tag name
-    tag = set_default('meta')
+    tag = set_default("meta")
 
     name = d_(Str())
     content = d_(Str())
 
-    @observe('name', 'content')
-    def _update_proxy(self, change):
-        super(Meta, self)._update_proxy(change)
+    @observe("name", "content")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Base(Tag):
     #: Set the tag name
-    tag = set_default('base')
+    tag = set_default("base")
 
     href = d_(Str())
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
-    @observe('href', 'target')
-    def _update_proxy(self, change):
-        super(Base, self)._update_proxy(change)
+    @observe("href", "target")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Header(Tag):
     #: Set the tag name
-    tag = set_default('header')
+    tag = set_default("header")
 
 
 class Nav(Tag):
     #: Set the tag name
-    tag = set_default('nav')
+    tag = set_default("nav")
 
 
 class Section(Tag):
     #: Set the tag name
-    tag = set_default('section')
+    tag = set_default("section")
 
 
 class Aside(Tag):
     #: Set the tag name
-    tag = set_default('aside')
+    tag = set_default("aside")
 
 
 class Article(Tag):
     #: Set the tag name
-    tag = set_default('article')
+    tag = set_default("article")
 
 
 class Footer(Tag):
     #: Set the tag name
-    tag = set_default('footer')
+    tag = set_default("footer")
 
 
 class Summary(Tag):
     #: Set the tag name
-    tag = set_default('summary')
+    tag = set_default("summary")
 
 
 class Details(Tag):
     #: Set the tag name
-    tag = set_default('details')
+    tag = set_default("details")
 
 
 class Form(Tag):
     #: Set the tag name
-    tag = set_default('form')
+    tag = set_default("form")
 
     action = d_(Str())
     method = d_(Enum("post", "get"))
 
-    @observe('action', 'method')
-    def _update_proxy(self, change):
-        super(Form, self)._update_proxy(change)
+    @observe("action", "method")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Fieldset(Tag):
     #: Set the tag name
-    tag = set_default('fieldset')
+    tag = set_default("fieldset")
 
 
 class Legend(Tag):
     #: Set the tag name
-    tag = set_default('legend')
+    tag = set_default("legend")
 
 
 class Label(Tag):
     #: Set the tag name
-    tag = set_default('label')
+    tag = set_default("label")
 
 
 class Select(Tag):
     #: Set the tag name
-    tag = set_default('select')
+    tag = set_default("select")
 
     name = d_(Str())
     value = d_(Str())
 
     def _default_name(self):
-        return u'{}'.format(self.id)
+        return "{}".format(self.id)
 
-    @observe('name', 'value')
-    def _update_proxy(self, change):
-        super(Select, self)._update_proxy(change)
+    @observe("name", "value")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Option(Tag):
     #: Set the tag name
-    tag = set_default('option')
+    tag = set_default("option")
 
     value = d_(Str())
     selected = d_(Coerced(bool))
 
-    @observe('value', 'selected')
-    def _update_proxy(self, change):
-        super(Option, self)._update_proxy(change)
+    @observe("value", "selected")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class OptGroup(Tag):
     #: Set the tag name
-    tag = set_default('optgroup')
+    tag = set_default("optgroup")
 
     label = d_(Str())
     disabled = d_(Coerced(bool))
 
-    @observe('label', 'disabled')
-    def _update_proxy(self, change):
-        super(OptGroup, self)._update_proxy(change)
+    @observe("label", "disabled")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Input(Tag):
     #: Set the tag name
-    tag = set_default('input')
+    tag = set_default("input")
 
     name = d_(Str())
     type = d_(Str())
@@ -768,63 +821,63 @@ class Input(Tag):
     value = d_(Value())
 
     def _default_name(self):
-        return u'{}'.format(self.id)
+        return f"{self.id}"
 
-    @observe('name', 'type', 'disabled', 'checked', 'value', 'placeholder')
-    def _update_proxy(self, change):
-        super(Input, self)._update_proxy(change)
+    @observe("name", "type", "disabled", "checked", "value", "placeholder")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Textarea(Tag):
     #: Set the tag name
-    tag = set_default('textarea')
+    tag = set_default("textarea")
 
     name = d_(Str())
     rows = d_(Str())
     cols = d_(Str())
 
     def _default_name(self):
-        return u'{}'.format(self.id)
+        return f"{self.id}"
 
-    @observe('name', 'rows', 'cols')
-    def _update_proxy(self, change):
-        super(Textarea, self)._update_proxy(change)
+    @observe("name", "rows", "cols")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Button(Tag):
     #: Set the tag name
-    tag = set_default('button')
+    tag = set_default("button")
 
     name = d_(Str())
     type = d_(Str())
-    value = d_(Str('1'))
+    value = d_(Str("1"))
 
     def _default_name(self):
-        return u'{}'.format(self.id)
+        return f"{self.id}"
 
-    @observe('type')
-    def _update_proxy(self, change):
-        super(Button, self)._update_proxy(change)
+    @observe("type")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Video(Tag):
     #: Set the tag name
-    tag = set_default('video')
+    tag = set_default("video")
 
     controls = d_(Coerced(bool))
 
-    @observe('controls')
-    def _update_proxy(self, change):
-        super(Video, self)._update_proxy(change)
+    @observe("controls")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)
 
 
 class Source(Tag):
     #: Set the tag name
-    tag = set_default('source')
+    tag = set_default("source")
 
     src = d_(Str())
     type = d_(Str())
 
-    @observe('src', 'type')
-    def _update_proxy(self, change):
-        super(Source, self)._update_proxy(change)
+    @observe("src", "type")
+    def _update_proxy(self, change: ChangeDict):
+        super()._update_proxy(change)

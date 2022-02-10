@@ -4,6 +4,7 @@ from utils import compile_source
 from textwrap import dedent
 from web.core.app import WebApplication
 
+
 @pytest.fixture
 def app():
     app = WebApplication.instance() or WebApplication()
@@ -12,7 +13,9 @@ def app():
 
 def test_block(app):
     # Test that a block's content is replaced
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -31,15 +34,20 @@ def test_block(app):
             H2:
                 text = "It worked!"
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    assert len(view.xpath('/html/body/h2')) == 1
+    assert len(view.xpath("/html/body/h2")) == 1
 
 
 def test_block_unused(app):
     # Test that an unused block retains it's default content
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -56,15 +64,20 @@ def test_block_unused(app):
     enamldef Page(Template):
         pass
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    assert len(view.xpath('/html/body/h1')) == 1
+    assert len(view.xpath("/html/body/h1")) == 1
 
 
 def test_block_replace(app):
     # Test that a used a block's content is replaced in 'replace' mode
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -86,18 +99,23 @@ def test_block_replace(app):
             H2:
                 text = "It worked!"
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    assert len(view.xpath('/html/body/h1')) == 0
-    assert len(view.xpath('/html/body/p')) == 0
-    assert len(view.xpath('/html/body/h2')) == 1
+    assert len(view.xpath("/html/body/h1")) == 0
+    assert len(view.xpath("/html/body/p")) == 0
+    assert len(view.xpath("/html/body/h2")) == 1
 
 
 def test_block_append(app):
     # Test that a block's content is retained and new content is appended in
     # append mode
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -118,10 +136,13 @@ def test_block_append(app):
             H1:
                 text = "Appended"
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    nodes = view.xpath('/html/body/h1')
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 2
     assert nodes[0].text == "Default"
     assert nodes[1].text == "Appended"
@@ -130,7 +151,9 @@ def test_block_append(app):
 def test_block_prepend(app):
     # Test that a block's content is retained and new content is inserted
     # before the default content in prepend mode.
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -151,10 +174,13 @@ def test_block_prepend(app):
             H1:
                 text = "Prepended"
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    nodes = view.xpath('/html/body/h1')
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 2
     assert nodes[0].text == "Prepended"
     assert nodes[1].text == "Default"
@@ -162,7 +188,9 @@ def test_block_prepend(app):
 
 def test_block_replace_changed(app):
     # Test that a block's content is updated when the blocks content is updated
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -185,27 +213,32 @@ def test_block_replace_changed(app):
                 H2:
                     text = loop_item
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    assert len(view.xpath('/html/body/h1')) == 0
-    assert len(view.xpath('/html/body/h2')) == 1
+    assert len(view.xpath("/html/body/h1")) == 0
+    assert len(view.xpath("/html/body/h2")) == 1
 
     # Update
-    print(view.render(names=['alice', 'bob']))
-    assert len(view.xpath('/html/body/h1')) == 0
-    assert len(view.xpath('/html/body/h2')) == 2
+    print(view.render(names=["alice", "bob"]))
+    assert len(view.xpath("/html/body/h1")) == 0
+    assert len(view.xpath("/html/body/h2")) == 2
 
-    print(view.render(names=['tom']))
-    assert len(view.xpath('/html/body/h1')) == 0
-    nodes = view.xpath('/html/body/h2')
+    print(view.render(names=["tom"]))
+    assert len(view.xpath("/html/body/h1")) == 0
+    nodes = view.xpath("/html/body/h2")
     assert len(nodes) == 1
-    assert nodes[0].text == 'tom'
+    assert nodes[0].text == "tom"
 
 
 def test_block_append_changed(app):
     # Test that a block's content is updated when the blocks content is updated
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -229,33 +262,38 @@ def test_block_append_changed(app):
                 H1:
                     text = loop_item
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    nodes = view.xpath('/html/body/h1')
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 2
-    assert nodes[0].text == 'Default'
-    assert nodes[1].text == 'alice'
+    assert nodes[0].text == "Default"
+    assert nodes[1].text == "alice"
 
     # Update
-    print(view.render(names=['alice', 'bob']))
-    nodes = view.xpath('/html/body/h1')
+    print(view.render(names=["alice", "bob"]))
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 3
-    assert nodes[0].text == 'Default'
-    assert nodes[1].text == 'alice'
-    assert nodes[2].text == 'bob'
+    assert nodes[0].text == "Default"
+    assert nodes[1].text == "alice"
+    assert nodes[2].text == "bob"
 
     # Update
-    print(view.render(names=['bob']))
-    nodes = view.xpath('/html/body/h1')
+    print(view.render(names=["bob"]))
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 2
-    assert nodes[0].text == 'Default'
-    assert nodes[1].text == 'bob'
+    assert nodes[0].text == "Default"
+    assert nodes[1].text == "bob"
 
 
 def test_block_prepend_changed(app):
     # Test that a block's content is updated when the blocks content is updated
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -279,33 +317,38 @@ def test_block_prepend_changed(app):
                 H1:
                     text = loop_item
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
     print(view.render())
-    nodes = view.xpath('/html/body/h1')
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 2
-    assert nodes[0].text == 'alice'
-    assert nodes[1].text == 'Default'
+    assert nodes[0].text == "alice"
+    assert nodes[1].text == "Default"
 
     # Update
-    print(view.render(names=['alice', 'bob']))
-    nodes = view.xpath('/html/body/h1')
+    print(view.render(names=["alice", "bob"]))
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 3
-    assert nodes[0].text == 'alice'
-    assert nodes[1].text == 'bob'
-    assert nodes[2].text == 'Default'
+    assert nodes[0].text == "alice"
+    assert nodes[1].text == "bob"
+    assert nodes[2].text == "Default"
 
     # Update
-    print(view.render(names=['bob']))
-    nodes = view.xpath('/html/body/h1')
+    print(view.render(names=["bob"]))
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 2
-    assert nodes[0].text == 'bob'
-    assert nodes[1].text == 'Default'
+    assert nodes[0].text == "bob"
+    assert nodes[1].text == "Default"
 
 
 def test_block_mode_changed(app):
     # Test that a block's content is updated when the blocks content is updated
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -327,21 +370,26 @@ def test_block_mode_changed(app):
             H1:
                 text = 'Mode'
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
 
-    for mode in ('append', 'prepend', 'append', 'prepend'):
+    for mode in ("append", "prepend", "append", "prepend"):
         print(view.render(mode=mode))
-        nodes = view.xpath('/html/body/h1')
+        nodes = view.xpath("/html/body/h1")
         assert len(nodes) == 2
-        i, j = (0, 1) if mode == 'append' else (1, 0)
-        assert nodes[i].text == 'Default'
-        assert nodes[j].text == 'Mode'
+        i, j = (0, 1) if mode == "append" else (1, 0)
+        assert nodes[i].text == "Default"
+        assert nodes[j].text == "Mode"
 
 
 def test_block_ref_changed(app):
     # Test that a block's content is updated when the blocks content is updated
-    Page = compile_source(dedent("""
+    Page = compile_source(
+        dedent(
+            """
     from web.components.api import *
     from web.core.api import *
 
@@ -368,18 +416,21 @@ def test_block_ref_changed(app):
             H1:
                 text = 'Added'
 
-    """), 'Page')
+    """
+        ),
+        "Page",
+    )
     view = Page()
-    print(view.render(block='header'))
-    nodes = view.xpath('/html/body/h1')
+    print(view.render(block="header"))
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 3
-    assert nodes[0].text == 'Header'
-    assert nodes[1].text == 'Added'
-    assert nodes[2].text == 'Footer'
+    assert nodes[0].text == "Header"
+    assert nodes[1].text == "Added"
+    assert nodes[2].text == "Footer"
 
-    print(view.render(block='footer'))
-    nodes = view.xpath('/html/body/h1')
+    print(view.render(block="footer"))
+    nodes = view.xpath("/html/body/h1")
     assert len(nodes) == 3
-    assert nodes[0].text == 'Header'
-    assert nodes[1].text == 'Footer'
-    assert nodes[2].text == 'Added'
+    assert nodes[0].text == "Header"
+    assert nodes[1].text == "Footer"
+    assert nodes[2].text == "Added"

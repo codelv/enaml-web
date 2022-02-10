@@ -9,13 +9,15 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
+from __future__ import annotations
+
 import markdown
-from .lxml_raw import RawComponent
 from web.components.md import ProxyMarkdown
+from .lxml_raw import RawComponent
 
 
 class MarkdownComponent(RawComponent, ProxyMarkdown):
-    """ A block for rendering Markdown source. """
+    """A block for rendering Markdown source."""
 
     def _refresh_source(self):
         d = self.declaration
@@ -27,25 +29,25 @@ class MarkdownComponent(RawComponent, ProxyMarkdown):
             safe_mode=d.safe_mode,
             output_format=d.output_format,
             extensions=d.extensions,
-            extension_configs=d.extension_configs
+            extension_configs=d.extension_configs,
         )
         #: Parse source to html
-        super(MarkdownComponent, self).set_source(source)
+        super().set_source(source)
 
-    def set_source(self, source):
+    def set_source(self, source: str):
         self._refresh_source()
 
-    def set_safe_mode(self, mode):
+    def set_safe_mode(self, mode: bool):
         self._refresh_source()
 
-    def set_output_format(self, format):
+    def set_output_format(self, format: str):
         self._refresh_source()
 
-    def set_tab_length(self, length):
+    def set_tab_length(self, length: int):
         self._refresh_source()
 
-    def set_extensions(self, extensions):
+    def set_extensions(self, extensions: list[str]):
         self._refresh_source()
 
-    def set_extension_configs(self, config):
+    def set_extension_configs(self, config: dict[str, dict]):
         self._refresh_source()
