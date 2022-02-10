@@ -9,7 +9,7 @@ Created on Apr 2, 2017
 
 @author: jrm
 """
-
+from __future__ import annotations
 
 from typing import Any, Generator
 from atom.api import (
