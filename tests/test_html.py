@@ -60,8 +60,8 @@ def test_hello_world(app):
             '//span[(@style="background:#fff;color:blue" or '
             '@style="color:blue;background:#fff")]',
         ),
-        ("Li", "clickable = True", '//li[@clickable="clickable"]'),
-        ("Li", "draggable = True", '//li[@draggable="draggable"]'),
+        ("Li", "clickable = True", '//li[@clickable="true"]'),
+        ("Li", "draggable = True", '//li[@draggable="true"]'),
         ("Img", 'id = "logo"', '//img[@id="logo"]'),
         # Use attrs for special or non-python html attributes
         ("Div", 'attrs = {"data-tooltip":"Tooltip"}', '//div[@data-tooltip="Tooltip"]'),
