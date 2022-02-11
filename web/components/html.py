@@ -113,6 +113,15 @@ class Tag(ToolkitObject):
     #: JS ondragover definition
     ondragover = d_(Str()).tag(attr=False)
 
+    #: JS ondragend definition
+    ondragend = d_(Str()).tag(attr=False)
+
+    #: JS ondragenter definition
+    ondragenter = d_(Str()).tag(attr=False)
+
+    #: JS ondragleave definition
+    ondragleave = d_(Str()).tag(attr=False)
+
     #: JS ondrop definition
     ondrop = d_(Str()).tag(attr=False)
 
@@ -122,9 +131,14 @@ class Tag(ToolkitObject):
     #: Event triggered when a drag starts
     dragstart = d_(Event())
 
-    #: Event triggered when a node is dragged over
-    #: The rpoxy sh
-    dragover = d_(Event(ToolkitObject))
+    #: Event triggered when a drag ends
+    dragend = d_(Event())
+
+    #: Event triggered when a node is dragged over a valid drop target
+    dragenter = d_(Event(ToolkitObject))
+
+    #: Event triggered when a node leaves a valid drop target
+    dragleave = d_(Event(ToolkitObject))
 
     #: Event triggered when a drop occurs
     dropped = d_(Event(ToolkitObject))
@@ -141,12 +155,15 @@ class Tag(ToolkitObject):
         "tail",
         "alt",
         "attrs",
-        "onclick",
         "clickable",
+        "draggable",
+        "onclick",
         "ondragstart",
         "ondragover",
+        "ondragend",
+        "ondragenter",
+        "ondragleave",
         "ondrop",
-        "draggable",
     )
     def _update_proxy(self, change: ChangeDict):
         """Update the proxy widget when the Widget data changes.

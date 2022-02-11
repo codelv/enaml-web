@@ -99,14 +99,20 @@ class WebComponent(ProxyTag):
             attrib.update(d.attrs)
         if d.clickable:
             attrib["clickable"] = "true"
-        if d.onclick:
-            attrib["onclick"] = d.onclick
         if d.draggable:
             attrib["draggable"] = "true"
+        if d.onclick:
+            attrib["onclick"] = d.onclick
         if d.ondragstart:
             attrib["ondragstart"] = d.ondragstart
         if d.ondragover:
             attrib["ondragover"] = d.ondragover
+        if d.ondragend:
+            attrib["ondragend"] = d.ondragend
+        if d.ondragenter:
+            attrib["ondragenter"] = d.ondragenter
+        if d.ondragleave:
+            attrib["ondragleave"] = d.ondragleave
         if d.ondrop:
             attrib["ondrop"] = d.ondrop
 
