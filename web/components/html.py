@@ -124,7 +124,7 @@ class Tag(ToolkitObject):
     dropped = d_(Event(ToolkitObject))
 
     def _default_id(self):
-        return "%0x" % id(self)
+        return gen_id(self)
 
     @observe(
         "id",
