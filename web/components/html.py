@@ -33,6 +33,20 @@ from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 
 ChangeDict = dict[str, Any]
 
+try:
+    from web.core.speedups import gen_id
+except ImportError as e:
+
+    def gen_id(tag, id=id, mod=divmod):
+        """Generate a short id for the tag"""
+        number = id(tag)
+        output = ""
+        alpha = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+        while number:
+            number, digit = mod(number, 59)
+            output += alpha[digit]
+        return output
+
 
 class ProxyTag(ProxyToolkitObject):
     declaration = ForwardTyped(lambda: Tag)
@@ -47,17 +61,6 @@ class ProxyTag(ProxyToolkitObject):
 
     def set_attribute(self, name: str, value: Any):
         raise NotImplementedError
-
-
-def gen_id(tag, id=id, mod=divmod):
-    """Generate a short id for the tag"""
-    number = id(tag)
-    output = ""
-    alpha = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-    while number:
-        number, digit = mod(number, 59)
-        output += alpha[digit]
-    return output
 
 
 class Tag(ToolkitObject):
@@ -121,7 +124,7 @@ class Tag(ToolkitObject):
     dropped = d_(Event(ToolkitObject))
 
     def _default_id(self):
-        return gen_id(self)
+        return "%0x" % id(self)
 
     @observe(
         "id",

@@ -3,7 +3,14 @@ Created on Apr 17, 2017
 
 @author: jrm
 """
-from setuptools import setup, find_packages
+from setuptools import Extension, setup, find_packages
+
+speedups_module = Extension(
+    "web.core.speedups",
+    ["src/speedups.c"],
+    include_dirs=["src"],
+    language="c",
+)
 
 setup(
     name='enaml-web',
@@ -21,5 +28,6 @@ setup(
     optional_requires=[
         'Pygments', 'Markdown', 'nbconvert',  # extra components
     ],
+    ext_modules=[speedups_module],
     packages=find_packages(),
 )
