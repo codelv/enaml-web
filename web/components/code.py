@@ -9,7 +9,7 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from __future__ import annotations
+
 
 from atom.api import Str, Typed, ForwardTyped, observe
 from enaml.core.declarative import d_
