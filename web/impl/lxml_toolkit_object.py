@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from typing import Any, Type, Union, Optional, Generator
-from atom.api import Atom, Member, Typed, Event, ForwardTyped, Dict, atomref
+from atom.api import Atom, Bool, Member, Typed, Event, ForwardTyped, Dict, atomref
 from lxml.html import tostring
 from lxml.etree import _Element, Element, SubElement
 from web.components.html import ProxyTag, Tag
@@ -53,10 +53,6 @@ class WebComponent(ProxyTag):
 
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(_Element)
-
-    #: A cached reference to the root element.
-    #: WARNING: If the root is changed this becomes invalid
-    root = ForwardTyped(lambda: RootWebComponent)
 
     # -------------------------------------------------------------------------
     # Initialization API
@@ -327,6 +323,14 @@ class RootWebComponent(WebComponent):
     #: can retrieve their declaration component
     cache = Dict()
 
+    #: Flag to indicate whether this node was rendered. This is used by the
+    #: declaration to avoid creating unnecessary modified events.
+    rendered = Bool()
+
     def create_widget(self):
         self.root = self  # This is the root
         self.widget = Element(self.declaration.tag)
+
+    def render(self, *args, **kwargs):
+        self.rendered = True
+        return super().render(*args, **kwargs)

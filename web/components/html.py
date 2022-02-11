@@ -11,10 +11,11 @@ Created on Apr 2, 2017
 """
 from __future__ import annotations
 
-from typing import Any, Generator
+from typing import Any, Generator, Optional
 from atom.api import (
     Atom,
     Event,
+    Bool,
     Enum,
     ContainerList,
     Value,
@@ -49,7 +50,12 @@ except ImportError as e:
 
 
 class ProxyTag(ProxyToolkitObject):
+    #: Reference to the declaration
     declaration = ForwardTyped(lambda: Tag)
+
+    #: A cached reference to the root element.
+    #: WARNING: If the root is changed this becomes invalid
+    root = ForwardTyped(lambda: ProxyTag)
 
     def xpath(self, query: str, **kwargs) -> Generator[ProxyToolkitObject, None, None]:
         """Perform an xpath lookup on the node"""
@@ -158,74 +164,59 @@ class Tag(ToolkitObject):
                 handler(value)
             else:
                 proxy.set_attribute(name, value)
-            self._notify_modified(
-                {"id": self.id, "type": change["type"], "name": name, "value": value}
-            )
-
-    def _notify_modified(self, change: ChangeDict):
-        """Triggers a modified event on the root node with the given change.
-
-        Parameters
-        ----------
-        change: Dict
-            A change event dict indicating what change has occurred.
-
-        """
-        root = self.root_object()
-        if isinstance(root, Html):
-            root.modified(change)
+            root = proxy.root
+            if root is not None and root.rendered:
+                self._notify_modified(
+                    root.declaration,
+                    {
+                        "id": self.id,
+                        "type": change["type"],
+                        "name": name,
+                        "value": value,
+                    },
+                )
 
     # =========================================================================
     # Object API
     # =========================================================================
+
     def child_added(self, child: Declarative):
         super().child_added(child)
         if self.proxy_is_active and isinstance(child, Tag):
-            change = {
-                "id": self.id,
-                "type": "added",
-                "name": "children",
-                "value": child.render(),
-            }
-
-            # Indicate where it was added
-            children = self.children
-            i = children.index(child) + 1
-            while i < len(children):
-                c = children[i]
-                if isinstance(c, Tag):  # Ignore pattern nodes
-                    change["before"] = c.id
-                    break
-                else:
-                    i += 1
-            # else added to the end
-            self._notify_modified(change)
+            proxy = self.proxy
+            assert proxy is not None
+            root = proxy.root
+            assert root is not None
+            if root.rendered:
+                self._notify_modified(
+                    root,
+                    {
+                        "id": self.id,
+                        "type": "added",
+                        "name": "children",
+                        "value": child.render(),
+                        "before": self._next_child_id(child),
+                    },
+                )
 
     def child_moved(self, child: Declarative):
         super().child_moved(child)
         if self.proxy_is_active and isinstance(child, Tag):
             proxy = self.proxy
             assert proxy is not None
-            if proxy.child_moved(child.proxy):
-                change = {
-                    "id": self.id,
-                    "type": "moved",
-                    "name": "children",
-                    "value": child.id,
-                }
-
-                # Indicate where it was moved to
-                children = self.children
-                i = children.index(child) + 1
-                while i < len(children):
-                    c = children[i]
-                    if isinstance(c, Tag):  # Ignore pattern nodes
-                        change["before"] = c.id
-                        break
-                    else:
-                        i += 1
-                # else moved to the end
-                self._notify_modified(change)
+            root = proxy.root
+            assert root is not None
+            if root.rendered and proxy.child_moved(child.proxy):
+                self._notify_modified(
+                    root.declaration,
+                    {
+                        "id": self.id,
+                        "type": "moved",
+                        "name": "children",
+                        "value": child.id,
+                        "before": self._next_child_id(child),
+                    },
+                )
 
     def child_removed(self, child: Declarative):
         """Handles the child removed event.
@@ -235,14 +226,38 @@ class Tag(ToolkitObject):
         """
         super().child_removed(child)
         if self.proxy_is_active and isinstance(child, Tag):
-            self._notify_modified(
-                {
-                    "id": self.id,
-                    "type": "removed",
-                    "name": "children",
-                    "value": child.id,
-                }
-            )
+            proxy = self.proxy
+            assert proxy is not None
+            root = proxy.root
+            assert root is not None
+            if root.rendered:
+                self._notify_modified(
+                    root.declaration,
+                    {
+                        "id": self.id,
+                        "type": "removed",
+                        "name": "children",
+                        "value": child.id,
+                    },
+                )
+
+    def _notify_modified(self, root: Optional[Tag], change: ChangeDict):
+        """Trigger a modified event on the root node. Subclasses may override
+        this to update change parameters if needed.
+
+        """
+        if root is not None:
+            root.modified(change)
+
+    def _next_child_id(self, child: Tag) -> Optional[str]:
+        """Find the id of the node after this child."""
+        # Indicate where it was added
+        children = self.children
+        i = children.index(child) + 1
+        for c in children[i:]:
+            if isinstance(c, Tag):  # Ignore pattern nodes
+                return c.id
+        return None
 
     # =========================================================================
     # Tag API

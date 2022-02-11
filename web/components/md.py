@@ -9,11 +9,11 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from __future__ import annotations
 
+from typing import Optional
 from atom.api import Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
 from enaml.core.declarative import d_
-from .html import ChangeDict
+from .html import Tag, ChangeDict
 from .raw import Raw, ProxyRawNode
 
 
@@ -79,8 +79,8 @@ class Markdown(Raw):
         """The superclass implementation is sufficient."""
         super()._update_proxy(change)
 
-    def _notify_modified(self, change: ChangeDict):
+    def _notify_modified(self, root: Optional[Tag], change: ChangeDict):
         """Update the notification"""
         if change["type"] == "update" and change["name"] == "source":
             change["value"] = self.render()
-        super()._notify_modified(change)
+        super()._notify_modified(root, change)
