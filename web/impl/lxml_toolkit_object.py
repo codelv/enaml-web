@@ -98,11 +98,11 @@ class WebComponent(ProxyTag):
         if d.attrs:
             attrib.update(d.attrs)
         if d.clickable:
-            attrib["clickable"] = "clickable"
+            attrib["clickable"] = "true"
         if d.onclick:
             attrib["onclick"] = d.onclick
         if d.draggable:
-            attrib["draggable"] = "draggable"
+            attrib["draggable"] = "true"
         if d.ondragstart:
             attrib["ondragstart"] = d.ondragstart
         if d.ondragover:
@@ -306,14 +306,16 @@ class WebComponent(ProxyTag):
         else:
             w.attrib[name] = f"{value}"
 
+    def set_clickable(self, clickable: bool):
+        w = self.widget
+        assert w is not None
+        w.attrib["clickable"] = "true" if clickable else "false"
+
     def set_draggable(self, draggable: bool):
         """The draggable attr must be explicitly set to true or false"""
         w = self.widget
         assert w is not None
-        if draggable:
-            w.attrib["draggable"] = "draggable"
-        else:
-            del w.attrib["draggable"]
+        w.attrib["draggable"] = "true" if draggable else "false"
 
 
 class RootWebComponent(WebComponent):
