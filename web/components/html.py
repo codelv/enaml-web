@@ -189,7 +189,7 @@ class Tag(ToolkitObject):
             assert root is not None
             if root.rendered:
                 self._notify_modified(
-                    root,
+                    root.declaration,
                     {
                         "id": self.id,
                         "type": "added",
