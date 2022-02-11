@@ -10,8 +10,12 @@ def main():
     app = WebApplication()
 
     # Generate index.html from index.enaml
-    with open('index.html', 'wb') as f:
-        f.write(Index().render())
+    # See lxml docs on tostring
+    options = {
+        'pretty_print': True,
+    }
+    with open('index.html', 'w') as f:
+        f.write(Index().render(render_options=options))
 
 if __name__ == '__main__':
     main()

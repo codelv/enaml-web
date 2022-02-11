@@ -296,18 +296,31 @@ class Tag(ToolkitObject):
         if not self.proxy_is_active:
             self.activate_proxy()
 
-    def render(self, **kwargs: dict[str, Any]):
+    def render(
+        self,
+        render_options: Optional[dict] = None,
+        **kwargs: dict[str, Any]
+    ) -> str:
         """Render this tag and all children to a string.
+
+        Parameters
+        -------
+        render_options: dict
+            Options to pass to render
+        kwargs: dict
+            Attributes to set on the view
 
         Returns
         -------
-        html: String
+        html: str
             The rendered html content of the node.
 
         """
         self.prepare(**kwargs)
         proxy = self.proxy
         assert proxy is not None
+        if render_options:
+            return proxy.render(**render_options)
         return proxy.render()
 
 
