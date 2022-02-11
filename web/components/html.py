@@ -297,9 +297,7 @@ class Tag(ToolkitObject):
             self.activate_proxy()
 
     def render(
-        self,
-        render_options: Optional[dict] = None,
-        **kwargs: dict[str, Any]
+        self, render_options: Optional[dict] = None, **kwargs: dict[str, Any]
     ) -> str:
         """Render this tag and all children to a string.
 
