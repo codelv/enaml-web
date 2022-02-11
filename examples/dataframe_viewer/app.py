@@ -122,6 +122,7 @@ def run():
             'path': os.path.dirname(__file__)}),
     ], debug=True)
     app.listen(8888)
+    print("Listening on 8888")
     tornado.ioloop.IOLoop.current().start()
 
 
