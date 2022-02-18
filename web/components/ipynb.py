@@ -11,10 +11,10 @@ Created on Jul 8, 2018
 """
 from __future__ import annotations
 
-from atom.api import ForwardTyped, Int, Typed, observe
-from enaml.core.declarative import d_
+from atom.api import ForwardTyped, Int, Typed
+from enaml.core.declarative import d_, observe
 
-from .raw import D_CHANGE_TYPES, ChangeDict, ProxyRawNode, Raw
+from .raw import ChangeDict, ProxyRawNode, Raw
 
 
 class ProxyNotebook(ProxyRawNode):
@@ -34,7 +34,7 @@ class Notebook(Raw):
     #: Version
     version = d_(Int(4))
 
-    @observe("version", change_types=D_CHANGE_TYPES)
+    @observe("version")
     def _update_proxy(self, change: ChangeDict):
         """Update the version"""
         super()._update_proxy(change)

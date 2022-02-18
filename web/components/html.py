@@ -24,11 +24,10 @@ from atom.api import (
     Str,
     Typed,
     Value,
-    observe,
     set_default,
 )
 from atom.typing_utils import ChangeDict
-from enaml.core.declarative import Declarative, d_, D_CHANGE_TYPES
+from enaml.core.declarative import Declarative, d_, observe
 from enaml.widgets.toolkit_object import ProxyToolkitObject, ToolkitObject
 
 try:
@@ -162,7 +161,6 @@ class Tag(ToolkitObject):
         "ondragenter",
         "ondragleave",
         "ondrop",
-        change_types=D_CHANGE_TYPES,
     )
     def _update_proxy(self, change: ChangeDict):
         """Update the proxy widget when the Widget data changes.
@@ -452,7 +450,7 @@ class A(Tag):
     #: Set the target options
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
-    @observe("href", "target", change_types=D_CHANGE_TYPES)
+    @observe("href", "target")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -518,7 +516,7 @@ class Blockquote(Tag):
 
     cite = d_(Str())
 
-    @observe("cite", change_types=D_CHANGE_TYPES)
+    @observe("cite")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -553,7 +551,7 @@ class Img(Tag):
     width = d_(Str())
     height = d_(Str())
 
-    @observe("src", "width", "height", change_types=D_CHANGE_TYPES)
+    @observe("src", "width", "height")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -572,7 +570,7 @@ class Link(Tag):
     href = d_(Str())
     media = d_(Str())
 
-    @observe("type", "rel", "href", "media", change_types=D_CHANGE_TYPES)
+    @observe("type", "rel", "href", "media")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -583,7 +581,7 @@ class Map(Tag):
 
     name = d_(Str())
 
-    @observe("name", change_types=D_CHANGE_TYPES)
+    @observe("name")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -596,7 +594,7 @@ class Area(Tag):
     coords = d_(Str())
     href = d_(Str())
 
-    @observe("shape", "coords", "href", change_types=D_CHANGE_TYPES)
+    @observe("shape", "coords", "href")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -618,7 +616,7 @@ class Td(Tag):
     colspan = d_(Str())
     rowspan = d_(Str())
 
-    @observe("colspan", "rowspan", change_types=D_CHANGE_TYPES)
+    @observe("colspan", "rowspan")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -630,7 +628,7 @@ class Th(Tag):
     colspan = d_(Str())
     rowspan = d_(Str())
 
-    @observe("colspan", "rowspan", change_types=D_CHANGE_TYPES)
+    @observe("colspan", "rowspan")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -666,7 +664,7 @@ class Ol(Tag):
 
     type = d_(Enum("", "1", "A", "a", "I", "i"))
 
-    @observe("type", change_types=D_CHANGE_TYPES)
+    @observe("type")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -700,7 +698,7 @@ class IFrame(Tag):
     width = d_(Str())
     target = d_(Str())
 
-    @observe("src", "height", "width", "target", change_types=D_CHANGE_TYPES)
+    @observe("src", "height", "width", "target")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -711,7 +709,7 @@ class Script(Tag):
     src = d_(Str())
     type = d_(Str())
 
-    @observe("type", "src", change_types=D_CHANGE_TYPES)
+    @observe("type", "src")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -728,7 +726,7 @@ class Meta(Tag):
     name = d_(Str())
     content = d_(Str())
 
-    @observe("name", "content", change_types=D_CHANGE_TYPES)
+    @observe("name", "content")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -740,7 +738,7 @@ class Base(Tag):
     href = d_(Str())
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
-    @observe("href", "target", change_types=D_CHANGE_TYPES)
+    @observe("href", "target")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -792,7 +790,7 @@ class Form(Tag):
     action = d_(Str())
     method = d_(Enum("post", "get"))
 
-    @observe("action", "method", change_types=D_CHANGE_TYPES)
+    @observe("action", "method")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -822,7 +820,7 @@ class Select(Tag):
     def _default_name(self):
         return f"{self.id}"
 
-    @observe("name", "value", change_types=D_CHANGE_TYPES)
+    @observe("name", "value")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -834,7 +832,7 @@ class Option(Tag):
     value = d_(Str())
     selected = d_(Coerced(bool))
 
-    @observe("value", "selected", change_types=D_CHANGE_TYPES)
+    @observe("value", "selected")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -846,7 +844,7 @@ class OptGroup(Tag):
     label = d_(Str())
     disabled = d_(Coerced(bool))
 
-    @observe("label", "disabled", change_types=D_CHANGE_TYPES)
+    @observe("label", "disabled")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -872,7 +870,6 @@ class Input(Tag):
         "checked",
         "value",
         "placeholder",
-        change_types=D_CHANGE_TYPES,
     )
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
@@ -889,7 +886,7 @@ class Textarea(Tag):
     def _default_name(self):
         return f"{self.id}"
 
-    @observe("name", "rows", "cols", change_types=D_CHANGE_TYPES)
+    @observe("name", "rows", "cols")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -905,7 +902,7 @@ class Button(Tag):
     def _default_name(self):
         return f"{self.id}"
 
-    @observe("type", change_types=D_CHANGE_TYPES)
+    @observe("type")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -916,7 +913,7 @@ class Video(Tag):
 
     controls = d_(Coerced(bool))
 
-    @observe("controls", change_types=D_CHANGE_TYPES)
+    @observe("controls")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -928,6 +925,6 @@ class Source(Tag):
     src = d_(Str())
     type = d_(Str())
 
-    @observe("src", "type", change_types=D_CHANGE_TYPES)
+    @observe("src", "type")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)

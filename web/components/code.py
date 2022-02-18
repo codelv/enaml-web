@@ -11,10 +11,10 @@ Created on Aug 2, 2017
 """
 
 
-from atom.api import ForwardTyped, Str, Typed, observe
-from enaml.core.declarative import d_
+from atom.api import ForwardTyped, Str, Typed
+from enaml.core.declarative import d_, observe
 
-from .raw import D_CHANGE_TYPES, ChangeDict, ProxyRawNode, Raw
+from .raw import ChangeDict, ProxyRawNode, Raw
 
 
 class ProxyCode(ProxyRawNode):
@@ -43,7 +43,7 @@ class Code(Raw):
     #: Highlighter style to use
     highlight_style = d_(Str()).tag(attr=False)
 
-    @observe("language", "highlight_style", change_types=D_CHANGE_TYPES)
+    @observe("language", "highlight_style")
     def _update_proxy(self, change: ChangeDict):
         """The superclass implementation is sufficient."""
         super()._update_proxy(change)
