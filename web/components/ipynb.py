@@ -11,9 +11,10 @@ Created on Jul 8, 2018
 """
 from __future__ import annotations
 
-from atom.api import Int, Typed, ForwardTyped, observe
+from atom.api import ForwardTyped, Int, Typed, observe
 from enaml.core.declarative import d_
-from .raw import Raw, ProxyRawNode, ChangeDict, DEFAULT_CHANGE_TYPES
+
+from .raw import DEFAULT_CHANGE_TYPES, ChangeDict, ProxyRawNode, Raw
 
 
 class ProxyNotebook(ProxyRawNode):

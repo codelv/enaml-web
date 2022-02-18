@@ -11,4 +11,5 @@ Created on Apr 16, 2017
 """
 # flake8: noqa
 from enaml.core.api import *
+
 from .block import Block

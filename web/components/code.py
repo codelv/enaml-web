@@ -11,9 +11,10 @@ Created on Aug 2, 2017
 """
 
 
-from atom.api import Str, Typed, ForwardTyped, observe
+from atom.api import ForwardTyped, Str, Typed, observe
 from enaml.core.declarative import d_
-from .raw import Raw, ProxyRawNode, ChangeDict, DEFAULT_CHANGE_TYPES
+
+from .raw import DEFAULT_CHANGE_TYPES, ChangeDict, ProxyRawNode, Raw
 
 
 class ProxyCode(ProxyRawNode):

@@ -11,10 +11,12 @@ Created on Aug 2, 2017
 """
 
 from typing import Optional
-from atom.api import Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
+
+from atom.api import Bool, Dict, Enum, ForwardTyped, Int, List, Typed, observe
 from enaml.core.declarative import d_
-from .html import Tag, ChangeDict, DEFAULT_CHANGE_TYPES
-from .raw import Raw, ProxyRawNode
+
+from .html import DEFAULT_CHANGE_TYPES, ChangeDict, Tag
+from .raw import ProxyRawNode, Raw
 
 
 class ProxyMarkdown(ProxyRawNode):

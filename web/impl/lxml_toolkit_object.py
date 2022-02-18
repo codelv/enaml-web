@@ -12,10 +12,12 @@ Created on Apr 12, 2017
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any, Type, Union, Optional, Generator
-from atom.api import Atom, Bool, Member, Typed, Event, Dict, atomref
+from typing import Any, Generator, Optional, Type, Union
+
+from atom.api import Atom, Bool, Dict, Event, Member, Typed, atomref
+from lxml.etree import Element, SubElement, _Element
 from lxml.html import tostring
-from lxml.etree import _Element, Element, SubElement
+
 from web.components.html import ProxyTag
 
 

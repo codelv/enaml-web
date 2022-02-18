@@ -1,6 +1,7 @@
 import os
-import pytest
+
 import enaml
+import pytest
 from jinja2 import Template
 
 TEMPLATE_DIR = os.path.dirname(__file__)

@@ -9,9 +9,10 @@ Created on Apr 16, 2017
 
 @author: jrm
 """
+from .code import Code
+
 # flake8: noqa F403 F401
 from .html import *
-from .md import Markdown
 from .ipynb import Notebook
-from .code import Code
+from .md import Markdown
 from .raw import Raw

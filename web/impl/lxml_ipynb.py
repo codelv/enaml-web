@@ -12,7 +12,9 @@ Created on Jul 8, 2018
 import nbformat
 from atom.api import Instance, Value
 from nbconvert import HTMLExporter
+
 from web.components.ipynb import ProxyNotebook
+
 from .lxml_raw import RawComponent
 
 

@@ -13,23 +13,24 @@ from __future__ import annotations
 
 import warnings
 from typing import Any, Generator, Optional
+
 from atom.api import (
     ChangeType,
-    Event,
-    Enum,
-    Value,
-    Str,
-    Dict,
-    Instance,
-    ForwardTyped,
-    Typed,
     Coerced,
+    Dict,
+    Enum,
+    Event,
+    ForwardTyped,
+    Instance,
+    Str,
+    Typed,
+    Value,
     observe,
     set_default,
 )
 from atom.typing_utils import ChangeDict
-from enaml.core.declarative import d_, Declarative
-from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
+from enaml.core.declarative import Declarative, d_
+from enaml.widgets.toolkit_object import ProxyToolkitObject, ToolkitObject
 
 try:
     from web.core.speedups import gen_id

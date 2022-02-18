@@ -12,7 +12,9 @@ Created on Aug 2, 2017
 from __future__ import annotations
 
 import markdown
+
 from web.components.md import ProxyMarkdown
+
 from .lxml_raw import RawComponent
 
 

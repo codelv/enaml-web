@@ -9,9 +9,10 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from atom.api import Str, Typed, ForwardTyped, set_default, observe
+from atom.api import ForwardTyped, Str, Typed, observe, set_default
 from enaml.core.declarative import d_
-from .html import Tag, ProxyTag, ChangeDict, DEFAULT_CHANGE_TYPES
+
+from .html import DEFAULT_CHANGE_TYPES, ChangeDict, ProxyTag, Tag
 
 
 class ProxyRawNode(ProxyTag):

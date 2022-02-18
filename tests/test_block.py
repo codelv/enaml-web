@@ -1,6 +1,8 @@
-import pytest
 from textwrap import dedent
+
+import pytest
 from utils import compile_source
+
 from web.core.app import WebApplication
 
 
