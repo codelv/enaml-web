@@ -15,7 +15,7 @@ from typing import Optional
 from atom.api import Bool, Dict, Enum, ForwardTyped, Int, List, Typed, observe
 from enaml.core.declarative import d_
 
-from .html import DEFAULT_CHANGE_TYPES, ChangeDict, Tag
+from .html import D_CHANGE_TYPES, ChangeDict, Tag
 from .raw import ProxyRawNode, Raw
 
 
@@ -80,7 +80,7 @@ class Markdown(Raw):
         "safe_mode",
         "output_format",
         "tab_length",
-        change_types=DEFAULT_CHANGE_TYPES,
+        change_types=D_CHANGE_TYPES,
     )
     def _update_proxy(self, change: ChangeDict):
         """The superclass implementation is sufficient."""

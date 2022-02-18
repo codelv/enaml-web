@@ -12,7 +12,7 @@ Created on Aug 2, 2017
 from atom.api import ForwardTyped, Str, Typed, observe, set_default
 from enaml.core.declarative import d_
 
-from .html import DEFAULT_CHANGE_TYPES, ChangeDict, ProxyTag, Tag
+from .html import D_CHANGE_TYPES, ChangeDict, ProxyTag, Tag
 
 
 class ProxyRawNode(ProxyTag):
@@ -39,7 +39,7 @@ class Raw(Tag):
     #: Raw source to parse and display
     source = d_(Str()).tag(attr=False)
 
-    @observe("source", change_types=DEFAULT_CHANGE_TYPES)
+    @observe("source", change_types=D_CHANGE_TYPES)
     def _update_proxy(self, change: ChangeDict):
         """The superclass implementation is sufficient."""
         super()._update_proxy(change)
