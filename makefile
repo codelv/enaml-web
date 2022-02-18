@@ -7,8 +7,8 @@ isort:
 typecheck:
 	mypy web --ignore-missing-imports
 lintcheck:
-	flake8 --ignore=E203,E266,E501,W503,E731 web
-	flake8 --ignore=E203,E266,E501,W503,E731 tests
+	flake8 --ignore=E501 web
+	flake8 --ignore=E501 tests
 reformat:
 	black web
 	black tests

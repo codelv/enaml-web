@@ -42,5 +42,6 @@ jobs:
             black tests --check --diff
             isort web --check --diff
             isort tests --check --diff
-            flake8 web --ignore=E203,E266,E501,W503,E731
+            flake8 web --ignore=E501
+            flake8 tests --ignore=E501
 
