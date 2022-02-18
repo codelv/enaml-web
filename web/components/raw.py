@@ -9,11 +9,9 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from __future__ import annotations
-
 from atom.api import Str, Typed, ForwardTyped, set_default, observe
 from enaml.core.declarative import d_
-from .html import Tag, ProxyTag, ChangeDict
+from .html import Tag, ProxyTag, ChangeDict, DEFAULT_CHANGE_TYPES
 
 
 class ProxyRawNode(ProxyTag):
@@ -40,7 +38,7 @@ class Raw(Tag):
     #: Raw source to parse and display
     source = d_(Str()).tag(attr=False)
 
-    @observe("source")
+    @observe("source", change_types=DEFAULT_CHANGE_TYPES)
     def _update_proxy(self, change: ChangeDict):
         """The superclass implementation is sufficient."""
         super()._update_proxy(change)

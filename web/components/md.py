@@ -13,7 +13,7 @@ Created on Aug 2, 2017
 from typing import Optional
 from atom.api import Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
 from enaml.core.declarative import d_
-from .html import Tag, ChangeDict
+from .html import Tag, ChangeDict, DEFAULT_CHANGE_TYPES
 from .raw import Raw, ProxyRawNode
 
 
@@ -73,7 +73,12 @@ class Markdown(Raw):
     proxy = Typed(ProxyMarkdown)
 
     @observe(
-        "extensions", "extension_configs", "safe_mode", "output_format", "tab_length"
+        "extensions",
+        "extension_configs",
+        "safe_mode",
+        "output_format",
+        "tab_length",
+        change_types=DEFAULT_CHANGE_TYPES,
     )
     def _update_proxy(self, change: ChangeDict):
         """The superclass implementation is sufficient."""

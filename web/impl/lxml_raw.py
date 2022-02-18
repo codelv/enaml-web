@@ -9,7 +9,6 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from atom.api import set_default
 from lxml.etree import HTML
 from web.components.raw import ProxyRawNode
 from .lxml_toolkit_object import WebComponent

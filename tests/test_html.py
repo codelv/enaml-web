@@ -1,22 +1,21 @@
-import enaml
-import pytest
 import inspect
+import pytest
 from textwrap import dedent
 from utils import compile_source
 from web.core.app import WebApplication
 
 try:
-    import nbformat
+    import nbformat  # noqa: F401
 
     SKIP_NBFORMAT = False
-except ImportError as e:
+except ImportError:
     SKIP_NBFORMAT = True
 
 try:
-    import markdown
+    import markdown  # noqa: F401
 
     MARKDOWN_UNAVAILABLE = False
-except ImportError as e:
+except ImportError:
     MARKDOWN_UNAVAILABLE = True
 
 
@@ -412,7 +411,7 @@ def test_node_added(app):
 
     # Save the node we're added
     node = view.proxy.widget.xpath("/html/body/ul/li")[-1]
-    ref = node.attrib["id"]
+    #  ref = node.attrib["id"]
     parent_ref = node.getparent().attrib["id"]
 
     for e in evts:

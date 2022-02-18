@@ -1,7 +1,6 @@
-import enaml
 import pytest
-from utils import compile_source
 from textwrap import dedent
+from utils import compile_source
 from web.core.app import WebApplication
 
 

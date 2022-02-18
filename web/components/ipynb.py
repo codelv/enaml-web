@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from atom.api import Int, Typed, ForwardTyped, observe
 from enaml.core.declarative import d_
-from .raw import Raw, ProxyRawNode, ChangeDict
+from .raw import Raw, ProxyRawNode, ChangeDict, DEFAULT_CHANGE_TYPES
 
 
 class ProxyNotebook(ProxyRawNode):
@@ -33,7 +33,7 @@ class Notebook(Raw):
     #: Version
     version = d_(Int(4))
 
-    @observe("version")
+    @observe("version", change_types=DEFAULT_CHANGE_TYPES)
     def _update_proxy(self, change: ChangeDict):
         """Update the version"""
         super()._update_proxy(change)

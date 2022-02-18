@@ -9,6 +9,7 @@ Created on Apr 16, 2017
 
 @author: jrm
 """
+# flake8: noqa F403 F401
 from .html import *
 from .md import Markdown
 from .ipynb import Notebook

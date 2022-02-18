@@ -33,10 +33,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: pip install -U codecov pytest pytest-cov pytest-benchmark pygments markdown nbconvert faker jinja2 requests mypy isort black
+        run: pip install -U codecov pytest pytest-cov pytest-benchmark pygments markdown nbconvert faker jinja2 requests mypy isort black flake8
       - name: Run checks
         run: |
             yes | mypy web --install-types || true
             mypy web --ignore-missing-imports
             black web --check --diff
+            black tests --check --diff
             isort web --check --diff
+            isort tests --check --diff
+            flake8 web --ignore=E203,E266,E501,W503,E731
+

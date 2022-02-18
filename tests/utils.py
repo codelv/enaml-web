@@ -1,31 +1,6 @@
-import sys
-import pytest
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
 from faker import Faker
-
-try:
-    from enaml.compat import exec_
-except ImportError:
-    if sys.version_info.major == 3:
-        import builtins
-
-        exec_ = getattr(builtins, "exec")
-
-    else:
-
-        def exec_(code, globs=None, locs=None):
-            """Execute code in a namespace."""
-            if globs is None:
-                frame = sys._getframe(1)
-                globs = frame.f_globals
-                if locs is None:
-                    locs = frame.f_locals
-                del frame
-            elif locs is None:
-                locs = globs
-            exec("""exec code in globs, locs""")
-
 
 faker = Faker()
 
@@ -51,5 +26,5 @@ def compile_source(source, item, filename="<test>", namespace=None):
     ast = parse(source, filename)
     code = EnamlCompiler.compile(ast, filename)
     namespace = namespace or {}
-    exec_(code, namespace)
+    exec(code, namespace)
     return namespace[item]
