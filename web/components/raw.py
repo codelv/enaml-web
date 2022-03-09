@@ -11,7 +11,9 @@ Created on Aug 2, 2017
 """
 from __future__ import annotations
 
-from atom.api import Str, Typed, ForwardTyped, set_default, observe
+from typing import Union
+from atom.api import ForwardTyped, Instance, Typed, set_default, observe
+from lxml.etree import _Element as Element
 from enaml.core.declarative import d_
 from .html import Tag, ProxyTag, ChangeDict
 
@@ -20,7 +22,7 @@ class ProxyRawNode(ProxyTag):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Raw)
 
-    def set_source(self, source: str):
+    def set_source(self, source: Union[str, Element]):
         raise NotImplementedError
 
 
@@ -38,7 +40,7 @@ class Raw(Tag):
     tag = set_default("div")
 
     #: Raw source to parse and display
-    source = d_(Str()).tag(attr=False)
+    source = d_(Instance((str, Element))).tag(attr=False)
 
     @observe("source")
     def _update_proxy(self, change: ChangeDict):
