@@ -22,7 +22,7 @@ class RawComponent(WebComponent, ProxyRawNode):
     def init_widget(self):
         """Initialize the widget with the source."""
         d = self.declaration
-        if d.source:
+        if len(d.source):
             self.set_source(d.source)
         else:
             super().init_widget()
