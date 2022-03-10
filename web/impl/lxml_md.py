@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import markdown
 from web.components.md import ProxyMarkdown
-from .lxml_raw import RawComponent
+from .lxml_raw import RawComponent, SourceType
 
 
 class MarkdownComponent(RawComponent, ProxyMarkdown):
@@ -21,20 +21,22 @@ class MarkdownComponent(RawComponent, ProxyMarkdown):
 
     def _refresh_source(self):
         d = self.declaration
+        assert d is not None
+        source = d.source
+        if isinstance(source, str):
+            source = markdown.markdown(
+                source,
+                tab_length=d.tab_length,
+                safe_mode=d.safe_mode,
+                output_format=d.output_format,
+                extensions=d.extensions,
+                extension_configs=d.extension_configs,
+            )
 
         #: Parse md and put in a root node
-        source = markdown.markdown(
-            d.source,
-            tab_length=d.tab_length,
-            safe_mode=d.safe_mode,
-            output_format=d.output_format,
-            extensions=d.extensions,
-            extension_configs=d.extension_configs,
-        )
-        #: Parse source to html
         super().set_source(source)
 
-    def set_source(self, source: str):
+    def set_source(self, source: SourceType):
         self._refresh_source()
 
     def set_safe_mode(self, mode: bool):

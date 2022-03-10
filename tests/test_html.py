@@ -219,6 +219,15 @@ def test_raw(app):
     assert "Preparsed content" in r
     assert len(view.proxy.widget.xpath("/html/body/div/p")) == 1
 
+    source = html.fromstring("<li>one</li><li>two</li>").xpath("//li")
+    r = view.render(source=source)
+    print(r)
+    assert "one" in r and "two" in r
+    assert len(view.proxy.widget.xpath("/html/body/div/li")) == 2
+
+    r = view.render(source=None)
+    assert len(view.proxy.widget.xpath("/html/body/div/li")) == 0
+
 
 def test_raw_proxy(app):
     # To make cov happy

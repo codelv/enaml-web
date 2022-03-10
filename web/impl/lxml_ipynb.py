@@ -13,7 +13,7 @@ import nbformat
 from atom.api import Instance, Value
 from nbconvert import HTMLExporter
 from web.components.ipynb import ProxyNotebook
-from .lxml_raw import RawComponent
+from .lxml_raw import RawComponent, SourceType
 
 
 class NotebookComponent(RawComponent, ProxyNotebook):
@@ -25,15 +25,17 @@ class NotebookComponent(RawComponent, ProxyNotebook):
     #: Resources from the node
     resources = Value()
 
-    def set_source(self, source: str):
+    def set_source(self, source: SourceType):
         # Parse md and put in a root node
         d = self.declaration
         assert d is not None
-        source, self.resources = self.exporter.from_notebook_node(
-            nbformat.reads(source, as_version=d.version)
-        )
-        # Parse source to html
-        super().set_source(f"<div>{source}</div>")
+        source = d.source
+        if isinstance(source, str):
+            source, self.resources = self.exporter.from_notebook_node(
+                nbformat.reads(source, as_version=d.version)
+            )
+            source = f"<div>{source}</div>"
+        super().set_source(source)
 
     def set_version(self, version: int):
         d = self.declaration
