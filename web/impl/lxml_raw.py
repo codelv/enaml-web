@@ -9,9 +9,10 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
-from atom.api import set_default
+from typing import Optional, Union
 from lxml.etree import HTML
-from web.components.raw import ProxyRawNode
+from lxml.etree import _Element as Element
+from web.components.raw import ProxyRawNode, SourceType
 from .lxml_toolkit_object import WebComponent
 
 
@@ -21,20 +22,27 @@ class RawComponent(WebComponent, ProxyRawNode):
     def init_widget(self):
         """Initialize the widget with the source."""
         d = self.declaration
-        if d.source:
-            self.set_source(d.source)
+        source = d.source
+        if source is not None and len(source):
+            self.set_source(source)
         else:
             super().init_widget()
 
-    def set_source(self, source: str):
+    def set_source(self, source: SourceType):
         """Set the source by parsing the source and inserting it into the
         component.
         """
         widget = self.widget
         assert widget is not None
         widget.clear()
-        html = HTML(source)
-        widget.extend(html[0])
+        if isinstance(source, Element):
+            widget.append(source)
+        elif isinstance(source, list):
+            widget.extend(source)
+        elif isinstance(source, str):
+            html = HTML(source)
+            widget.extend(html[0])
+        # else source is None
 
         # Clear removes everything so it must be reinitialized
         super().init_widget()

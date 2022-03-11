@@ -1,3 +1,7 @@
+# 0.11.1
+
+- Allow `Raw` node to accept an etree element for the it's source.
+
 # 0.11.0
 
 - Move to python 3 only syntax and add typing annotations

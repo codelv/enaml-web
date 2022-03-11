@@ -14,7 +14,7 @@ from pygments import lexers, highlight
 from pygments.lexer import Lexer
 from pygments.formatters import HtmlFormatter
 from web.components.code import ProxyCode
-from .lxml_raw import RawComponent
+from .lxml_raw import RawComponent, SourceType
 
 
 class CodeComponent(RawComponent, ProxyCode):
@@ -33,10 +33,10 @@ class CodeComponent(RawComponent, ProxyCode):
             return lexers.find_lexer_class_by_name(d.language)()
         return lexers.guess_lexer(d.source)
 
-    def set_source(self, source: str):
-        super().set_source(
-            highlight(source, lexer=self.lexer, formatter=self.formatter)
-        )
+    def set_source(self, source: SourceType):
+        if isinstance(source, str):
+            source = highlight(source, lexer=self.lexer, formatter=self.formatter)
+        super().set_source(source)
 
     def set_language(self, language: str):
         d = self.declaration

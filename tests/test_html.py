@@ -2,6 +2,7 @@ import enaml
 import pytest
 import inspect
 from textwrap import dedent
+from lxml import html
 from utils import compile_source
 from web.core.app import WebApplication
 
@@ -211,6 +212,21 @@ def test_raw(app):
 
     print(view.render(source="<h1>Rendered content!</h1>"))
     assert len(view.proxy.widget.xpath("/html/body/div/h1")) == 1
+
+    source = html.fromstring("<p>Preparsed content</p>")
+    r = view.render(source=source)
+    print(r)
+    assert "Preparsed content" in r
+    assert len(view.proxy.widget.xpath("/html/body/div/p")) == 1
+
+    source = html.fromstring("<li>one</li><li>two</li>").xpath("//li")
+    r = view.render(source=source)
+    print(r)
+    assert "one" in r and "two" in r
+    assert len(view.proxy.widget.xpath("/html/body/div/li")) == 2
+
+    r = view.render(source=None)
+    assert len(view.proxy.widget.xpath("/html/body/div/li")) == 0
 
 
 def test_raw_proxy(app):
