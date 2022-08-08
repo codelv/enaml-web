@@ -234,10 +234,6 @@ class WebComponent(ProxyTag):
                 continue
             yield obj
 
-    def should_notify(self, name: str) -> bool:
-        """Only send updates for public attrs"""
-        return name in get_fields(self.declaration.__class__)
-
     def parent_widget(self) -> Optional[_Element]:
         """Get the parent toolkit widget for this object.
 

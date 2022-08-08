@@ -1,6 +1,6 @@
 # 0.11.2
 
-- Do not emit change notifications for attrs where `attr=False`.
+- Fix error when `Raw` node source is empty string.
 - Make ext optional
 
 # 0.11.1

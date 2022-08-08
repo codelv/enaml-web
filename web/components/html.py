@@ -65,10 +65,6 @@ class ProxyTag(ProxyToolkitObject):
         """Render the node and all children"""
         raise NotImplementedError
 
-    def should_notify(self, name: str) -> bool:
-        """Return whether the client shoudl be notified when change occurs"""
-        raise NotImplementedError
-
     def set_attribute(self, name: str, value: Any):
         raise NotImplementedError
 
@@ -186,7 +182,7 @@ class Tag(ToolkitObject):
             else:
                 proxy.set_attribute(name, value)
             root = proxy.root
-            if root is not None and root.rendered and proxy.should_notify(name):
+            if root is not None and root.rendered:
                 self._notify_modified(
                     root.declaration,
                     {
