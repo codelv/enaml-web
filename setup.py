@@ -10,11 +10,12 @@ speedups_module = Extension(
     ["src/speedups.c"],
     include_dirs=["src"],
     language="c",
+    optional=True,
 )
 
 setup(
     name='enaml-web',
-    version='0.11.1',
+    version='0.11.2',
     author='CodeLV',
     author_email='frmdstryr@gmail.com',
     url='https://github.com/codelv/enaml-web',
