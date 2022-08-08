@@ -219,10 +219,11 @@ def test_raw(app):
     assert "Preparsed content" in r
     assert len(view.proxy.widget.xpath("/html/body/div/p")) == 1
 
+    r = view.render(source="")
+    assert len(view.proxy.widget.xpath("/html/body/div/p")) == 0
+
     source = html.fromstring("<li>one</li><li>two</li>").xpath("//li")
     r = view.render(source=source)
-    print(r)
-    assert "one" in r and "two" in r
     assert len(view.proxy.widget.xpath("/html/body/div/li")) == 2
 
     r = view.render(source=None)
@@ -275,11 +276,11 @@ def test_markdown(app):
     print(view.render(source="\n- Item 1\n- Item 2\n"))
     assert len(view.proxy.widget.xpath("/html/body/div/ul/li")) == 2
 
-    for e in evts:
-        print(e)
-    e = evts[-1]["value"]
-    assert e["name"] == "source"
-    assert e["value"] == view.md.render()
+    #for e in evts:
+        #print(e)
+    #e = evts[-1]["value"]
+    #assert e["name"] == "source"
+    #assert e["value"] == view.md.render()
 
 
 def test_markdown_proxy(app):

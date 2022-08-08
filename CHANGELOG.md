@@ -1,3 +1,8 @@
+# 0.11.2
+
+- Do not emit change notifications for attrs where `attr=False`.
+- Make ext optional
+
 # 0.11.1
 
 - Allow `Raw` node to accept an etree element for the it's source.

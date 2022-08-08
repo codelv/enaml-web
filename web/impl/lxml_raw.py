@@ -41,7 +41,7 @@ class RawComponent(WebComponent, ProxyRawNode):
             widget.extend(source)
         elif isinstance(source, str):
             html = HTML(source)
-            if len(html):
+            if html is not None:
                 widget.extend(html[0])
         # else source is None
 
