@@ -7,8 +7,6 @@
 A web component toolkit for [enaml](https://github.com/nucleic/enaml) that
 let's you build websites in python declaratively.
 
-> Note: A breaking change was introduced in 0.9.0 usage of `ref` should be replaced with `id`
-
 You can use enaml-web to build "interactive" websites using python, enaml, and a few lines of _simple_ javascript (see the simple pandas [dataframe viewer](https://github.com/codelv/enaml-web/tree/master/examples/dataframe_viewer) example). The view state (dom) is stored on the server as an enaml view and interaction works by syncing changes between
 between the client(s) and server using websockets (or polling).
 
@@ -44,7 +42,13 @@ enamldef Index(Html):
             text = "Hello world"
     Body:
         H1:
-            text = "Hello world"
+            text = "Render a list!"
+        Ul:
+            Looper:
+                iterable = range(3)
+                Li:
+                    style = 'color: blue' if loop.index & 1 else ''
+                    text = loop.item
 
 ```
 
@@ -163,8 +167,6 @@ be more than plain string templates.
 It only works with html.
 
 
-## Notes
-
 ### Data binding
 
 Because enaml-web is generating a dom, you can use websockets and some js
@@ -175,18 +177,66 @@ collaborative pages or they can be unique to each page.
 
 ![Data binding](https://github.com/frmdstryr/enaml-web/blob/master/docs/data-binding.gif?raw=true)
 
-Each node as a unique identifier and can be modified using change events. An
+Each node has a unique identifier and can be modified using change events. An
 example of this is in the examples folder.
 
 You can also have the client trigger events on the server and have the server
 trigger JS events on the client.
 
 To use:
-1. Include enaml.js in your page
+1. Include a client side script in your page to process modified events
 2. Observe the `modified` event of an Html node and pass these changes to the
 client via websockets.
-3. Enamljs will send events back to the server, update the dom accordingly.
+3. Make a handlers on the server side to update dom accordingly.
 
+
+See [app.js](examples/dataframe_viewer/app.js#L7) for an example client
+side handler and [app.py](examples/dataframe_viewer/app.py#L70) for an example
+server side handler.
+
+##### Modified events
+
+The modified events will be a dict. The keys depend on the event type but the
+general format is:
+
+```python
+{
+  'id': 'id-of-node', # ID of node where the event originated
+  'type': 'update', # Type of event, eg, update, added, removed, etc..
+  'name': 'attr-modified', # Attr name that was modified, eg `cls` or `children`
+  'value': object, # Depends on the event type
+  # May have other events
+}
+```
+
+For example, changing the `style` attribute on a node will generate an event like
+
+```python
+{
+  'id': 'id-of-a-node',
+  'type': 'update',
+  'name': 'style',
+  'value': 'color: blue',
+  'oldvalue': 'color: red'
+}
+```
+
+Inserting a new list item node will generate an event like
+
+```python
+{
+  'id': 'id-of-my-list',
+  'type': 'added',
+  'name': 'children',
+  'value': '<li>New item</li>',
+  'before': 'id-of-node-to-insert-before', 
+}
+
+```
+
+The full list of events can be found in the base [Tag](web/components/html.py)
+by searching for `_notify_modified` calls. You can also generate your own
+custom events as needed.
 
 #### Data models
 
