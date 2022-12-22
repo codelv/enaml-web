@@ -1,6 +1,6 @@
+import inspect
 import enaml
 import pytest
-import inspect
 from textwrap import dedent
 from lxml import html
 from utils import compile_source

@@ -2,13 +2,12 @@ docs:
 	cd docs
 	make html
 isort:
-	isort web
+	isort web tests
 typecheck:
 	mypy web --ignore-missing-imports
 
 reformat:
-	black web
-	black tests
+	black web tests
 
 test:
 	pytest -v tests --cov web --cov-report xml --asyncio-mode auto
