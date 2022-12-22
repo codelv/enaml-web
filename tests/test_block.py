@@ -293,8 +293,10 @@ def test_block_inserting_into_another_block(app, mode):
     print(view.body.children)
     if mode == "append":
         assert view.body.children[0].tag == "h2"
+        assert view.body.children[1].tag == "h3"
     elif mode == "prepend":
         assert view.body.children[0].tag == "h3"
+        assert view.body.children[-2].tag == "h2"
 
 
 def test_block_append_changed(app):
