@@ -234,6 +234,69 @@ def test_block_replace_changed(app):
     assert nodes[0].text == "tom"
 
 
+@pytest.mark.parametrize("mode", ("replace", "prepend", "append"))
+def test_block_inserting_into_another_block(app, mode):
+    # IDK why this would ever happen
+    # Should just use the target block directly
+    CustomPage = compile_source(
+        dedent(
+            """
+    from web.components.api import *
+    from web.core.api import *
+
+    enamldef Template(Html):
+        alias body
+        alias content
+        Head:
+            Title:
+                text = "Test"
+        Body: body:
+            Block: content:
+                H1:
+                    text = "Default"
+
+    enamldef Page(Template):
+        alias custom
+        Block: custom:
+            block = parent.content
+            H2:
+                text = "bob"
+
+    enamldef CustomPage(Page):
+        attr extra = ['jill']
+        Block:
+            block = custom
+            mode = "{mode}"
+            Looper:
+                iterable << extra
+                H3:
+                    text = loop_item
+
+    """.format(
+                mode=mode
+            )
+        ),
+        "CustomPage",
+    )
+    view = CustomPage()
+    print(view.render())
+    assert len(view.xpath("/html/body/h1")) == 0
+    n = 0 if mode == "replace" else 1
+    assert len(view.xpath("/html/body/h2")) == n
+    node_text = [n.text for n in view.xpath("/html/body/h3")]
+    assert node_text == ["jill"]
+
+    print(view.render(extra=["jill", "tom"]))
+    node_text = [n.text for n in view.xpath("/html/body/h3")]
+    assert node_text == ["jill", "tom"]
+
+    print(view.body.children)
+    if mode == "append":
+        assert view.body.children[0].tag == "h2"
+    elif mode == "prepend":
+        assert view.body.children[0].tag == "h3"
+
+
 def test_block_append_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(

@@ -116,8 +116,11 @@ class Block(Declarative):
             # This block is inserting into another block
             before = None
             if self.mode == "replace":
-                block.children = []
-            if self.mode == "prepend" and block.children:
+                for c in block.children:
+                    block.children.remove(c)
+                    if not c.is_destroyed:
+                        c.destroy()
+            elif self.mode == "prepend" and block.children:
                 before = block.children[0]
             block.insert_children(before, new_children)
         else:

@@ -38,5 +38,5 @@ jobs:
         run: |
             yes | mypy web --install-types || true
             mypy web --ignore-missing-imports
-            black web --check --diff
-            isort web --check --diff
+            black web tests --check --diff
+            isort web tests --check --diff
