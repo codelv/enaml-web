@@ -678,6 +678,12 @@ def test_node_moved_with_pattern(app):
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "2", "4", "5"]
 
+    # Trigger condition
     view.render(menu=["3", "4"])
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "2", "3", "4", "5"]
+
+    # Remove condition
+    view.render(menu=["4", "3"])
+    r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
+    assert r == ["1", "4", "3", "5"]

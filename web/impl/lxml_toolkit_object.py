@@ -154,41 +154,34 @@ class WebComponent(ProxyTag):
     def child_added(self, child: WebComponent):
         """Handle the child added event from the declaration.
 
-        This handler will insert the child toolkit widget in the correct.
-        position. Subclasses which need more control should reimplement this
-        method.
+        This handler will insert the child into the tree at the
+        appropriate index.
 
         """
+        w = self.widget
+        if w is None:
+            return
+
         # Use insert to put in the correct spot
         d = self.declaration
         assert d is not None
-        i = d.children.index(child.declaration)
-        widget = self.widget
-        if widget is None:
-            return False
-        widget.insert(i, child.widget)
+        i = d._child_index(child.declaration)
+        w.insert(i, child.widget)
 
-    def child_moved(self, child: WebComponent):
+    def child_moved(self, child: WebComponent) -> bool:
         """Handle the child moved event from the declaration.
 
         This handler will pop the child and insert it in the correct position
         if it isn't already there.
 
-        Subclasses which need more control should reimplement this method.
-
-        Returns
-        -------
-        was_moved: Bool
-            Whether a move was performed or not
-
         """
-        # Determine the new index
-        d = self.declaration
-        assert d is not None
-        i = d.children.index(child.declaration)
         w = self.widget
         if w is None:
             return False
+        # Determine the new index
+        d = self.declaration
+        assert d is not None
+        i = d._child_index(child.declaration)
         j = w.index(child.widget)
         if j == i:
             return False  # Already in the correct spot

@@ -212,6 +212,7 @@ class Tag(ToolkitObject):
                         "type": "added",
                         "name": "children",
                         "value": child.render(),
+                        "index": self._child_index(child),
                         "before": self._next_child_id(child),
                     },
                 )
@@ -231,6 +232,7 @@ class Tag(ToolkitObject):
                         "type": "moved",
                         "name": "children",
                         "value": child.id,
+                        "index": self._child_index(child),
                         "before": self._next_child_id(child),
                     },
                 )
@@ -265,6 +267,16 @@ class Tag(ToolkitObject):
         """
         if root is not None:
             root.modified(change)
+
+    def _child_index(self, child: Tag) -> int:
+        """Find the index of the child ignoring any pattern nodes"""
+        i = 0
+        for c in self.children:
+            if c is child:
+                return i
+            elif isinstance(c, Tag):
+                i += 1
+        raise ValueError("Child not found")
 
     def _next_child_id(self, child: Tag) -> Optional[str]:
         """Find the id of the node after this child."""

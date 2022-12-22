@@ -1,3 +1,8 @@
+# 0.11.3
+
+- Include new index in added and moved modification events
+- Fix bug where pattern nodes caused nodes to be inserted in the incorrect order
+
 # 0.11.2
 
 - Fix error when `Raw` node source is empty string.
