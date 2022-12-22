@@ -597,19 +597,87 @@ def test_node_moved(app):
         evts.append(change)
 
     view.observe("modified", on_modified)
+
+    # Insert items
     view.render(menu=["2", "3", "4"])
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "2", "3", "4", "6"]
 
+    # Swap adjacent items
+    view.render(menu=["3", "2", "4"])
+    r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
+    assert r == ["1", "3", "2", "4", "6"]
+
+    # Swap two items that are not adjacent (3 and 4)
     view.render(menu=["4", "2", "3"])
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "4", "2", "3", "6"]
 
-    for e in evts:
-        print(e)
+    # view.render(menu=["4", "2", "3"])
+    # r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
+    # assert r == ["1", "4", "2", "3", "6"]
 
-    assert len(evts) == 1
+    # for e in evts:
+    #     print(e)
+    #
+    # assert len(evts) == 1
 
     view.render(menu=["3", "2"])
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "3", "2", "6"]
+
+
+def test_node_moved_with_pattern(app):
+    Page = compile_source(
+        dedent(
+            """
+    from web.components.api import *
+    from web.core.api import *
+
+    enamldef Page(Html): view:
+        attr menu: list = []
+        Head:
+            Title:
+                text = "Test"
+        Body:
+            Ul:
+                Li:
+                    text = '1'
+                Conditional:
+                    condition << view.menu == ['3', '4']
+                    Li:
+                        text = '2'
+                Looper:
+                    iterable << view.menu
+                    Li:
+                        text = loop_item
+                Li:
+                    text = '5'
+    """
+        ),
+        "Page",
+    )
+    view = Page()
+
+    evts = []
+
+    def on_modified(change):
+        evts.append(change)
+
+    view.observe("modified", on_modified)
+
+    view.render(menu=["2", "3"])
+    r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
+    assert r == ["1", "2", "3", "5"]
+
+    view.render(menu=["2", "3", "4"])
+    r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
+    assert r == ["1", "2", "3", "4", "5"]
+
+    view.render(menu=["2", "4"])
+    r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
+    assert r == ["1", "2", "4", "5"]
+
+    view.render(menu=["3", "4"])
+    r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
+    assert r == ["1", "2", "3", "4", "5"]
