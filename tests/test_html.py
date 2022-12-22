@@ -47,6 +47,9 @@ def test_hello_world(app):
     view = Page()
     assert view.render()
     assert len(list(view.proxy.child_widgets())) == 2
+    head = next(view.proxy.xpath("//head"))
+    html = head.parent_widget()
+    assert html.tag == "html"
 
 
 @pytest.mark.parametrize(
@@ -101,6 +104,7 @@ def test_html(app, tag, attr, query):
         ("Base", "href", '"#"', "/home/", '//base[@href="/home/"]'),
         ("Blockquote", "cite", '"1"', "2", '//blockquote[@cite="2"]'),
         ("Img", "width", '"100px"', "100%", '//img[@width="100%"]'),
+        ("Img", "alt", '"x"', "y", '//img[@alt="y"]'),
         ("Link", "rel", '"text/css"', "favicon", '//link[@rel="favicon"]'),
         ("Map", "name", '"a"', "b", '//map[@name="b"]'),
         ("Area", "shape", '"square"', "round", '//area[@shape="round"]'),
@@ -116,16 +120,28 @@ def test_html(app, tag, attr, query):
         ("Option", "selected", "True", "False", "//option"),
         ("OptGroup", "label", '"a"', "b", '//optgroup[@label="b"]'),
         ("Input", "type", '"checkbox"', "text", '//input[@type="text"]'),
+        ("Input", "checked", True, False, "//input[not(@checked)]"),
         ("Textarea", "rows", '"10"', "2", '//textarea[@rows="2"]'),
         ("Button", "type", '"a"', "b", '//button[@type="b"]'),
         ("Video", "controls", '"False"', "True", '//video[@controls="controls"]'),
         ("Source", "type", '"a"', "b", '//source[@type="b"]'),
+        ("P", "text", '"a"', "b", '//p[text()="b"]'),
+        ("P", "tail", '"a"', "b", '//body[text()="b"]'),
+        ("A", "attrs", {"data-x": "a"}, {"data-x": "b"}, '//a[@data-x="b"]'),
+        ("Button", "clickable", False, True, '//button[@clickable="true"]'),
+        ("Button", "draggable", True, False, '//button[@draggable="false"]'),
+        ("A", "onclick", '"a"', "b", '//a[@onclick="b"]'),
+        ("A", "ondragstart", '"a"', "b", '//a[@ondragstart="b"]'),
+        ("A", "ondragover", '"a"', "b", '//a[@ondragover="b"]'),
+        ("A", "ondragend", '"a"', "b", '//a[@ondragend="b"]'),
+        ("A", "ondragenter", '"a"', "b", '//a[@ondragenter="b"]'),
+        ("A", "ondragleave", '"a"', "b", '//a[@ondragleave="b"]'),
+        ("A", "ondrop", '"a"', "b", '//a[@ondrop="b"]'),
     ),
 )
 def test_html_change(app, tag, attr, default, change, query):
-    Page = compile_source(
-        dedent(
-            """
+    source = dedent(
+        """
     from web.components.api import *
 
     enamldef Page(Html):
@@ -134,11 +150,11 @@ def test_html_change(app, tag, attr, default, change, query):
             {tag}:
                 {attr} << v
     """.format(
-                tag=tag, attr=attr, default=default
-            )
-        ),
-        "Page",
+            tag=tag, attr=attr, default=default
+        )
     )
+    print(source)
+    Page = compile_source(source, "Page")
     view = Page()
     print(view.render())
     print(view.render(v=change))
@@ -173,6 +189,8 @@ def test_looper(app):
                     iterable = range(10)
                     Li:
                         text = str(loop_item)
+            P:
+                text = "Test"
     """
         ),
         "Page",
@@ -687,3 +705,28 @@ def test_node_moved_with_pattern(app):
     view.render(menu=["4", "3"])
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "4", "3", "5"]
+
+
+def test_node_destroy(app):
+    """Test that calling destroy on a node removes it"""
+    Page = compile_source(
+        dedent(
+            """
+    from web.components.api import *
+    enamldef Page(Html): view:
+        Head:
+            Title:
+                text = "Hi"
+        Body:
+            P:
+                text = "Bye!"
+    """
+        ),
+        "Page",
+    )
+
+    view = Page()
+    view.render()
+    assert len(view.xpath("//p")) == 1
+    view.children[1].children[0].destroy()
+    assert len(view.xpath("//p")) == 0
