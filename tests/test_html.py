@@ -515,7 +515,7 @@ def test_note_insert_before(app):
     assert len(evts) == 1
 
     e = evts[-1]["value"]
-    assert e["before"] == view.xpath("/html/body/ul/li")[-1].id
+    assert e["index"] == 4
 
 
 def test_node_removed(app):

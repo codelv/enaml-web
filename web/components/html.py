@@ -35,8 +35,18 @@ from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 ChangeDict = dict[str, Any]
 
 try:
-    from web.core.speedups import gen_id
+    from web.core.speedups import gen_id, lookup_child_index
 except ImportError as e:
+
+    def lookup_child_index(parent: "Tag", child: "Tag") -> int:
+        """Find the index of the child ignoring any pattern nodes"""
+        i = 0
+        for c in parent.children:
+            if c is child:
+                return i
+            elif isinstance(c, Tag):
+                i += 1
+        raise KeyError("Child not found")
 
     def gen_id(tag, id=id, mod=divmod):
         """Generate a short id for the tag"""
@@ -213,7 +223,6 @@ class Tag(ToolkitObject):
                         "name": "children",
                         "value": child.render(),
                         "index": self._child_index(child),
-                        "before": self._next_child_id(child),
                     },
                 )
 
@@ -233,7 +242,6 @@ class Tag(ToolkitObject):
                         "name": "children",
                         "value": child.id,
                         "index": self._child_index(child),
-                        "before": self._next_child_id(child),
                     },
                 )
 
@@ -270,23 +278,7 @@ class Tag(ToolkitObject):
 
     def _child_index(self, child: Tag) -> int:
         """Find the index of the child ignoring any pattern nodes"""
-        i = 0
-        for c in self.children:
-            if c is child:
-                return i
-            elif isinstance(c, Tag):
-                i += 1
-        raise ValueError("Child not found")
-
-    def _next_child_id(self, child: Tag) -> Optional[str]:
-        """Find the id of the node after this child."""
-        # Indicate where it was added
-        children = self.children
-        i = children.index(child) + 1
-        for c in children[i:]:
-            if isinstance(c, Tag):  # Ignore pattern nodes
-                return c.id
-        return None
+        return lookup_child_index(self, child)
 
     # =========================================================================
     # Tag API

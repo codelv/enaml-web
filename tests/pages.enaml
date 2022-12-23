@@ -9,6 +9,17 @@ enamldef HelloWorld(Html):
         text = "Hello world"
 
 
+enamldef ListView(Html):
+    alias iterable: looper.iterable
+    Head:
+        Title:
+            text = "List of items"
+    Body:
+        Ul:
+            Looper: looper:
+                Li:
+                    text = str(loop_item)
+
 enamldef Simple(Html):
     attrs = {'lang': 'en'}
     attr navigation
