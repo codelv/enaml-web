@@ -353,9 +353,6 @@ class Html(Tag):
     #: or removed. Observe this event to handle updating websockets.
     modified = d_(Event(dict), writable=False).tag(attr=False)
 
-    def _default_tag(self):
-        return "html"
-
 
 class Head(Tag):
     #: Set the tag name
@@ -825,7 +822,7 @@ class Select(Tag):
     value = d_(Str())
 
     def _default_name(self):
-        return "{}".format(self.id)
+        return self.id
 
     @observe("name", "value")
     def _update_proxy(self, change: ChangeDict):
@@ -868,7 +865,7 @@ class Input(Tag):
     value = d_(Value())
 
     def _default_name(self):
-        return f"{self.id}"
+        return self.id
 
     @observe("name", "type", "disabled", "checked", "value", "placeholder")
     def _update_proxy(self, change: ChangeDict):
@@ -884,7 +881,7 @@ class Textarea(Tag):
     cols = d_(Str())
 
     def _default_name(self):
-        return f"{self.id}"
+        return self.id
 
     @observe("name", "rows", "cols")
     def _update_proxy(self, change: ChangeDict):
@@ -900,7 +897,7 @@ class Button(Tag):
     value = d_(Str("1"))
 
     def _default_name(self):
-        return f"{self.id}"
+        return self.id
 
     @observe("type")
     def _update_proxy(self, change: ChangeDict):

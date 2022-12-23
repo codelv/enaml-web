@@ -1,3 +1,11 @@
+# 0.11.4 - unreleased
+
+- **BREAKING** remove the `before` key from `added` and moved modified `events`.
+  The index can be used instead.
+- Speedup looking up the index when adding child nodes
+- Fix block insertion into another block that has a `block` set
+- Cleanup some uncecesesary code
+
 # 0.11.3
 
 - Include new index in added and moved modification events
