@@ -14,8 +14,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any, Type, Union, Optional, Generator
 from atom.api import Atom, Bool, Member, Typed, Event, ForwardTyped, Dict, atomref
-from lxml.html import tostring
-from lxml.etree import _Element, Element, SubElement
+from lxml.etree import _Element, Element, SubElement, tostring
 from web.components.html import ProxyTag, Tag
 from web.core.app import WebApplication
 
@@ -69,6 +68,7 @@ class WebComponent(ProxyTag):
         parent = d.parent.proxy
         self.root = parent.root
         self.widget = SubElement(parent.widget, d.tag)
+        self.root.cache[d.id] = self
 
     def init_widget(self):
         """Initialize the state of the toolkit widget.
@@ -81,56 +81,61 @@ class WebComponent(ProxyTag):
         widget = self.widget
         d = self.declaration
 
-        #: Save ref id
-        self.root.cache[d.id] = atomref(self)
-        attrib = widget.attrib
-        attrib["id"] = d.id
+        widget.set("id", d.id)
         if d.text:
             widget.text = d.text
         if d.tail:
             widget.tail = d.tail
         if d.alt:
-            attrib["alt"] = d.alt
+            widget.set("alt", d.alt)
         if d.style:
             self.set_style(d.style)
         if d.cls:
             self.set_cls(d.cls)
-        if d.attrs:
-            attrib.update(d.attrs)
         if d.clickable:
-            attrib["clickable"] = "true"
+            widget.set("clickable", "true")
         if d.draggable:
-            attrib["draggable"] = "true"
+            widget.set("draggable", "true")
         if d.onclick:
-            attrib["onclick"] = d.onclick
+            widget.set("onclick", d.onclick)
         if d.ondragstart:
-            attrib["ondragstart"] = d.ondragstart
+            widget.set("ondragstart", d.ondragstart)
         if d.ondragover:
-            attrib["ondragover"] = d.ondragover
+            widget.set("ondragover", d.ondragover)
         if d.ondragend:
-            attrib["ondragend"] = d.ondragend
+            widget.set("ondragend", d.ondragend)
         if d.ondragenter:
-            attrib["ondragenter"] = d.ondragenter
+            widget.set("ondragenter", d.ondragenter)
         if d.ondragleave:
-            attrib["ondragleave"] = d.ondragleave
+            widget.set("ondragleave", d.ondragleave)
         if d.ondrop:
-            attrib["ondrop"] = d.ondrop
+            widget.set("ondrop", d.ondrop)
+
+        for k, v in d.attrs.items():
+            widget.set(k, v)
 
         for m in get_fields(d.__class__):
             name = m.name
             value = getattr(d, name)
             if value is True:
-                attrib[name] = name
+                widget.set(name, name)
             elif value:
-                attrib[name] = f"{value}"
+                widget.set(name, f"{value}")
 
     # -------------------------------------------------------------------------
     # ProxyToolkitObject API
     # -------------------------------------------------------------------------
     def activate_top_down(self):
         """Activate the proxy for the top-down pass."""
-        self.create_widget()
-        self.init_widget()
+        try:
+            self.create_widget()
+            self.init_widget()
+        except Exception as e:
+            nodes = getattr(e, "_d_nodes", None)
+            if not isinstance(nodes, list):
+                nodes = e._d_nodes = []
+            nodes.append(self.declaration)
+            raise e
 
     def destroy(self):
         """A reimplemented destructor.
@@ -139,15 +144,21 @@ class WebComponent(ProxyTag):
         and set its parent to None.
 
         """
-        widget = self.widget
-        if widget is not None:
-            parent = widget.getparent()
-            if parent is not None:
-                parent.remove(widget)
-            del self.widget
+        if self.root is not None:
+            if (root := self.root()) and (cache := root.cache):
+                try:
+                    del cache[self.declaration.id]
+                except KeyError:
+                    pass
 
-            # Remove from cache
-            self.root.cache.pop(self.declaration.id, None)
+            del self.root
+
+        if self.widget is not None:
+            parent = self.widget.getparent()
+            if parent is not None:
+                parent.remove(self.widget)
+            self.widget.clear()
+            del self.widget
 
         super().destroy()
 
@@ -216,16 +227,12 @@ class WebComponent(ProxyTag):
         nodes = w.xpath(query, **kwargs)
         if not nodes:
             return None
-
-        root = self.root
-        assert root is not None
-        lookup = root.cache.get
-        for node in nodes:
-            aref = lookup(node.attrib.get("id"))
-            obj = aref() if aref else None
-            if obj is None:
-                continue
-            yield obj
+        if root := self.root():
+            lookup = root.cache.get
+            for node in nodes:
+                aref = lookup(node.get("id"))
+                if aref and (obj := aref()):
+                    yield obj
 
     def parent_widget(self) -> Optional[_Element]:
         """Get the parent toolkit widget for this object.
@@ -237,8 +244,7 @@ class WebComponent(ProxyTag):
             None if there is no such parent.
 
         """
-        parent = self.parent()
-        if parent is not None:
+        if parent := self.parent():
             return parent.widget
         return None
 
@@ -274,47 +280,48 @@ class WebComponent(ProxyTag):
         assert w is not None
         w.tag = tag
 
-    def set_attrs(self, attrs: dict[str, Any]):
+    def set_attrs(self, attrs: dict[str, str]):
         """Set any attributes not explicitly defined"""
         w = self.widget
         assert w is not None
-        w.attrib.update(attrs)
+        for k, v in attrs.items():
+           w.set(k, v)
 
     def set_cls(self, cls: Union[tuple[str], list[str], str]):
         if isinstance(cls, (tuple, list)):
             cls = " ".join(cls)
         w = self.widget
         assert w is not None
-        w.attrib["class"] = cls
+        w.set("class", cls)
 
     def set_style(self, style: Union[dict, str]):
         if isinstance(style, dict):
             style = ";".join(f"{k}:{v}" for k, v in style.items())
         w = self.widget
         assert w is not None
-        w.attrib["style"] = style
+        w.set("style", style)
 
     def set_attribute(self, name: str, value: Any):
         """Default handler for those not explicitly defined"""
         w = self.widget
         assert w is not None
         if value is True:
-            w.attrib[name] = name
+            w.set(name, name)
         elif value is False:
-            del w.attrib[name]
+            w.pop(name, None)
         else:
-            w.attrib[name] = f"{value}"
+            w.set(name, f"{value}")
 
     def set_clickable(self, clickable: bool):
         w = self.widget
         assert w is not None
-        w.attrib["clickable"] = "true" if clickable else "false"
+        w.set("clickable", "true" if clickable else "false")
 
     def set_draggable(self, draggable: bool):
         """The draggable attr must be explicitly set to true or false"""
         w = self.widget
         assert w is not None
-        w.attrib["draggable"] = "true" if draggable else "false"
+        w.set("draggable", "true" if draggable else "false")
 
 
 class RootWebComponent(WebComponent):
@@ -329,9 +336,15 @@ class RootWebComponent(WebComponent):
     rendered = Bool()
 
     def create_widget(self):
-        self.root = self  # This is the root
-        self.widget = Element(self.declaration.tag)
+        d = self.declaration
+        self.root = self.cache[d.id] = self
+        self.widget = Element(d.tag)
 
     def render(self, *args, **kwargs):
         self.rendered = True
         return super().render(*args, **kwargs)
+
+    def destroy(self):
+        del self.root
+        del self.cache
+        super().destroy()

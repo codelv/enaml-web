@@ -5,6 +5,8 @@
 - Speedup looking up the index when adding child nodes
 - Fix block insertion into another block that has a `block` set
 - Cleanup some uncecesesary code
+- Use etree.tostring instead of html.tostring to speed up render
+- Add destroy methods
 
 # 0.11.3
 
