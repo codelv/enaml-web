@@ -7,14 +7,16 @@ try:
     import requests
     import psutil
     import tornado
+
     DEPS_UNAVAILABLE = False
 except ImportError as e:
     DEPS_UNAVAILABLE = True
     print(e)
 
+
 @pytest.mark.skipif(DEPS_UNAVAILABLE, reason="Requires requests and psutil")
 def test_mem_usage():
-    """ Tests that memory usage does not keep increasing"""
+    """Tests that memory usage does not keep increasing"""
     cmd = ["python", "examples/simple_site/main.py"]
     proc = Popen(cmd, stdout=PIPE, stderr=STDOUT)
     url = "http://localhost:8888"
@@ -34,9 +36,10 @@ def test_mem_usage():
                 if first_mem_info is None:
                     first_mem_info = mem_info
                 print(f"{round(i*100/total)}% - {mem_info}")
-        assert first_mem_info == mem_info, "ERROR: Memory leak detected\nfirst={}\nfinal={}".format(
-            first_mem_info,
-            mem_info
+        assert (
+            first_mem_info == mem_info
+        ), "ERROR: Memory leak detected\nfirst={}\nfinal={}".format(
+            first_mem_info, mem_info
         )
         print("OK!")
     except KeyboardInterrupt:
@@ -46,9 +49,5 @@ def test_mem_usage():
         print(proc.stdout.read())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_mem_usage()
-
-
-
-
