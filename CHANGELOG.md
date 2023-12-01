@@ -1,4 +1,4 @@
-# 0.12.0 - unreleased
+# 0.12.0
 
 - **BREAKING** remove the `before` key from `added` and moved modified `events`.
   The index can be used instead.

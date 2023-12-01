@@ -23,7 +23,7 @@ def test_mem_usage():
     try:
         time.sleep(0.2)
         total = 20000
-        half = int(total/2)
+        half = int(total / 2)
         p = psutil.Process(proc.pid)
         n = 0
         half_mem_info = None
