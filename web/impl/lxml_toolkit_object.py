@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from typing import Any, Type, Union, Optional, Generator
-from atom.api import Atom, Bool, Member, Typed, Event, ForwardTyped, Dict, atomref
+from atom.api import Atom, Bool, Member, Typed, Event, ForwardTyped, Dict
 from lxml.etree import _Element, Element, SubElement, tostring
 from web.components.html import ProxyTag, Tag
 from web.core.app import WebApplication
@@ -67,8 +67,8 @@ class WebComponent(ProxyTag):
         d = self.declaration
         parent = d.parent.proxy
         self.root = parent.root
-        self.widget = SubElement(parent.widget, d.tag)
         self.root.cache[d.id] = self
+        self.widget = SubElement(parent.widget, d.tag)
 
     def init_widget(self):
         """Initialize the state of the toolkit widget.
@@ -145,7 +145,7 @@ class WebComponent(ProxyTag):
 
         """
         if self.root is not None:
-            if (root := self.root()) and (cache := root.cache):
+            if (root := self.root) and (cache := root.cache):
                 try:
                     del cache[self.declaration.id]
                 except KeyError:
@@ -176,6 +176,7 @@ class WebComponent(ProxyTag):
         # Use insert to put in the correct spot
         d = self.declaration
         assert d is not None
+        assert child.declaration is not None
         i = d._child_index(child.declaration)
         w.insert(i, child.widget)
 
@@ -192,6 +193,7 @@ class WebComponent(ProxyTag):
         # Determine the new index
         d = self.declaration
         assert d is not None
+        assert child.declaration is not None
         i = d._child_index(child.declaration)
         j = w.index(child.widget)
         if j == i:
@@ -227,11 +229,10 @@ class WebComponent(ProxyTag):
         nodes = w.xpath(query, **kwargs)
         if not nodes:
             return None
-        if root := self.root():
+        if root := self.root:
             lookup = root.cache.get
             for node in nodes:
-                aref = lookup(node.get("id"))
-                if aref and (obj := aref()):
+                if obj := lookup(node.get("id")):
                     yield obj
 
     def parent_widget(self) -> Optional[_Element]:
@@ -285,7 +286,7 @@ class WebComponent(ProxyTag):
         w = self.widget
         assert w is not None
         for k, v in attrs.items():
-           w.set(k, v)
+            w.set(k, v)
 
     def set_cls(self, cls: Union[tuple[str], list[str], str]):
         if isinstance(cls, (tuple, list)):
@@ -308,7 +309,7 @@ class WebComponent(ProxyTag):
         if value is True:
             w.set(name, name)
         elif value is False:
-            w.pop(name, None)
+            w.attrib.pop(name, None)
         else:
             w.set(name, f"{value}")
 

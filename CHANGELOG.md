@@ -1,12 +1,14 @@
-# 0.11.4 - unreleased
+# 0.12.0 - unreleased
 
 - **BREAKING** remove the `before` key from `added` and moved modified `events`.
   The index can be used instead.
+- Add oldvalue to update events
 - Speedup looking up the index when adding child nodes
 - Fix block insertion into another block that has a `block` set
 - Cleanup some uncecesesary code
 - Use etree.tostring instead of html.tostring to speed up render
 - Add destroy methods
+- Drop usage of atomref
 
 # 0.11.3
 
