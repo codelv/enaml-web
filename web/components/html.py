@@ -200,6 +200,7 @@ class Tag(ToolkitObject):
                         "type": change["type"],
                         "name": name,
                         "value": value,
+                        "oldvalue": change["oldvalue"],
                     },
                 )
 
@@ -820,11 +821,12 @@ class Select(Tag):
 
     name = d_(Str())
     value = d_(Str())
+    disabled = d_(Coerced(bool))
 
     def _default_name(self):
         return self.id
 
-    @observe("name", "value")
+    @observe("name", "value", "disabled")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
@@ -879,11 +881,12 @@ class Textarea(Tag):
     name = d_(Str())
     rows = d_(Str())
     cols = d_(Str())
+    disabled = d_(Coerced(bool))
 
     def _default_name(self):
         return self.id
 
-    @observe("name", "rows", "cols")
+    @observe("name", "rows", "cols", "disabled")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
