@@ -1,3 +1,7 @@
+# 0.12.1
+- Support python 3.13
+- Cleanup type errors and lint errors
+
 # 0.12.0
 
 - **BREAKING** remove the `before` key from `added` and moved modified `events`.
