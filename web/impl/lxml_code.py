@@ -9,6 +9,7 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
+
 from atom.api import Instance
 from pygments import lexers, highlight
 from pygments.lexer import Lexer

@@ -9,13 +9,14 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
+
 from __future__ import annotations
 
 from typing import Union, Optional
-from atom.api import ForwardTyped, Instance, Typed, set_default, observe
+from atom.api import ForwardTyped, Instance, Typed, ChangeDict, set_default, observe
 from lxml.etree import _Element as Element
 from enaml.core.declarative import d_
-from .html import Tag, ProxyTag, ChangeDict
+from .html import Tag, ProxyTag
 
 SourceType = Optional[Union[str, list[Element], Element]]
 

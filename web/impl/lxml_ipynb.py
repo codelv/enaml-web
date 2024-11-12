@@ -9,6 +9,7 @@ Created on Jul 8, 2018
 
 @author: jrm
 """
+
 import nbformat
 from atom.api import Instance, Value
 from nbconvert import HTMLExporter

@@ -9,9 +9,10 @@ Created on Apr 2, 2017
 
 @author: jrm
 """
+
 from __future__ import annotations
 
-from typing import Any, Generator, Optional
+from typing import Any, Callable, Generator, Optional, Union
 from atom.api import (
     Atom,
     Event,
@@ -28,11 +29,10 @@ from atom.api import (
     Coerced,
     observe,
     set_default,
+    ChangeDict,
 )
 from enaml.core.declarative import d_, Declarative
 from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
-
-ChangeDict = dict[str, Any]
 
 try:
     from web.core.speedups import gen_id, lookup_child_index
@@ -71,7 +71,9 @@ class ProxyTag(ProxyToolkitObject):
         """Perform an xpath lookup on the node"""
         raise NotImplementedError
 
-    def render(self, method: str = "html", encoding: str = "unicode", **kwargs) -> str:
+    def render(
+        self, method: str = "html", encoding: str = "unicode", **kwargs
+    ) -> Union[str, bytes]:
         """Render the node and all children"""
         raise NotImplementedError
 
@@ -269,7 +271,7 @@ class Tag(ToolkitObject):
                     },
                 )
 
-    def _notify_modified(self, root: Optional[Tag], change: ChangeDict):
+    def _notify_modified(self, root: Optional[Tag], change: dict[str, Any]):
         """Trigger a modified event on the root node. Subclasses may override
         this to update change parameters if needed.
 
@@ -320,7 +322,7 @@ class Tag(ToolkitObject):
 
     def render(
         self, render_options: Optional[dict] = None, **kwargs: dict[str, Any]
-    ) -> str:
+    ) -> Union[str, bytes]:
         """Render this tag and all children to a string.
 
         Parameters

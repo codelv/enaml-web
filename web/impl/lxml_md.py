@@ -9,6 +9,7 @@ Created on Aug 2, 2017
 
 @author: jrm
 """
+
 from __future__ import annotations
 
 import markdown

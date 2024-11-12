@@ -9,13 +9,12 @@ Created on Apr 15, 2017
 
 @author: jrm
 """
+
 from __future__ import annotations
 
 from typing import Any
-from atom.api import ForwardInstance, Enum
+from atom.api import ForwardInstance, Enum, ChangeDict
 from enaml.core.declarative import Declarative, d_
-
-ChangeDict = dict[str, Any]
 
 
 class Block(Declarative):

@@ -10,10 +10,20 @@ Created on Aug 2, 2017
 @author: jrm
 """
 
-from typing import Optional
-from atom.api import Typed, ForwardTyped, Enum, Int, Bool, List, Dict, observe
+from typing import Any, Optional
+from atom.api import (
+    Typed,
+    ForwardTyped,
+    Enum,
+    Int,
+    Bool,
+    List,
+    Dict,
+    ChangeDict,
+    observe,
+)
 from enaml.core.declarative import d_
-from .html import Tag, ChangeDict
+from .html import Tag
 from .raw import Raw, ProxyRawNode
 
 
@@ -79,7 +89,7 @@ class Markdown(Raw):
         """The superclass implementation is sufficient."""
         super()._update_proxy(change)
 
-    def _notify_modified(self, root: Optional[Tag], change: ChangeDict):
+    def _notify_modified(self, root: Optional[Tag], change: dict[str, Any]):
         """Update the notification"""
         if change["type"] == "update" and change["name"] == "source":
             change["value"] = self.render()

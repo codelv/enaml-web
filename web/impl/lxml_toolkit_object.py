@@ -9,6 +9,7 @@ Created on Apr 12, 2017
 
 @author: jrm
 """
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -217,7 +218,9 @@ class WebComponent(ProxyTag):
     # -------------------------------------------------------------------------
     # Public API
     # -------------------------------------------------------------------------
-    def render(self, method: str = "html", encoding: str = "unicode", **kwargs) -> str:
+    def render(
+        self, method: str = "html", encoding: str = "unicode", **kwargs
+    ) -> Union[str, bytes]:
         """Render the widget tree into a string"""
         return tostring(self.widget, method=method, encoding=encoding, **kwargs)
 
