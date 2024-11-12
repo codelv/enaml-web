@@ -26,6 +26,8 @@ def test_child_index():
 
     c = Tag()
     p = Tag()
+    assert isinstance(gen_id(c), str)
+
     p._children = [Tag(), c]
     assert lookup_child_index(p, c) == 1
     p._children = [c, Tag()]

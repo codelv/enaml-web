@@ -2,7 +2,6 @@ import os
 import pytest
 import enaml
 from jinja2 import Template
-from utils import compile_source
 
 TEMPLATE_DIR = os.path.dirname(__file__)
 

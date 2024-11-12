@@ -1,12 +1,11 @@
 import time
 import pytest
-import enaml
 from subprocess import Popen, PIPE, STDOUT
 
 try:
     import requests
     import psutil
-    import tornado
+    import tornado  # noqa: F401
 
     DEPS_UNAVAILABLE = False
 except ImportError as e:
@@ -39,7 +38,7 @@ def test_mem_usage():
             n += 1
         assert (
             half_mem_info == mem_info
-        ), "ERROR: Memory leak detected\half={}\nfinal={}".format(
+        ), "ERROR: Memory leak detected\nhalf={}\nfinal={}".format(
             half_mem_info, mem_info
         )
         print("OK!")

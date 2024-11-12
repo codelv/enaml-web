@@ -10,7 +10,6 @@ Created on Aug 2, 2017
 @author: jrm
 """
 
-from typing import Optional, Union
 from lxml.etree import HTML
 from lxml.etree import _Element as Element
 from web.components.raw import ProxyRawNode, SourceType

@@ -10,5 +10,5 @@ Created on Apr 16, 2017
 @author: jrm
 """
 
-from enaml.core.api import *
-from .block import Block
+from enaml.core.api import *  # noqa: F401,F403
+from .block import Block  # noqa: F401

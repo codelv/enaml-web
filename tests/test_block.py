@@ -1,4 +1,3 @@
-import enaml
 import pytest
 from textwrap import dedent
 from utils import compile_source

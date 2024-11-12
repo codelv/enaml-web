@@ -12,16 +12,12 @@ Created on Apr 2, 2017
 
 from __future__ import annotations
 
-from typing import Any, Callable, Generator, Optional, Union
+from typing import Any, Generator, Optional, Union
 from atom.api import (
-    Atom,
     Event,
-    Bool,
     Enum,
-    ContainerList,
     Dict,
     Value,
-    Int,
     Str,
     Instance,
     ForwardTyped,
@@ -36,7 +32,7 @@ from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 
 try:
     from web.core.speedups import gen_id, lookup_child_index
-except ImportError as e:
+except ImportError:
 
     def lookup_child_index(parent: "Tag", child: "Tag") -> int:
         """Find the index of the child ignoring any pattern nodes"""
@@ -467,7 +463,7 @@ class B(Tag):
     tag = set_default("b")
 
 
-class I(Tag):
+class I(Tag):  # noqa: E742
     #: Set the tag name
     tag = set_default("i")
 

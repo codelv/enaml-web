@@ -14,10 +14,9 @@ from __future__ import annotations
 
 from functools import lru_cache
 from typing import Any, Type, Union, Optional, Generator
-from atom.api import Atom, Bool, Member, Typed, Event, ForwardTyped, Dict
+from atom.api import Atom, Bool, Member, Typed, Event, Dict
 from lxml.etree import _Element, Element, SubElement, tostring
-from web.components.html import ProxyTag, Tag
-from web.core.app import WebApplication
+from web.components.html import ProxyTag
 
 
 @lru_cache(1024)
