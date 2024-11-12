@@ -38,7 +38,7 @@ static PyObject * gen_id(PyObject *self, PyObject *obj)
         index += 1;
     }
     Py_DECREF(id);
-    return _PyUnicode_FromASCII(buf, 8);
+    return PyUnicode_FromStringAndSize(buf, 8);
 }
 
 /**
