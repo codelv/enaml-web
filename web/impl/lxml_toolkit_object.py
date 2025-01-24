@@ -79,48 +79,49 @@ class WebComponent(ProxyTag):
 
         """
         widget = self.widget
+        set_attr = widget.set
         d = self.declaration
 
-        widget.set("id", d.id)
-        if d.text:
-            widget.text = d.text
-        if d.tail:
-            widget.tail = d.tail
-        if d.alt:
-            widget.set("alt", d.alt)
-        if d.style:
-            self.set_style(d.style)
-        if d.cls:
-            self.set_cls(d.cls)
+        set_attr("id", d.id)
+        if v := d.text:
+            widget.text = v
+        if v := d.tail:
+            widget.tail = v
+        if v := d.alt:
+            set_attr("alt", v)
+        if v := d.style:
+            self.set_style(v)
+        if v := d.cls:
+            self.set_cls(v)
         if d.clickable:
-            widget.set("clickable", "true")
+            set_attr("clickable", "true")
         if d.draggable:
-            widget.set("draggable", "true")
-        if d.onclick:
-            widget.set("onclick", d.onclick)
-        if d.ondragstart:
-            widget.set("ondragstart", d.ondragstart)
-        if d.ondragover:
-            widget.set("ondragover", d.ondragover)
-        if d.ondragend:
-            widget.set("ondragend", d.ondragend)
-        if d.ondragenter:
-            widget.set("ondragenter", d.ondragenter)
-        if d.ondragleave:
-            widget.set("ondragleave", d.ondragleave)
-        if d.ondrop:
-            widget.set("ondrop", d.ondrop)
+            set_attr("draggable", "true")
+        if v := d.onclick:
+            set_attr("onclick", v)
+        if v := d.ondragstart:
+            set_attr("ondragstart", v)
+        if v := d.ondragover:
+            set_attr("ondragover", v)
+        if v := d.ondragend:
+            set_attr("ondragend", v)
+        if v := d.ondragenter:
+            set_attr("ondragenter", v)
+        if v := d.ondragleave:
+            set_attr("ondragleave", v)
+        if v := d.ondrop:
+            set_attr("ondrop", v)
 
         for k, v in d.attrs.items():
-            widget.set(k, v)
+            set_attr(k, v)
 
         for m in get_fields(d.__class__):
             name = m.name
-            value = getattr(d, name)
+            value = m.do_getattr(d)
             if value is True:
-                widget.set(name, name)
+                set_attr(name, name)
             elif value:
-                widget.set(name, f"{value}")
+                set_attr(name, f"{value}")
 
     # -------------------------------------------------------------------------
     # ProxyToolkitObject API
@@ -287,8 +288,9 @@ class WebComponent(ProxyTag):
         """Set any attributes not explicitly defined"""
         w = self.widget
         assert w is not None
+        set_attr = w.set
         for k, v in attrs.items():
-            w.set(k, v)
+            set_attr(k, v)
 
     def set_cls(self, cls: Union[tuple[str], list[str], str]):
         if isinstance(cls, (tuple, list)):
