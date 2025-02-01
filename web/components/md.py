@@ -10,7 +10,7 @@ Created on Aug 2, 2017
 @author: jrm
 """
 
-from typing import Any, Optional
+from typing import Any
 from atom.api import (
     Typed,
     ForwardTyped,
@@ -23,7 +23,6 @@ from atom.api import (
     observe,
 )
 from enaml.core.declarative import d_
-from .html import Tag
 from .raw import Raw, ProxyRawNode
 
 
@@ -89,8 +88,8 @@ class Markdown(Raw):
         """The superclass implementation is sufficient."""
         super()._update_proxy(change)
 
-    def _notify_modified(self, root: Optional[Tag], change: dict[str, Any]):
+    def _notify_modified(self, change: dict[str, Any]):
         """Update the notification"""
         if change["type"] == "update" and change["name"] == "source":
             change["value"] = self.render()
-        super()._notify_modified(root, change)
+        super()._notify_modified(change)

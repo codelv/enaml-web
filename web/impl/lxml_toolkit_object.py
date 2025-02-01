@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from typing import Any, Type, Union, Optional, Generator
-from atom.api import Atom, Bool, Member, Typed, Event, Dict
+from atom.api import Atom, Bool, Member, Typed, Event
 from lxml.etree import _Element, Element, SubElement, tostring
 from web.components.html import ProxyTag
 
@@ -66,8 +66,6 @@ class WebComponent(ProxyTag):
         """
         d = self.declaration
         parent = d.parent.proxy
-        self.root = parent.root
-        self.root.cache[d.id] = self
         self.widget = SubElement(parent.widget, d.tag)
 
     def init_widget(self):
@@ -117,7 +115,7 @@ class WebComponent(ProxyTag):
 
         for m in get_fields(d.__class__):
             name = m.name
-            value = m.do_getattr(d)
+            value = getattr(d, name)
             if value is True:
                 set_attr(name, name)
             elif value:
@@ -145,15 +143,6 @@ class WebComponent(ProxyTag):
         and set its parent to None.
 
         """
-        if self.root is not None:
-            if (root := self.root) and (cache := root.cache):
-                try:
-                    del cache[self.declaration.id]
-                except KeyError:
-                    pass
-
-            del self.root
-
         if self.widget is not None:
             parent = self.widget.getparent()
             if parent is not None:
@@ -224,7 +213,7 @@ class WebComponent(ProxyTag):
         """Render the widget tree into a string"""
         return tostring(self.widget, method=method, encoding=encoding, **kwargs)
 
-    def xpath(self, query: str, **kwargs) -> Generator[WebComponent, None, None]:
+    def xpath(self, query: str, **kwargs) -> Generator[ProxyTag, None, None]:
         """Get the node(s) matching the query"""
         w = self.widget
         if w is None:
@@ -232,11 +221,13 @@ class WebComponent(ProxyTag):
         nodes = w.xpath(query, **kwargs)
         if not nodes:
             return None
-        if root := self.root:
-            lookup = root.cache.get
-            for node in nodes:
-                if obj := lookup(node.get("id")):
-                    yield obj
+        find_by_id = self.declaration.find_by_id
+        for node in nodes:
+            node_id = node.get("id")
+            if not node_id:
+                continue
+            if obj := find_by_id(node_id):
+                yield obj
 
     def parent_widget(self) -> Optional[_Element]:
         """Get the parent toolkit widget for this object.
@@ -332,24 +323,14 @@ class WebComponent(ProxyTag):
 class RootWebComponent(WebComponent):
     """A root component"""
 
-    #: Components are cached for lookup by id so xpath queries from lxml
-    #: can retrieve their declaration component
-    cache = Dict()
-
     #: Flag to indicate whether this node was rendered. This is used by the
     #: declaration to avoid creating unnecessary modified events.
     rendered = Bool()
 
     def create_widget(self):
         d = self.declaration
-        self.root = self.cache[d.id] = self
         self.widget = Element(d.tag)
 
     def render(self, *args, **kwargs):
         self.rendered = True
         return super().render(*args, **kwargs)
-
-    def destroy(self):
-        del self.root
-        del self.cache
-        super().destroy()

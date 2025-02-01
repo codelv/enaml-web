@@ -59,11 +59,7 @@ class ProxyTag(ProxyToolkitObject):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Tag)
 
-    #: A cached reference to the root element.
-    #: WARNING: If the root is changed this becomes invalid
-    root = ForwardTyped(lambda: ProxyTag)
-
-    def xpath(self, query: str, **kwargs) -> Generator[ProxyToolkitObject, None, None]:
+    def xpath(self, query: str, **kwargs) -> Generator["ProxyTag", None, None]:
         """Perform an xpath lookup on the node"""
         raise NotImplementedError
 
@@ -189,18 +185,15 @@ class Tag(ToolkitObject):
                 handler(value)
             else:
                 proxy.set_attribute(name, value)
-            root = proxy.root
-            if root is not None and root.rendered:
-                self._notify_modified(
-                    root.declaration,
-                    {
-                        "id": self.id,
-                        "type": change["type"],
-                        "name": name,
-                        "value": value,
-                        "oldvalue": change["oldvalue"],
-                    },
-                )
+            self._notify_modified(
+                {
+                    "id": self.id,
+                    "type": change["type"],
+                    "name": name,
+                    "value": value,
+                    "oldvalue": change["oldvalue"],
+                },
+            )
 
     # =========================================================================
     # Object API
@@ -209,32 +202,23 @@ class Tag(ToolkitObject):
     def child_added(self, child: Declarative):
         super().child_added(child)
         if self.proxy_is_active and isinstance(child, Tag):
-            proxy = self.proxy
-            assert proxy is not None
-            root = proxy.root
-            assert root is not None
-            if root.rendered:
-                self._notify_modified(
-                    root.declaration,
-                    {
-                        "id": self.id,
-                        "type": "added",
-                        "name": "children",
-                        "value": child.render(),
-                        "index": self._child_index(child),
-                    },
-                )
+            self._notify_modified(
+                {
+                    "id": self.id,
+                    "type": "added",
+                    "name": "children",
+                    "value": child.render(),
+                    "index": self._child_index(child),
+                },
+            )
 
     def child_moved(self, child: Declarative):
         super().child_moved(child)
         if self.proxy_is_active and isinstance(child, Tag):
             proxy = self.proxy
             assert proxy is not None
-            root = proxy.root
-            assert root is not None
-            if root.rendered and proxy.child_moved(child.proxy):
+            if proxy.child_moved(child.proxy):
                 self._notify_modified(
-                    root.declaration,
                     {
                         "id": self.id,
                         "type": "moved",
@@ -252,28 +236,26 @@ class Tag(ToolkitObject):
         """
         super().child_removed(child)
         if self.proxy_is_active and isinstance(child, Tag):
-            proxy = self.proxy
-            assert proxy is not None
-            root = proxy.root
-            assert root is not None
-            if root.rendered:
-                self._notify_modified(
-                    root.declaration,
-                    {
-                        "id": self.id,
-                        "type": "removed",
-                        "name": "children",
-                        "value": child.id,
-                    },
-                )
+            self._notify_modified(
+                {
+                    "id": self.id,
+                    "type": "removed",
+                    "name": "children",
+                    "value": child.id,
+                },
+            )
 
-    def _notify_modified(self, root: Optional[Tag], change: dict[str, Any]):
+    def _notify_modified(self, change: dict[str, Any]):
         """Trigger a modified event on the root node. Subclasses may override
         this to update change parameters if needed.
 
         """
-        if root is not None:
-            root.modified(change)
+        root = self.root_object()
+        if isinstance(root, Html):
+            proxy = root.proxy
+            assert proxy is not None
+            if proxy.rendered:
+                root.modified(change)
 
     def _child_index(self, child: Tag) -> int:
         """Find the index of the child ignoring any pattern nodes"""
@@ -282,6 +264,25 @@ class Tag(ToolkitObject):
     # =========================================================================
     # Tag API
     # =========================================================================
+    def find_by_id(self, id: str) -> Optional[Tag]:
+        """Find a child node with the given id.
+
+        Parameters
+        ----------
+        id: str
+            The id to look for.
+
+        Returns
+        -------
+        results: Optional[Tag]
+            The first node with the given id or None.
+
+        """
+        for child in self.traverse():
+            if isinstance(child, Tag) and child.id == id:
+                return child
+        return None
+
     def xpath(self, query: str, **kwargs) -> list[Tag]:
         """Find nodes matching the given xpath query
 
@@ -300,7 +301,7 @@ class Tag(ToolkitObject):
         """
         proxy = self.proxy
         assert proxy is not None
-        return [n.declaration for n in proxy.xpath(query, **kwargs)]
+        return [n for n in proxy.xpath(query, **kwargs)]
 
     def prepare(self, **kwargs: dict[str, Any]):
         """Prepare this node for rendering.

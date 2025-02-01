@@ -47,7 +47,7 @@ def test_hello_world(app):
     assert view.render()
     assert len(list(view.proxy.child_widgets())) == 2
     head = next(view.proxy.xpath("//head"))
-    html = head.parent_widget()
+    html = head.parent
     assert html.tag == "html"
 
 
@@ -465,7 +465,7 @@ def test_node_added(app):
     assert v["id"] == parent_ref  # value is also the dom inserted
 
 
-def test_note_insert_before(app):
+def test_node_insert_before(app):
     Page = compile_source(
         dedent(
             """
@@ -513,8 +513,13 @@ def test_note_insert_before(app):
     # enaml-web should block extraneous moved events
     assert len(evts) == 1
 
-    e = evts[-1]["value"]
-    assert e["index"] == 4
+    # Verify the modified event
+    e = evts[-1]
+    assert e["type"] == "event" and e["name"] == "modified"
+
+    v = e["value"]
+    assert v["type"] == "added" and v["name"] == "children"
+    assert v["index"] == 4
 
 
 def test_node_removed(app):
@@ -620,15 +625,48 @@ def test_node_moved(app):
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "2", "3", "4", "6"]
 
+    # Save the nodes we're moving
+    ul_id = view.proxy.widget.xpath("/html/body/ul")[0].attrib["id"]
+    list_items = view.proxy.widget.xpath("/html/body/ul/li")
+    li2 = list_items[1]
+    assert li2.text == "2"
+    li2_id = li2.attrib["id"]
+
+    li3 = list_items[2]
+    assert li3.text == "3"
+    li3_id = li3.attrib["id"]
+
+    li4 = list_items[3]
+    assert li4.text == "4"
+    li4_id = li4.attrib["id"]
+
     # Swap adjacent items
     view.render(menu=["3", "2", "4"])
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "3", "2", "4", "6"]
 
+    # Moved 3 to before 2
+    print(evts)
+    assert len(evts) == 1
+    v = evts[-1]["value"]
+    assert v["type"] == "moved" and v["name"] == "children"
+    assert v["value"] == li3_id and v["id"] == ul_id and v["index"] == 1
+
     # Swap two items that are not adjacent (3 and 4)
     view.render(menu=["4", "2", "3"])
     r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
     assert r == ["1", "4", "2", "3", "6"]
+
+    # Moved 4 to before 3
+    print(evts)
+    assert len(evts) == 3
+    v = evts[-2]["value"]
+    assert v["type"] == "moved" and v["name"] == "children"
+    assert v["value"] == li4_id and v["id"] == ul_id and v["index"] == 1
+
+    v = evts[-1]["value"]
+    assert v["type"] == "moved" and v["name"] == "children"
+    assert v["value"] == li2_id and v["id"] == ul_id and v["index"] == 2
 
     # view.render(menu=["4", "2", "3"])
     # r = [li.text for li in view.proxy.widget.xpath("/html/body/ul/li")]
