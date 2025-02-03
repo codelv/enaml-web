@@ -157,6 +157,23 @@ def test_html_change(app, tag, attr, default, change, query):
     assert len(view.proxy.widget.xpath(query)) == 1
 
 
+def test_root_tag_render(app):
+    """Test rendering a root component with a custom tag"""
+    source = dedent(
+        """
+    from web.components.api import *
+
+    enamldef Toast(Html):
+        tag = "toast"
+    """
+    )
+    print(source)
+    Toast = compile_source(source, "Toast")
+    toast = Toast()
+    print(toast.render())
+    assert len(toast.proxy.widget.xpath("//toast")) == 1
+
+
 def test_tag_proxy(app):
     # To make cov happy
     from web.components.html import ProxyTag

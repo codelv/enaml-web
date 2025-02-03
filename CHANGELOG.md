@@ -1,6 +1,6 @@
 # 0.13.0
 - **BREAKING** Refactor Tag and implementation to significantly reduce memory usage
-- The Tag's `tag` is now a ClassVar instead of an atom member. Use a subclass to change tags.
+- The Tag's `tag` is now a ClassVar instead of an atom member. Only the tag of the "root" html node can be changed per instance. Use a subclass to change tags of child nodes.
 - The Tag's `clickable` and `draggable` are now removed. `clickable` is automatically inferred if a `clicked` handler is defined. `draggable` is inferred if `dragstart` is defined. 
 - Due to their minimal usage `onclick`, `ondragstart`, `ondragover`, `ondragend`, `ondragenter` and `ondragleave` are removed. Use
 the `attrs` dict to define these instead.

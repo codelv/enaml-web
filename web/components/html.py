@@ -301,10 +301,12 @@ class Tag(ToolkitObject):
 
 
 class Html(Tag):
+    """Html is a root tag. It can be created without a parent and handles all modified events"""
+
     __slots__ = ("__weakref__",)
 
-    #: Set the tag name
-    tag = "html"
+    #: The xml tag of the root node.
+    tag = d_(Str("html"))
 
     #: Dom modified event. This will fire when any child node is updated, added
     #: or removed. Observe this event to handle updating websockets.
