@@ -55,7 +55,7 @@ def test_hello_world(app):
     "tag, attr, query",
     (
         ("Div", 'cls = "right"', '//div[@class="right"]'),
-        ("Div", 'cls = ["btn", "btn-large"]', '//div[@class="btn btn-large"]'),
+        ("Div", 'cls = "btn btn-large"', '//div[@class="btn btn-large"]'),
         ("Span", 'style = "float: left;"', '//span[@style="float: left;"]'),
         (
             "Span",
@@ -63,8 +63,8 @@ def test_hello_world(app):
             '//span[(@style="background:#fff;color:blue" or '
             '@style="color:blue;background:#fff")]',
         ),
-        ("Li", "clickable = True", '//li[@clickable="true"]'),
-        ("Li", "draggable = True", '//li[@draggable="true"]'),
+        ("Li", "clicked :: print('clicked')", '//li[@clickable="true"]'),
+        ("Li", "dragstart :: print('dragstart')", '//li[@draggable="true"]'),
         ("Img", 'id = "logo"', '//img[@id="logo"]'),
         # Use attrs for special or non-python html attributes
         ("Div", 'attrs = {"data-tooltip":"Tooltip"}', '//div[@data-tooltip="Tooltip"]'),
@@ -99,7 +99,6 @@ def test_html(app, tag, attr, query):
     "tag, attr, default, change, query",
     (
         ("A", "href", '"#"', "/home/", '//a[@href="/home/"]'),
-        ("A", "tag", '"a"', "span", "//span"),  # It's possible to change tags
         ("Base", "href", '"#"', "/home/", '//base[@href="/home/"]'),
         ("Blockquote", "cite", '"1"', "2", '//blockquote[@cite="2"]'),
         ("Img", "width", '"100px"', "100%", '//img[@width="100%"]'),
@@ -127,15 +126,13 @@ def test_html(app, tag, attr, query):
         ("P", "text", '"a"', "b", '//p[text()="b"]'),
         ("P", "tail", '"a"', "b", '//body[text()="b"]'),
         ("A", "attrs", {"data-x": "a"}, {"data-x": "b"}, '//a[@data-x="b"]'),
-        ("Button", "clickable", False, True, '//button[@clickable="true"]'),
-        ("Button", "draggable", True, False, '//button[@draggable="false"]'),
-        ("A", "onclick", '"a"', "b", '//a[@onclick="b"]'),
-        ("A", "ondragstart", '"a"', "b", '//a[@ondragstart="b"]'),
-        ("A", "ondragover", '"a"', "b", '//a[@ondragover="b"]'),
-        ("A", "ondragend", '"a"', "b", '//a[@ondragend="b"]'),
-        ("A", "ondragenter", '"a"', "b", '//a[@ondragenter="b"]'),
-        ("A", "ondragleave", '"a"', "b", '//a[@ondragleave="b"]'),
-        ("A", "ondrop", '"a"', "b", '//a[@ondrop="b"]'),
+        (
+            "A",
+            "attrs",
+            {"data-x": "a"},
+            {"data-y": "b"},
+            '//a[@data-y="b" and not(@data-x)]',
+        ),
     ),
 )
 def test_html_change(app, tag, attr, default, change, query):
@@ -313,7 +310,7 @@ def test_markdown_proxy(app):
         "extensions_config",
     ):
         with pytest.raises(NotImplementedError):
-            getattr(proxy, "set_%s" % attr)(None)
+            getattr(proxy, "set_%s" % attr)(None, None)
 
 
 def test_code(app):
@@ -358,7 +355,7 @@ def test_code_proxy(app):
     proxy = ProxyCode()
     for attr in ("language", "highlight_style"):
         with pytest.raises(NotImplementedError):
-            getattr(proxy, "set_%s" % attr)(None)
+            getattr(proxy, "set_%s" % attr)(None, None)
 
 
 @pytest.mark.skipif(SKIP_NBFORMAT, reason="nbformat is required")

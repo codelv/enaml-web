@@ -28,7 +28,7 @@ class RawComponent(WebComponent, ProxyRawNode):
         else:
             super().init_widget()
 
-    def set_source(self, source: SourceType):
+    def set_source(self, source: SourceType, oldvalue: SourceType = None):
         """Set the source by parsing the source and inserting it into the
         component.
         """

@@ -26,7 +26,7 @@ class NotebookComponent(RawComponent, ProxyNotebook):
     #: Resources from the node
     resources = Value()
 
-    def set_source(self, source: SourceType):
+    def set_source(self, source: SourceType, oldvalue: SourceType = None):
         # Parse md and put in a root node
         d = self.declaration
         assert d is not None
@@ -38,7 +38,7 @@ class NotebookComponent(RawComponent, ProxyNotebook):
             source = f"<div>{source}</div>"
         super().set_source(source)
 
-    def set_version(self, version: int):
+    def set_version(self, version: int, oldvalue: int):
         d = self.declaration
         assert d is not None
         self.set_source(d.source)

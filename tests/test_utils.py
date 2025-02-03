@@ -3,6 +3,13 @@ from web.core.speedups import gen_id, lookup_child_index
 from web.components.html import Tag
 
 
+def test_intern_str():
+    # Python normally does not intern anything that doesn't look like an attribute
+    # Since cls names are likely to be reused they are automatically interned to save space
+    t1 = Tag(cls="ms-2")
+    assert t1.cls is "ms-2"  # noqa: F632
+
+
 def test_child_index():
     with pytest.raises(ValueError):
         lookup_child_index(None)

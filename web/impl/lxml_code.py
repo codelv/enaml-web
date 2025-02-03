@@ -34,18 +34,18 @@ class CodeComponent(RawComponent, ProxyCode):
             return lexers.find_lexer_class_by_name(d.language)()
         return lexers.guess_lexer(d.source)
 
-    def set_source(self, source: SourceType):
+    def set_source(self, source: SourceType, oldvalue: SourceType = None):
         if isinstance(source, str):
             source = highlight(source, lexer=self.lexer, formatter=self.formatter)
         super().set_source(source)
 
-    def set_language(self, language: str):
+    def set_language(self, language: str, oldvalue: str):
         d = self.declaration
         assert d is not None
         self.lexer = self._default_lexer()
         self.set_source(d.source)
 
-    def set_highlight_style(self, style: str):
+    def set_highlight_style(self, style: str, oldvalue: str):
         d = self.declaration
         assert d is not None
         self.formatter = self._default_formatter()

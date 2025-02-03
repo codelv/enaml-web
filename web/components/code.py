@@ -19,10 +19,10 @@ class ProxyCode(ProxyRawNode):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Code)
 
-    def set_language(self, language: str):
+    def set_language(self, language: str, oldvalue: str):
         raise NotImplementedError
 
-    def set_highlight_style(self, style: str):
+    def set_highlight_style(self, style: str, oldvalue: str):
         raise NotImplementedError
 
 

@@ -21,7 +21,7 @@ class ProxyNotebook(ProxyRawNode):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Notebook)
 
-    def set_version(self, version: int):
+    def set_version(self, version: int, oldvalue: int):
         raise NotImplementedError
 
 

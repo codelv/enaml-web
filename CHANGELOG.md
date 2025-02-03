@@ -1,3 +1,16 @@
+# 0.13.0
+- **BREAKING** Refactor Tag and implementation to significantly reduce memory usage
+- The Tag's `tag` is now a ClassVar instead of an atom member. Use a subclass to change tags.
+- The Tag's `clickable` and `draggable` are now removed. `clickable` is automatically inferred if a `clicked` handler is defined. `draggable` is inferred if `dragstart` is defined. 
+- Due to their minimal usage `onclick`, `ondragstart`, `ondragover`, `ondragend`, `ondragenter` and `ondragleave` are removed. Use
+the `attrs` dict to define these instead.
+- The `alt` attribute was moved from `Tag` to `A` and `Img`, for other nodes use the `attrs` dict.
+- The `cls` attributes now only accept strings. These values are now internd to save memory
+- Tags now have a `find_by_id` method to retrieve a node by it's `id` field
+- Fix bug where an item removed attrs dict was not removed from the html
+- Any proxy `set_{attr}` methods now take a second argument that includes the oldvalue.
+- Optimize speedups extension
+
 # 0.12.1
 - Support python 3.13
 - Cleanup type errors and lint errors

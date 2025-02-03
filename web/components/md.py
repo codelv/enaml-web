@@ -30,19 +30,19 @@ class ProxyMarkdown(ProxyRawNode):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Markdown)
 
-    def set_safe_mode(self, mode: bool):
+    def set_safe_mode(self, mode: bool, oldvalue: bool):
         raise NotImplementedError
 
-    def set_output_format(self, output_format: str):
+    def set_output_format(self, output_format: str, oldvalue: str):
         raise NotImplementedError
 
-    def set_tab_length(self, length: int):
+    def set_tab_length(self, length: int, oldvalue: int):
         raise NotImplementedError
 
-    def set_extensions(self, extensions: list[str]):
+    def set_extensions(self, extensions: list[str], oldvalue: list[str]):
         raise NotImplementedError
 
-    def set_extensions_config(self, config: dict[str, dict]):
+    def set_extensions_config(self, config: dict[str, dict], oldvalue: dict[str, dict]):
         raise NotImplementedError
 
 

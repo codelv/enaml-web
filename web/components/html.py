@@ -17,18 +17,18 @@ from atom.api import (
     Event,
     Enum,
     Dict,
+    Instance,
     Value,
     Str,
-    Instance,
     ForwardTyped,
     Typed,
     Coerced,
     observe,
-    set_default,
     ChangeDict,
 )
 from enaml.core.declarative import d_, Declarative
 from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
+from web.core.utils import InternStr
 
 try:
     from web.core.speedups import gen_id, lookup_child_index
@@ -81,10 +81,10 @@ class Tag(ToolkitObject):
     id = d_(Str()).tag(attr=False)
 
     #: Tag name
-    tag = d_(Str()).tag(attr=False)
+    tag = "tag"
 
-    #: CSS classes
-    cls = d_(Instance((list, tuple, str))).tag(attr=False)
+    #: CSS classes.
+    cls = d_(InternStr()).tag(attr=False)
 
     #: CSS styles
     style = d_(Instance((dict, str))).tag(attr=False)
@@ -95,39 +95,8 @@ class Tag(ToolkitObject):
     #: Node tail text
     tail = d_(Str()).tag(attr=False)
 
-    #: Alt attribute
-    alt = d_(Str()).tag(attr=False)
-
     #: Custom attributes not explicitly defined
     attrs = d_(Dict()).tag(attr=False)
-
-    #: JS onclick definition
-    onclick = d_(Str()).tag(attr=False)
-
-    #: Used to tell js to send click events back to the server
-    clickable = d_(Coerced(bool)).tag(attr=False)
-
-    #: Used to tell js to send drag events back to the server and sets the
-    #: draggable attribute. Must be used with ondragstart.
-    draggable = d_(Coerced(bool)).tag(attr=False)
-
-    #: JS ondragstart definition
-    ondragstart = d_(Str()).tag(attr=False)
-
-    #: JS ondragover definition
-    ondragover = d_(Str()).tag(attr=False)
-
-    #: JS ondragend definition
-    ondragend = d_(Str()).tag(attr=False)
-
-    #: JS ondragenter definition
-    ondragenter = d_(Str()).tag(attr=False)
-
-    #: JS ondragleave definition
-    ondragleave = d_(Str()).tag(attr=False)
-
-    #: JS ondrop definition
-    ondrop = d_(Str()).tag(attr=False)
 
     #: Event triggered on click
     clicked = d_(Event())
@@ -152,22 +121,11 @@ class Tag(ToolkitObject):
 
     @observe(
         "id",
-        "tag",
         "cls",
         "style",
         "text",
         "tail",
-        "alt",
         "attrs",
-        "clickable",
-        "draggable",
-        "onclick",
-        "ondragstart",
-        "ondragover",
-        "ondragend",
-        "ondragenter",
-        "ondragleave",
-        "ondrop",
     )
     def _update_proxy(self, change: ChangeDict):
         """Update the proxy widget when the Widget data changes.
@@ -180,9 +138,8 @@ class Tag(ToolkitObject):
             value = change["value"]
             proxy = self.proxy
             assert proxy is not None
-            handler = getattr(proxy, f"set_{name}", None)
-            if handler is not None:
-                handler(value)
+            if handler := getattr(proxy, f"set_{name}", None):
+                handler(value, change["oldvalue"])
             else:
                 proxy.set_attribute(name, value)
             self._notify_modified(
@@ -344,10 +301,10 @@ class Tag(ToolkitObject):
 
 
 class Html(Tag):
-    __slots__ = "__weakref__"
+    __slots__ = ("__weakref__",)
 
     #: Set the tag name
-    tag = set_default("html")
+    tag = "html"
 
     #: Dom modified event. This will fire when any child node is updated, added
     #: or removed. Observe this event to handle updating websockets.
@@ -355,169 +312,140 @@ class Html(Tag):
 
 
 class Head(Tag):
-    #: Set the tag name
-    tag = set_default("head")
+    tag = "head"
 
 
 class Body(Tag):
-    #: Set the tag name
-    tag = set_default("body")
+    tag = "body"
 
 
 class Title(Tag):
-    #: Set the tag name
-    tag = set_default("title")
+    tag = "title"
 
 
 class P(Tag):
-    #: Set the tag name
-    tag = set_default("p")
+    tag = "p"
 
 
 class H1(Tag):
-    #: Set the tag name
-    tag = set_default("h1")
+    tag = "h1"
 
 
 class H2(Tag):
-    #: Set the tag name
-    tag = set_default("h2")
+    tag = "h2"
 
 
 class H3(Tag):
-    #: Set the tag name
-    tag = set_default("h3")
+    tag = "h3"
 
 
 class H4(Tag):
-    #: Set the tag name
-    tag = set_default("h4")
+    tag = "h4"
 
 
 class H5(Tag):
-    #: Set the tag name
-    tag = set_default("h5")
+    tag = "h5"
 
 
 class H6(Tag):
-    #: Set the tag name
-    tag = set_default("h6")
+    tag = "h6"
 
 
 class Hr(Tag):
-    #: Set the tag name
-    tag = set_default("hr")
+    tag = "hr"
 
 
 class Br(Tag):
-    #: Set the tag name
-    tag = set_default("br")
+    tag = "br"
 
 
 class Pre(Tag):
-    #: Set the tag name
-    tag = set_default("pre")
+    tag = "pre"
 
 
 class Kbd(Tag):
-    #: Set the tag name
-    tag = set_default("kbd")
+    tag = "kbd"
 
 
 class Samp(Tag):
-    #: Set the tag name
-    tag = set_default("samp")
+    tag = "samp"
 
 
 class Var(Tag):
-    #: Set the tag name
-    tag = set_default("var")
+    tag = "var"
 
 
 class Div(Tag):
-    #: Set the tag name
-    tag = set_default("div")
+    tag = "div"
 
 
 class Span(Tag):
-    #: Set the tag name
-    tag = set_default("span")
+    tag = "span"
 
 
 class A(Tag):
-    #: Set the tag name
-    tag = set_default("a")
+    tag = "a"
 
     #: Set the url
     href = d_(Str())
 
+    #: Alt attribute
+    alt = d_(Str())
+
     #: Set the target options
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
 
-    @observe("href", "target")
+    @observe("href", "target", "alt")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
 
 class B(Tag):
-    #: Set the tag name
-    tag = set_default("b")
+    tag = "b"
 
 
 class I(Tag):  # noqa: E742
-    #: Set the tag name
-    tag = set_default("i")
+    tag = "i"
 
 
 class Strong(Tag):
-    #: Set the tag name
-    tag = set_default("strong")
+    tag = "strong"
 
 
 class Em(Tag):
-    #: Set the tag name
-    tag = set_default("em")
+    tag = "em"
 
 
 class Mark(Tag):
-    #: Set the tag name
-    tag = set_default("mark")
+    tag = "mark"
 
 
 class Small(Tag):
-    #: Set the tag name
-    tag = set_default("small")
+    tag = "small"
 
 
 class Del(Tag):
-    #: Set the tag name
-    tag = set_default("del")
+    tag = "del"
 
 
 class Ins(Tag):
-    #: Set the tag name
-    tag = set_default("ins")
+    tag = "ins"
 
 
 class Sub(Tag):
-    #: Set the tag name
-    tag = set_default("sub")
+    tag = "sub"
 
 
 class Sup(Tag):
-    #: Set the tag name
-    tag = set_default("sup")
+    tag = "sup"
 
 
 class Q(Tag):
-    #: Set the tag name
-    tag = set_default("q")
+    tag = "q"
 
 
 class Blockquote(Tag):
-    #: Set the tag name
-    tag = set_default("blockquote")
-
+    tag = "blockquote"
     cite = d_(Str())
 
     @observe("cite")
@@ -526,49 +454,42 @@ class Blockquote(Tag):
 
 
 class Abbr(Tag):
-    #: Set the tag name
-    tag = set_default("abbr")
+    tag = "abbr"
 
 
 class Address(Tag):
-    #: Set the tag name
-    tag = set_default("address")
+    tag = "address"
 
 
 class Cite(Tag):
-    #: Set the tag name
-    tag = set_default("cite")
+    tag = "cite"
 
 
 class Bdo(Tag):
-    #: Set the tag name
-    tag = set_default("bdo")
-
+    tag = "bdo"
     dir = d_(Str())
 
 
 class Img(Tag):
-    #: Set the tag name
-    tag = set_default("img")
+    tag = "img"
 
+    #: Alt attribute
+    alt = d_(Str())
     src = d_(Str())
     width = d_(Str())
     height = d_(Str())
 
-    @observe("src", "width", "height")
+    @observe("src", "width", "height", "alt")
     def _update_proxy(self, change: ChangeDict):
         super()._update_proxy(change)
 
 
 class Style(Tag):
-    #: Set the tag name
-    tag = set_default("style")
+    tag = "style"
 
 
 class Link(Tag):
-    #: Set the tag name
-    tag = set_default("link")
-
+    tag = "link"
     type = d_(Str())
     rel = d_(Str())
     href = d_(Str())
@@ -580,10 +501,7 @@ class Link(Tag):
 
 
 class Map(Tag):
-    #: Set the tag name
-    tag = set_default("map")
-
-    name = d_(Str())
+    tag = "map"
 
     @observe("name")
     def _update_proxy(self, change: ChangeDict):
@@ -591,8 +509,7 @@ class Map(Tag):
 
 
 class Area(Tag):
-    #: Set the tag name
-    tag = set_default("area")
+    tag = "area"
 
     shape = d_(Str())
     coords = d_(Str())
@@ -604,19 +521,15 @@ class Area(Tag):
 
 
 class Table(Tag):
-    #: Set the tag name
-    tag = set_default("table")
+    tag = "table"
 
 
 class Tr(Tag):
-    #: Set the tag name
-    tag = set_default("tr")
+    tag = "tr"
 
 
 class Td(Tag):
-    #: Set the tag name
-    tag = set_default("td")
-
+    tag = "td"
     colspan = d_(Str())
     rowspan = d_(Str())
 
@@ -626,9 +539,7 @@ class Td(Tag):
 
 
 class Th(Tag):
-    #: Set the tag name
-    tag = set_default("th")
-
+    tag = "th"
     colspan = d_(Str())
     rowspan = d_(Str())
 
@@ -638,34 +549,27 @@ class Th(Tag):
 
 
 class THead(Tag):
-    #: Set the tag name
-    tag = set_default("thead")
+    tag = "thead"
 
 
 class TBody(Tag):
-    #: Set the tag name
-    tag = set_default("tbody")
+    tag = "tbody"
 
 
 class TFoot(Tag):
-    #: Set the tag name
-    tag = set_default("tfoot")
+    tag = "tfoot"
 
 
 class Caption(Tag):
-    #: Set the tag name
-    tag = set_default("caption")
+    tag = "caption"
 
 
 class Ul(Tag):
-    #: Set the tag name
-    tag = set_default("ul")
+    tag = "ul"
 
 
 class Ol(Tag):
-    #: Set the tag name
-    tag = set_default("ol")
-
+    tag = "ol"
     type = d_(Enum("", "1", "A", "a", "I", "i"))
 
     @observe("type")
@@ -674,29 +578,23 @@ class Ol(Tag):
 
 
 class Li(Tag):
-    #: Set the tag name
-    tag = set_default("li")
+    tag = "li"
 
 
 class Dl(Tag):
-    #: Set the tag name
-    tag = set_default("dl")
+    tag = "dl"
 
 
 class Dt(Tag):
-    #: Set the tag name
-    tag = set_default("dt")
+    tag = "dt"
 
 
 class Dd(Tag):
-    #: Set the tag name
-    tag = set_default("dd")
+    tag = "dd"
 
 
 class IFrame(Tag):
-    #: Set the tag name
-    tag = set_default("iframe")
-
+    tag = "iframe"
     src = d_(Str())
     height = d_(Str())
     width = d_(Str())
@@ -708,8 +606,7 @@ class IFrame(Tag):
 
 
 class Script(Tag):
-    #: Set the tag name
-    tag = set_default("script")
+    tag = "script"
     src = d_(Str())
     type = d_(Str())
 
@@ -719,15 +616,11 @@ class Script(Tag):
 
 
 class NoScript(Tag):
-    #: Set the tag name
-    tag = set_default("noscript")
+    tag = "noscript"
 
 
 class Meta(Tag):
-    #: Set the tag name
-    tag = set_default("meta")
-
-    name = d_(Str())
+    tag = "meta"
     content = d_(Str())
 
     @observe("name", "content")
@@ -736,8 +629,7 @@ class Meta(Tag):
 
 
 class Base(Tag):
-    #: Set the tag name
-    tag = set_default("base")
+    tag = "base"
 
     href = d_(Str())
     target = d_(Enum("", "_blank", "_self", "_parent", "_top", "framename"))
@@ -748,49 +640,39 @@ class Base(Tag):
 
 
 class Header(Tag):
-    #: Set the tag name
-    tag = set_default("header")
+    tag = "header"
 
 
 class Nav(Tag):
-    #: Set the tag name
-    tag = set_default("nav")
+    tag = "nav"
 
 
 class Section(Tag):
-    #: Set the tag name
-    tag = set_default("section")
+    tag = "section"
 
 
 class Aside(Tag):
-    #: Set the tag name
-    tag = set_default("aside")
+    tag = "aside"
 
 
 class Article(Tag):
-    #: Set the tag name
-    tag = set_default("article")
+    tag = "article"
 
 
 class Footer(Tag):
-    #: Set the tag name
-    tag = set_default("footer")
+    tag = "footer"
 
 
 class Summary(Tag):
-    #: Set the tag name
-    tag = set_default("summary")
+    tag = "summary"
 
 
 class Details(Tag):
-    #: Set the tag name
-    tag = set_default("details")
+    tag = "details"
 
 
 class Form(Tag):
-    #: Set the tag name
-    tag = set_default("form")
-
+    tag = "form"
     action = d_(Str())
     method = d_(Enum("post", "get"))
 
@@ -800,25 +682,19 @@ class Form(Tag):
 
 
 class Fieldset(Tag):
-    #: Set the tag name
-    tag = set_default("fieldset")
+    tag = "fieldset"
 
 
 class Legend(Tag):
-    #: Set the tag name
-    tag = set_default("legend")
+    tag = "legend"
 
 
 class Label(Tag):
-    #: Set the tag name
-    tag = set_default("label")
+    tag = "label"
 
 
 class Select(Tag):
-    #: Set the tag name
-    tag = set_default("select")
-
-    name = d_(Str())
+    tag = "select"
     value = d_(Str())
     disabled = d_(Coerced(bool))
 
@@ -831,9 +707,7 @@ class Select(Tag):
 
 
 class Option(Tag):
-    #: Set the tag name
-    tag = set_default("option")
-
+    tag = "option"
     value = d_(Str())
     selected = d_(Coerced(bool))
 
@@ -843,9 +717,7 @@ class Option(Tag):
 
 
 class OptGroup(Tag):
-    #: Set the tag name
-    tag = set_default("optgroup")
-
+    tag = "optgroup"
     label = d_(Str())
     disabled = d_(Coerced(bool))
 
@@ -855,10 +727,7 @@ class OptGroup(Tag):
 
 
 class Input(Tag):
-    #: Set the tag name
-    tag = set_default("input")
-
-    name = d_(Str())
+    tag = "input"
     type = d_(Str())
     placeholder = d_(Str())
     disabled = d_(Coerced(bool))
@@ -874,10 +743,7 @@ class Input(Tag):
 
 
 class Textarea(Tag):
-    #: Set the tag name
-    tag = set_default("textarea")
-
-    name = d_(Str())
+    tag = "textarea"
     rows = d_(Str())
     cols = d_(Str())
     disabled = d_(Coerced(bool))
@@ -891,10 +757,7 @@ class Textarea(Tag):
 
 
 class Button(Tag):
-    #: Set the tag name
-    tag = set_default("button")
-
-    name = d_(Str())
+    tag = "button"
     type = d_(Str())
     value = d_(Str("1"))
 
@@ -907,9 +770,7 @@ class Button(Tag):
 
 
 class Video(Tag):
-    #: Set the tag name
-    tag = set_default("video")
-
+    tag = "video"
     controls = d_(Coerced(bool))
 
     @observe("controls")
@@ -918,9 +779,7 @@ class Video(Tag):
 
 
 class Source(Tag):
-    #: Set the tag name
-    tag = set_default("source")
-
+    tag = "source"
     src = d_(Str())
     type = d_(Str())
 

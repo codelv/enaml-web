@@ -37,20 +37,20 @@ class MarkdownComponent(RawComponent, ProxyMarkdown):
         #: Parse md and put in a root node
         super().set_source(source)
 
-    def set_source(self, source: SourceType):
+    def set_source(self, source: SourceType, oldvalue: SourceType = None):
         self._refresh_source()
 
-    def set_safe_mode(self, mode: bool):
+    def set_safe_mode(self, mode: bool, oldvalue: bool):
         self._refresh_source()
 
-    def set_output_format(self, format: str):
+    def set_output_format(self, format: str, oldvalue: str):
         self._refresh_source()
 
-    def set_tab_length(self, length: int):
+    def set_tab_length(self, length: int, oldvalue: int):
         self._refresh_source()
 
-    def set_extensions(self, extensions: list[str]):
+    def set_extensions(self, extensions: list[str], oldvalue: list[str]):
         self._refresh_source()
 
-    def set_extension_configs(self, config: dict[str, dict]):
+    def set_extension_configs(self, config: dict[str, dict], oldvalue: dict[str, dict]):
         self._refresh_source()

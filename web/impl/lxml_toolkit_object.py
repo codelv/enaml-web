@@ -18,6 +18,8 @@ from atom.api import Atom, Bool, Member, Typed, Event
 from lxml.etree import _Element, Element, SubElement, tostring
 from web.components.html import ProxyTag
 
+Style = Union[str, dict[str, str]]
+
 
 @lru_cache(1024)
 def get_fields(cls: Type[Atom]) -> tuple[Member, ...]:
@@ -85,30 +87,15 @@ class WebComponent(ProxyTag):
             widget.text = v
         if v := d.tail:
             widget.tail = v
-        if v := d.alt:
-            set_attr("alt", v)
         if v := d.style:
-            self.set_style(v)
+            self.set_style(v, "")
         if v := d.cls:
-            self.set_cls(v)
-        if d.clickable:
-            set_attr("clickable", "true")
-        if d.draggable:
-            set_attr("draggable", "true")
-        if v := d.onclick:
-            set_attr("onclick", v)
-        if v := d.ondragstart:
-            set_attr("ondragstart", v)
-        if v := d.ondragover:
-            set_attr("ondragover", v)
-        if v := d.ondragend:
-            set_attr("ondragend", v)
-        if v := d.ondragenter:
-            set_attr("ondragenter", v)
-        if v := d.ondragleave:
-            set_attr("ondragleave", v)
-        if v := d.ondrop:
-            set_attr("ondrop", v)
+            self.set_cls(v, "")
+        if engine := d._d_engine:
+            if "clicked" in engine._handlers:
+                set_attr("clickable", "true")
+            if "dragstart" in engine._handlers:
+                set_attr("draggable", "true")
 
         for k, v in d.attrs.items():
             set_attr(k, v)
@@ -260,37 +247,38 @@ class WebComponent(ProxyTag):
     # -------------------------------------------------------------------------
     # Change handlers
     # -------------------------------------------------------------------------
-    def set_text(self, text: str):
+    def set_text(self, text: str, oldvalue: str):
         w = self.widget
         assert w is not None
         w.text = text
 
-    def set_tail(self, text: str):
+    def set_tail(self, text: str, oldvalue: str):
         w = self.widget
         assert w is not None
         w.tail = text
 
-    def set_tag(self, tag: str):
+    def set_tag(self, tag: str, oldvalue: str):
         w = self.widget
         assert w is not None
         w.tag = tag
 
-    def set_attrs(self, attrs: dict[str, str]):
+    def set_attrs(self, attrs: dict[str, str], oldattrs: dict[str, str]):
         """Set any attributes not explicitly defined"""
         w = self.widget
         assert w is not None
         set_attr = w.set
+        for k in oldattrs:
+            if k not in attrs:
+                w.attrib.pop(k, None)
         for k, v in attrs.items():
             set_attr(k, v)
 
-    def set_cls(self, cls: Union[tuple[str], list[str], str]):
-        if isinstance(cls, (tuple, list)):
-            cls = " ".join(cls)
+    def set_cls(self, cls: str, oldvalue: str):
         w = self.widget
         assert w is not None
         w.set("class", cls)
 
-    def set_style(self, style: Union[dict, str]):
+    def set_style(self, style: Style, oldvalue: Style):
         if isinstance(style, dict):
             style = ";".join(f"{k}:{v}" for k, v in style.items())
         w = self.widget
@@ -307,17 +295,6 @@ class WebComponent(ProxyTag):
             w.attrib.pop(name, None)
         else:
             w.set(name, f"{value}")
-
-    def set_clickable(self, clickable: bool):
-        w = self.widget
-        assert w is not None
-        w.set("clickable", "true" if clickable else "false")
-
-    def set_draggable(self, draggable: bool):
-        """The draggable attr must be explicitly set to true or false"""
-        w = self.widget
-        assert w is not None
-        w.set("draggable", "true" if draggable else "false")
 
 
 class RootWebComponent(WebComponent):

@@ -13,7 +13,7 @@ Created on Aug 2, 2017
 from __future__ import annotations
 
 from typing import Union, Optional
-from atom.api import ForwardTyped, Instance, Typed, ChangeDict, set_default, observe
+from atom.api import ForwardTyped, Instance, Typed, ChangeDict, observe
 from lxml.etree import _Element as Element
 from enaml.core.declarative import d_
 from .html import Tag, ProxyTag
@@ -25,7 +25,7 @@ class ProxyRawNode(ProxyTag):
     #: Reference to the declaration
     declaration = ForwardTyped(lambda: Raw)
 
-    def set_source(self, source: SourceType):
+    def set_source(self, source: SourceType, oldvalue: SourceType = None):
         raise NotImplementedError
 
 
@@ -40,7 +40,7 @@ class Raw(Tag):
     proxy = Typed(ProxyRawNode)
 
     #: Default tag is a div
-    tag = set_default("div")
+    tag = "div"
 
     #: Raw source to parse and display
     source = d_(Instance((str, list, Element))).tag(attr=False)
