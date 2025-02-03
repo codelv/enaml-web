@@ -769,6 +769,10 @@ class Button(Tag):
         super()._update_proxy(change)
 
 
+class Canvas(Tag):
+    tag = "canvas"
+
+
 class Video(Tag):
     tag = "video"
     controls = d_(Coerced(bool))
