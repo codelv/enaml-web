@@ -663,6 +663,10 @@ class Footer(Tag):
     tag = "footer"
 
 
+class Font(Tag):
+    tag = "font"
+
+
 class Summary(Tag):
     tag = "summary"
 
