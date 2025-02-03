@@ -397,7 +397,7 @@ def test_notebook_proxy(app):
 
     proxy = ProxyNotebook()
     with pytest.raises(NotImplementedError):
-        proxy.set_version(None)
+        proxy.set_version(None, None)
 
 
 def test_node_added(app):
