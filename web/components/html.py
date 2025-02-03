@@ -16,7 +16,6 @@ from typing import Any, Generator, Optional, Union
 from atom.api import (
     Event,
     Enum,
-    Dict,
     Instance,
     Value,
     Str,
@@ -96,7 +95,7 @@ class Tag(ToolkitObject):
     tail = d_(Str()).tag(attr=False)
 
     #: Custom attributes not explicitly defined
-    attrs = d_(Dict()).tag(attr=False)
+    attrs = d_(Typed(dict)).tag(attr=False)
 
     #: Event triggered on click
     clicked = d_(Event())

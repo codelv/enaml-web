@@ -97,8 +97,9 @@ class WebComponent(ProxyTag):
             if "dragstart" in engine._handlers:
                 set_attr("draggable", "true")
 
-        for k, v in d.attrs.items():
-            set_attr(k, v)
+        if attrs := d.attrs:
+            for k, v in attrs.items():
+                set_attr(k, v)
 
         for m in get_fields(d.__class__):
             name = m.name
@@ -262,16 +263,27 @@ class WebComponent(ProxyTag):
         assert w is not None
         w.tag = tag
 
-    def set_attrs(self, attrs: dict[str, str], oldattrs: dict[str, str]):
+    def set_attrs(
+        self, attrs: Optional[dict[str, str]], oldattrs: Optional[dict[str, str]]
+    ):
         """Set any attributes not explicitly defined"""
         w = self.widget
         assert w is not None
-        set_attr = w.set
-        for k in oldattrs:
-            if k not in attrs:
+        if attrs and oldattrs:
+            # Attrs changed
+            for k in oldattrs:
+                if k not in attrs:
+                    w.attrib.pop(k, None)
+            for k, v in attrs.items():
+                w.set(k, v)
+        elif not attrs and oldattrs:
+            # All attrs removed
+            for k in oldattrs:
                 w.attrib.pop(k, None)
-        for k, v in attrs.items():
-            set_attr(k, v)
+        elif attrs and not oldattrs:
+            # Only new attrs
+            for k, v in attrs.items():
+                w.set(k, v)
 
     def set_cls(self, cls: str, oldvalue: str):
         w = self.widget

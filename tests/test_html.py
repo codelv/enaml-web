@@ -125,8 +125,28 @@ def test_html(app, tag, attr, query):
         ("Source", "type", '"a"', "b", '//source[@type="b"]'),
         ("P", "text", '"a"', "b", '//p[text()="b"]'),
         ("P", "tail", '"a"', "b", '//body[text()="b"]'),
-        ("A", "attrs", {"data-x": "a"}, {"data-x": "b"}, '//a[@data-x="b"]'),
         (
+            "A",
+            "attrs",
+            {"data-x": "a"},
+            {"data-x": "b"},
+            '//a[@data-x="b"]',
+        ),  # attrs value changed
+        (
+            "A",
+            "attrs",
+            None,
+            {"data-x": "b"},
+            '//a[@data-x="b"]',
+        ),  # attrs from none to new
+        (
+            "A",
+            "attrs",
+            {"data-x": "b"},
+            None,
+            "//a[not(@data-x)]",
+        ),  # attrs from old to none
+        (  # Test attrs key change
             "A",
             "attrs",
             {"data-x": "a"},

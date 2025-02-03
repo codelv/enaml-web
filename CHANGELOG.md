@@ -6,6 +6,7 @@
 the `attrs` dict to define these instead.
 - The `alt` attribute was moved from `Tag` to `A` and `Img`, for other nodes use the `attrs` dict.
 - The `cls` attributes now only accept strings. These values are now internd to save memory
+- The `attrs` is now `None` by default and can be set to `None` to clear any old attrs set
 - Tags now have a `find_by_id` method to retrieve a node by it's `id` field
 - Fix bug where an item removed attrs dict was not removed from the html
 - Any proxy `set_{attr}` methods now take a second argument that includes the oldvalue.
