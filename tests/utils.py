@@ -1,5 +1,7 @@
+import pytest
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
+from web.core.app import WebApplication
 
 
 def compile_source(source, item, filename="<test>", namespace=None):
@@ -25,3 +27,9 @@ def compile_source(source, item, filename="<test>", namespace=None):
     namespace = namespace or {}
     exec(code, namespace)
     return namespace[item]
+
+
+@pytest.fixture
+def app():
+    app = WebApplication.instance() or WebApplication()
+    yield app

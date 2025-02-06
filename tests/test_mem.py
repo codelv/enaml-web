@@ -1,6 +1,11 @@
+import sys
 import time
 import pytest
+import tracemalloc
+import linecache
 from subprocess import Popen, PIPE, STDOUT
+from textwrap import dedent
+from utils import compile_source, app
 
 try:
     import requests
@@ -47,6 +52,83 @@ def test_mem_usage():
     finally:
         proc.kill()
         print(proc.stdout.read())
+
+
+def diff_stats(snapshot1, snapshot2, label: str, limit: int = 10):
+    top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+
+    print(f"------- Top {limit} differences {label} -------")
+    for stat in top_stats[:limit]:
+        print(stat)
+
+
+def display_top(snapshot, key_type='lineno', limit=10):
+    snapshot = snapshot.filter_traces((
+        tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+        tracemalloc.Filter(False, "<unknown>"),
+    ))
+    top_stats = snapshot.statistics(key_type)
+
+    print("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        print("#%s: %s:%s: %.1f KiB (%i)"
+              % (index, frame.filename, frame.lineno, stat.size / 1024, stat.count))
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            print('    %s' % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        print("%s other: %.1f KiB" % (len(other), size / 1024))
+    total = sum(stat.size for stat in top_stats)
+    print("Total allocated size: %.1f KiB" % (total / 1024))
+
+
+def test_html_size(app):
+    tracemalloc.start()
+    Page = compile_source(dedent("""
+    from web.components.api import *
+    from web.core.api import *
+    enamldef Page(Html): view:
+        Head:
+            Title:
+                text = "Table"
+        Body:
+            Table:
+                TBody:
+                    Looper:
+                        iterable = range(1000)
+                        Tr:
+                            Td:
+                                text = f"{loop.index}"
+                            Looper:
+                                iterable = range(99)
+                                Td:
+                                    text = f"{loop.item}"
+
+    """), "Page")
+
+    snapshot1 = tracemalloc.take_snapshot()
+    display_top(snapshot1)
+    view = Page()
+    snapshot2 = tracemalloc.take_snapshot()
+    display_top(snapshot2)
+    diff_stats(snapshot1, snapshot2, "after construct", 20)
+
+    content = view.render()
+    snapshot3 = tracemalloc.take_snapshot()
+    display_top(snapshot3)
+    diff_stats(snapshot2, snapshot3, "after render", 20)
+
+    assert len(content) < 2_500_000
+    total_size = 0
+    num_nodes = 0
+    for node in view.traverse():
+        num_nodes += 1
+        total_size += sys.getsizeof(node)
+    assert total_size < 5_000_000
 
 
 if __name__ == "__main__":

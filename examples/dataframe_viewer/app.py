@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import enaml
 import tornado.web
@@ -6,6 +7,9 @@ import tornado.websocket
 import tornado.ioloop
 from tornado.log import enable_pretty_logging
 from web.core.app import WebApplication
+
+# Add this folder to syspath if running from a different folder
+sys.path.append(os.path.dirname(__file__))
 
 with enaml.imports():
     from viewer import Viewer

@@ -1,9 +1,9 @@
+import sys
 import inspect
 import pytest
 from textwrap import dedent
 from lxml import html
-from utils import compile_source
-from web.core.app import WebApplication
+from utils import compile_source, app
 
 try:
     import nbformat  # noqa: F401
@@ -18,13 +18,6 @@ try:
     MARKDOWN_UNAVAILABLE = False
 except ImportError:
     MARKDOWN_UNAVAILABLE = True
-
-
-@pytest.fixture
-def app():
-    app = WebApplication.instance() or WebApplication()
-    yield app
-
 
 def test_hello_world(app):
     Page = compile_source(
