@@ -12,7 +12,7 @@ Created on Feb 10, 2022
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-const char alphabet[] = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz-+=._";
+const char alphabet[] = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz-+.:!";
 // C adds a null at the end so it needs -1
 const uint64_t alphabet_size = sizeof(alphabet) / sizeof(alphabet[0]) - 1;
 const uint8_t id_size = 8;
@@ -23,7 +23,7 @@ static PyObject* children_str = 0;
 /**
  * Generate a short ID (8 characters)
  */
-static PyObject* gen_id(PyObject* self, PyObject* obj)
+static PyObject* gen_id(PyObject* mod, PyObject* obj)
 {
     uint64_t number = (uint64_t) obj;
     char buf[id_size];
@@ -40,7 +40,7 @@ static PyObject* gen_id(PyObject* self, PyObject* obj)
  * Lookup the index of the child tag from the parent's children list ignoring
  * any pattern nodes. This provides about a 30% speedup.
  */
-static PyObject* lookup_child_index(PyObject* self, PyObject *const *args, Py_ssize_t nargs)
+static PyObject* lookup_child_index(PyObject* mod, PyObject *const *args, Py_ssize_t nargs)
 {
     if (nargs != 2) {
         PyErr_SetString( PyExc_ValueError, "must take exactly 2 arguments" );
