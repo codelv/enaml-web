@@ -82,7 +82,8 @@ class WebComponent(ProxyTag):
         set_attr = widget.set
         d = self.declaration
 
-        set_attr("id", d.id)
+        if v := d.id:
+            set_attr("id", v)
         if v := d.text:
             widget.text = v
         if v := d.tail:
