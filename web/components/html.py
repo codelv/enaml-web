@@ -47,7 +47,7 @@ except ImportError:
         """Generate a short id for the tag"""
         number = id(tag)
         output = ""
-        alpha = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+        alpha = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz-+.:!"
         while number:
             number, digit = mod(number, 59)
             output += alpha[digit]
