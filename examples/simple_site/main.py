@@ -1,9 +1,13 @@
+import os
 import sys
 import enaml
 import asyncio
 from web.core.app import WebApplication
 
 from web.components.api import Html
+
+# Add this folder to syspath if running from a different folder
+sys.path.append(os.path.dirname(__file__))
 
 try:
     import tornado

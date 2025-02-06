@@ -1,10 +1,10 @@
 import json
+import random
 from web.components.api import *
 from web.core.api import Looper
 
 
 enamldef PlotlyChart(Div):
-    tag = 'div'
     cls = 'plotly-chart'
     attr traces: list = []
     attr layout: dict = {}
@@ -28,16 +28,21 @@ enamldef Index(Html):
             Script:
                 src = loop_item
     Body:
+        H1:
+            text = "Random line chart"
         PlotlyChart:
+            attr x = list(range(100))
+            attr y1 = [random.randint(10, 30) for i in x]
+            attr y2 = [random.randint(5, 35) for i in x]
             traces << [
                 {
-                    'x': [1, 2, 3, 4],
-                    'y': [10, 15, 13, 17],
+                    'x': x,
+                    'y': y1,
                     'type': 'scatter'
                 },
                 {
-                    'x': [1, 2, 3, 4],
-                    'y': [16, 5, 11, 9],
+                    'x': x,
+                    'y': y2,
                     'type': 'scatter'
                 }
             ]
