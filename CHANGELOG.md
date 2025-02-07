@@ -1,3 +1,7 @@
+# 0.12.2
+- Use @observe from enaml to avoid unecessary notifications during init_widget
+- Improve speedup code
+
 # 0.12.1
 - Support python 3.13
 - Cleanup type errors and lint errors

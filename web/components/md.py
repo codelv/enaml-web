@@ -11,18 +11,8 @@ Created on Aug 2, 2017
 """
 
 from typing import Any, Optional
-from atom.api import (
-    Typed,
-    ForwardTyped,
-    Enum,
-    Int,
-    Bool,
-    List,
-    Dict,
-    ChangeDict,
-    observe,
-)
-from enaml.core.declarative import d_
+from atom.api import Typed, ForwardTyped, Enum, Int, Bool, List, Dict, ChangeDict
+from enaml.core.declarative import d_, observe
 from .html import Tag
 from .raw import Raw, ProxyRawNode
 

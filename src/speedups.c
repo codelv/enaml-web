@@ -12,78 +12,74 @@ Created on Feb 10, 2022
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-const char * alphabet = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const char alphabet[] = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+// C adds a null at the end so it needs -1
+const uint64_t alphabet_size = sizeof(alphabet) / sizeof(alphabet[0]) - 1;
+const uint8_t id_size = 8;
+
+static PyObject* Tag = 0;
+static PyObject* children_str = 0;
 
 /**
  * Generate a short ID (8 characters)
  */
-static PyObject * gen_id(PyObject *self, PyObject *obj)
+static PyObject* gen_id(PyObject* mod, PyObject* obj)
 {
-    // Builtin ID
-    PyObject *id = PyLong_FromVoidPtr(obj);
-    if (id && PySys_Audit("builtins.id", "O", id) < 0) {
-        Py_DECREF(id);
-        return NULL;
-    }
-    // TODO: Should there be some randomness?
-    uint64_t number = PyLong_AsUnsignedLong(id);
-    uint8_t index = 0;
-    char buf[8];
-    while (index < 8)
+    uint64_t number = (uint64_t) obj;
+    char buf[id_size];
+    for (uint8_t index = 0; index < id_size; index++)
     {
-        // Mod must match sizeof alphabet
-        lldiv_t r = lldiv(number, 59);
+        lldiv_t r = lldiv(number, alphabet_size);
         number = r.quot;
         buf[index] = alphabet[r.rem];
-        index += 1;
     }
-    Py_DECREF(id);
-    return PyUnicode_FromStringAndSize(buf, 8);
+    return PyUnicode_FromStringAndSize(buf, id_size);
 }
 
 /**
  * Lookup the index of the child tag from the parent's children list ignoring
  * any pattern nodes. This provides about a 30% speedup.
  */
-static PyObject * lookup_child_index(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+static PyObject* lookup_child_index(PyObject* mod, PyObject *const *args, Py_ssize_t nargs)
 {
     if (nargs != 2) {
         PyErr_SetString( PyExc_ValueError, "must take exactly 2 arguments" );
         return 0;
     }
 
-    PyObject* module = PyImport_ImportModule("web.components.html");
-    if (!module) {
-        PyErr_SetString( PyExc_ImportError, "Could not import web.components.html" );
-        return 0;
-    }
+    // Deferred import of web.components.html.Tag
+    if ( !Tag ) {
+        PyObject* module = PyImport_ImportModule("web.components.html");
+        if (!module) {
+            PyErr_SetString( PyExc_ImportError, "Could not import web.components.html" );
+            return 0;
+        }
 
-    PyObject* Tag = PyObject_GetAttrString(module, "Tag");
-    Py_DECREF(module);
-    if (!Tag) {
-        PyErr_SetString( PyExc_ImportError, "Could not import web.components.html.Tag" );
-        return 0;
+        Tag = PyObject_GetAttrString(module, "Tag");
+        Py_DECREF(module);
+        if ( !Tag ) {
+            PyErr_SetString( PyExc_ImportError, "Could not import web.components.html.Tag" );
+            return 0;
+        }
     }
 
     PyObject* parent = args[0];
     PyObject* child = args[1];
     if (!PyObject_IsInstance(parent, Tag) || !PyObject_IsInstance(child, Tag)) {
         PyErr_SetString( PyExc_TypeError, "Both arguments must be Tags" );
-        Py_DECREF(Tag);
         return 0;
     }
 
-    PyObject* children = PyObject_GetAttrString(parent, "_children");
+    PyObject* children = PyObject_GetAttr(parent, children_str);
     if (!children || !PyList_Check(children)) {
         PyErr_SetString( PyExc_TypeError, "Tag's children must be a list" );
-        Py_DECREF(children);
-        Py_DECREF(Tag);
+        Py_XDECREF(children);
         return 0;
     }
 
     uint32_t index = 0;
     uint8_t found = 0;
-    for (uint32_t i = 0; i < PyList_Size(children); i++) {
+    for (uint32_t i = 0; i < PyList_GET_SIZE(children); i++) {
         PyObject* c = PyList_GET_ITEM(children, i);
         if (c == child)
         {
@@ -95,7 +91,6 @@ static PyObject * lookup_child_index(PyObject *self, PyObject *const *args, Py_s
             index += 1;
     }
     Py_DECREF(children);
-    Py_DECREF(Tag);
 
     if (!found)  {
         PyErr_SetString( PyExc_KeyError, "Child not found" );
@@ -121,5 +116,9 @@ static PyModuleDef speedups_module = {
 PyMODINIT_FUNC
 PyInit_speedups(void)
 {
+    children_str = PyUnicode_InternFromString("_children");
+    if ( !children_str )
+        return 0;
+
     return PyModule_Create( &speedups_module );
 }

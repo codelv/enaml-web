@@ -15,7 +15,7 @@ speedups_module = Extension(
 
 setup(
     name='enaml-web',
-    version='0.12.1',
+    version='0.12.2',
     author='CodeLV',
     author_email='frmdstryr@gmail.com',
     url='https://github.com/codelv/enaml-web',
@@ -25,7 +25,7 @@ setup(
     long_description_content_type="text/markdown",
     requires=['enaml'],
     python_requires='>=3.9',
-    install_requires=['enaml >= 0.9.8', 'lxml>=3.4.0'],
+    install_requires=['enaml >= 0.15.0', 'lxml>=3.4.0'],
     optional_requires=[
         'Pygments', 'Markdown', 'nbconvert',  # extra components
     ],
