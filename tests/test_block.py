@@ -1,13 +1,7 @@
 import pytest
 from textwrap import dedent
-from utils import compile_source
+from conftest import compile_source
 from web.core.app import WebApplication
-
-
-@pytest.fixture
-def app():
-    app = WebApplication.instance() or WebApplication()
-    yield app
 
 
 def test_block(app):

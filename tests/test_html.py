@@ -1,9 +1,8 @@
-import sys
 import inspect
 import pytest
 from textwrap import dedent
 from lxml import html
-from utils import compile_source, app
+from conftest import compile_source
 
 try:
     import nbformat  # noqa: F401
@@ -18,6 +17,7 @@ try:
     MARKDOWN_UNAVAILABLE = False
 except ImportError:
     MARKDOWN_UNAVAILABLE = True
+
 
 def test_hello_world(app):
     Page = compile_source(
