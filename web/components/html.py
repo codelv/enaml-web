@@ -23,11 +23,10 @@ from atom.api import (
     ForwardTyped,
     Typed,
     Coerced,
-    observe,
     set_default,
     ChangeDict,
 )
-from enaml.core.declarative import d_, Declarative
+from enaml.core.declarative import d_, Declarative, observe
 from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 
 try:
