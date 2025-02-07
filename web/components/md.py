@@ -20,9 +20,8 @@ from atom.api import (
     List,
     Dict,
     ChangeDict,
-    observe,
 )
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from .raw import Raw, ProxyRawNode
 
 

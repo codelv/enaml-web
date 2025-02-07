@@ -13,7 +13,7 @@ Created on Jul 8, 2018
 from __future__ import annotations
 
 from atom.api import Int, Typed, ForwardTyped, ChangeDict, observe
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, observe
 from .raw import Raw, ProxyRawNode
 
 

@@ -10,8 +10,8 @@ Created on Aug 2, 2017
 @author: jrm
 """
 
-from atom.api import Str, Typed, ForwardTyped, ChangeDict, observe
-from enaml.core.declarative import d_
+from atom.api import Str, Typed, ForwardTyped, ChangeDict
+from enaml.core.declarative import d_, observe
 from .raw import Raw, ProxyRawNode
 
 

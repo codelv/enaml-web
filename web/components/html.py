@@ -22,10 +22,9 @@ from atom.api import (
     ForwardTyped,
     Typed,
     Coerced,
-    observe,
     ChangeDict,
 )
-from enaml.core.declarative import d_, Declarative
+from enaml.core.declarative import d_, Declarative, observe
 from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
 from web.core.utils import InternStr
 
