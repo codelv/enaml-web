@@ -9,14 +9,6 @@ with enaml.imports():
     from pages import HelloWorld, Simple, ListView
 
 
-@pytest.fixture
-def app():
-    from web.core.app import WebApplication
-
-    app = WebApplication.instance() or WebApplication()
-    yield app
-
-
 @pytest.mark.benchmark(group="hello")
 def test_hello_world_jinja(app, benchmark):
     with open("{}/templates/hello_world.html".format(TEMPLATE_DIR)) as f:

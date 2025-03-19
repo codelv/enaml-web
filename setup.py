@@ -15,7 +15,7 @@ speedups_module = Extension(
 
 setup(
     name='enaml-web',
-    version='0.12.2',
+    version='0.12.3',
     author='CodeLV',
     author_email='frmdstryr@gmail.com',
     url='https://github.com/codelv/enaml-web',

@@ -1,3 +1,8 @@
+# 0.12.3
+- Make attrs use Typed(dict) to avoid creating an empty dict for each node
+- Make attrs remove old keys when attrs changes
+- Add Tag.find_by_id
+
 # 0.12.2
 - Use @observe from enaml to avoid unecessary notifications during init_widget
 - Improve speedup code

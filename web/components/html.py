@@ -16,7 +16,6 @@ from typing import Any, Generator, Optional, Union
 from atom.api import (
     Event,
     Enum,
-    Dict,
     Value,
     Str,
     Instance,
@@ -102,7 +101,7 @@ class Tag(ToolkitObject):
     alt = d_(Str()).tag(attr=False)
 
     #: Custom attributes not explicitly defined
-    attrs = d_(Dict()).tag(attr=False)
+    attrs = d_(Typed(dict)).tag(attr=False)
 
     #: JS onclick definition
     onclick = d_(Str()).tag(attr=False)
@@ -183,8 +182,9 @@ class Tag(ToolkitObject):
             value = change["value"]
             proxy = self.proxy
             assert proxy is not None
-            handler = getattr(proxy, f"set_{name}", None)
-            if handler is not None:
+            if name == "attrs":
+                proxy.set_attrs(value, change["oldvalue"])
+            elif handler := getattr(proxy, f"set_{name}", None):
                 handler(value)
             else:
                 proxy.set_attribute(name, value)
@@ -281,6 +281,25 @@ class Tag(ToolkitObject):
     # =========================================================================
     # Tag API
     # =========================================================================
+    def find_by_id(self, id: str) -> Optional[Tag]:
+        """Find a child node with the given id.
+
+        Parameters
+        ----------
+        id: str
+            The id to look for.
+
+        Returns
+        -------
+        results: Optional[Tag]
+            The first node with the given id or None.
+
+        """
+        for child in self.traverse():
+            if isinstance(child, Tag) and child.id == id:
+                return child
+        return None
+
     def xpath(self, query: str, **kwargs) -> list[Tag]:
         """Find nodes matching the given xpath query
 

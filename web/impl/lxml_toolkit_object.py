@@ -111,13 +111,13 @@ class WebComponent(ProxyTag):
             set_attr("ondragleave", v)
         if v := d.ondrop:
             set_attr("ondrop", v)
-
-        for k, v in d.attrs.items():
-            set_attr(k, v)
+        if attrs := d.attrs:
+            for k, v in attrs.items():
+                set_attr(k, v)
 
         for m in get_fields(d.__class__):
             name = m.name
-            value = m.do_getattr(d)
+            value = getattr(d, name)
             if value is True:
                 widget.set(name, name)
             elif value:
@@ -284,13 +284,27 @@ class WebComponent(ProxyTag):
         assert w is not None
         w.tag = tag
 
-    def set_attrs(self, attrs: dict[str, str]):
+    def set_attrs(
+        self, attrs: Optional[dict[str, str]], oldattrs: Optional[dict[str, str]]
+    ):
         """Set any attributes not explicitly defined"""
         w = self.widget
         assert w is not None
-        set_attr = w.set
-        for k, v in attrs.items():
-            set_attr(k, v)
+        if attrs and oldattrs:
+            # Attrs changed
+            for k in oldattrs:
+                if k not in attrs:
+                    w.attrib.pop(k, None)
+            for k, v in attrs.items():
+                w.set(k, v)
+        elif not attrs and oldattrs:
+            # All attrs removed
+            for k in oldattrs:
+                w.attrib.pop(k, None)
+        elif attrs and not oldattrs:
+            # Only new attrs
+            for k, v in attrs.items():
+                w.set(k, v)
 
     def set_cls(self, cls: Union[tuple[str], list[str], str]):
         if isinstance(cls, (tuple, list)):

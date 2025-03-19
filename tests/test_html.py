@@ -2,8 +2,7 @@ import inspect
 import pytest
 from textwrap import dedent
 from lxml import html
-from utils import compile_source
-from web.core.app import WebApplication
+from conftest import compile_source
 
 try:
     import nbformat  # noqa: F401
@@ -18,12 +17,6 @@ try:
     MARKDOWN_UNAVAILABLE = False
 except ImportError:
     MARKDOWN_UNAVAILABLE = True
-
-
-@pytest.fixture
-def app():
-    app = WebApplication.instance() or WebApplication()
-    yield app
 
 
 def test_hello_world(app):
@@ -136,6 +129,34 @@ def test_html(app, tag, attr, query):
         ("A", "ondragenter", '"a"', "b", '//a[@ondragenter="b"]'),
         ("A", "ondragleave", '"a"', "b", '//a[@ondragleave="b"]'),
         ("A", "ondrop", '"a"', "b", '//a[@ondrop="b"]'),
+        (
+            "A",
+            "attrs",
+            {"data-x": "a"},
+            {"data-x": "b"},
+            '//a[@data-x="b"]',
+        ),  # attrs value changed
+        (
+            "A",
+            "attrs",
+            None,
+            {"data-x": "b"},
+            '//a[@data-x="b"]',
+        ),  # attrs from none to new
+        (
+            "A",
+            "attrs",
+            {"data-x": "b"},
+            None,
+            "//a[not(@data-x)]",
+        ),  # attrs from old to none
+        (  # Test attrs key change
+            "A",
+            "attrs",
+            {"data-x": "a"},
+            {"data-y": "b"},
+            '//a[@data-y="b" and not(@data-x)]',
+        ),
     ),
 )
 def test_html_change(app, tag, attr, default, change, query):
