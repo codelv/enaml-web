@@ -1,3 +1,6 @@
+# 0.12.4
+- Used Bool instead of Coerced(bool)
+
 # 0.12.3
 - Make attrs use Typed(dict) to avoid creating an empty dict for each node
 - Make attrs remove old keys when attrs changes

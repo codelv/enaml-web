@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from typing import Any, Generator, Optional, Union
 from atom.api import (
+    Bool,
     Event,
     Enum,
     Value,
@@ -21,7 +22,6 @@ from atom.api import (
     Instance,
     ForwardTyped,
     Typed,
-    Coerced,
     set_default,
     ChangeDict,
 )
@@ -107,11 +107,11 @@ class Tag(ToolkitObject):
     onclick = d_(Str()).tag(attr=False)
 
     #: Used to tell js to send click events back to the server
-    clickable = d_(Coerced(bool)).tag(attr=False)
+    clickable = d_(Bool()).tag(attr=False)
 
     #: Used to tell js to send drag events back to the server and sets the
     #: draggable attribute. Must be used with ondragstart.
-    draggable = d_(Coerced(bool)).tag(attr=False)
+    draggable = d_(Bool()).tag(attr=False)
 
     #: JS ondragstart definition
     ondragstart = d_(Str()).tag(attr=False)
@@ -837,7 +837,7 @@ class Select(Tag):
 
     name = d_(Str())
     value = d_(Str())
-    disabled = d_(Coerced(bool))
+    disabled = d_(Bool())
 
     def _default_name(self):
         return self.id
@@ -852,7 +852,7 @@ class Option(Tag):
     tag = set_default("option")
 
     value = d_(Str())
-    selected = d_(Coerced(bool))
+    selected = d_(Bool())
 
     @observe("value", "selected")
     def _update_proxy(self, change: ChangeDict):
@@ -864,7 +864,7 @@ class OptGroup(Tag):
     tag = set_default("optgroup")
 
     label = d_(Str())
-    disabled = d_(Coerced(bool))
+    disabled = d_(Bool())
 
     @observe("label", "disabled")
     def _update_proxy(self, change: ChangeDict):
@@ -878,8 +878,8 @@ class Input(Tag):
     name = d_(Str())
     type = d_(Str())
     placeholder = d_(Str())
-    disabled = d_(Coerced(bool))
-    checked = d_(Coerced(bool))
+    disabled = d_(Bool())
+    checked = d_(Bool())
     value = d_(Value())
 
     def _default_name(self):
@@ -897,7 +897,7 @@ class Textarea(Tag):
     name = d_(Str())
     rows = d_(Str())
     cols = d_(Str())
-    disabled = d_(Coerced(bool))
+    disabled = d_(Bool())
 
     def _default_name(self):
         return self.id
@@ -927,7 +927,7 @@ class Video(Tag):
     #: Set the tag name
     tag = set_default("video")
 
-    controls = d_(Coerced(bool))
+    controls = d_(Bool())
 
     @observe("controls")
     def _update_proxy(self, change: ChangeDict):

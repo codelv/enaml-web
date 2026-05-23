@@ -17,3 +17,4 @@ htmlcov/
 *.kate-swp
 
 *.so
+data/
