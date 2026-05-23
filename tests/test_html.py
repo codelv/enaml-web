@@ -21,8 +21,7 @@ except ImportError:
 
 def test_hello_world(app):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
 
     enamldef Page(Html):
@@ -32,8 +31,7 @@ def test_hello_world(app):
         Body:
             H1:
                 text = "Hello world!"
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -67,8 +65,7 @@ def test_hello_world(app):
 )
 def test_html(app, tag, attr, query):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
 
     enamldef Page(Html):
@@ -77,10 +74,7 @@ def test_html(app, tag, attr, query):
                 {attr}
             Div:
                 pass
-    """.format(
-                tag=tag, attr=attr
-            )
-        ),
+    """.format(tag=tag, attr=attr)),
         "Page",
     )
     view = Page()
@@ -160,8 +154,7 @@ def test_html(app, tag, attr, query):
     ),
 )
 def test_html_change(app, tag, attr, default, change, query):
-    source = dedent(
-        """
+    source = dedent("""
     from web.components.api import *
 
     enamldef Page(Html):
@@ -169,10 +162,7 @@ def test_html_change(app, tag, attr, default, change, query):
         Body:
             {tag}:
                 {attr} << v
-    """.format(
-            tag=tag, attr=attr, default=default
-        )
-    )
+    """.format(tag=tag, attr=attr, default=default))
     print(source)
     Page = compile_source(source, "Page")
     view = Page()
@@ -194,8 +184,7 @@ def test_tag_proxy(app):
 
 def test_looper(app):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -211,8 +200,7 @@ def test_looper(app):
                         text = str(loop_item)
             P:
                 text = "Test"
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -223,8 +211,7 @@ def test_looper(app):
 def test_raw(app):
     # Test that raw content is rendered
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -236,8 +223,7 @@ def test_raw(app):
         Body:
             Raw:
                 source << view.source
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -281,8 +267,7 @@ def test_raw_proxy(app):
 def test_markdown(app):
     # Test that raw content is rendered
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -295,8 +280,7 @@ def test_markdown(app):
         Body:
             Markdown: md:
                 source << view.source
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -340,8 +324,7 @@ def test_markdown_proxy(app):
 def test_code(app):
     # Test that raw content is rendered
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -357,8 +340,7 @@ def test_code(app):
                 language << view.language
                 highlight_style << view.highlight_style
                 source << view.source
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -386,8 +368,7 @@ def test_code_proxy(app):
 def test_notebook(app):
     # Test that raw content is rendered
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -401,8 +382,7 @@ def test_notebook(app):
             Notebook:
                 source << view.source
                 version << view.version
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -426,8 +406,7 @@ def test_notebook_proxy(app):
 
 def test_node_added(app):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -444,8 +423,7 @@ def test_node_added(app):
                     iterable << view.menu
                     Li:
                         text = loop_item
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -488,8 +466,7 @@ def test_node_added(app):
 
 def test_note_insert_before(app):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -508,8 +485,7 @@ def test_note_insert_before(app):
                         text = loop_item
                 Li:
                     text = '6'
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -540,8 +516,7 @@ def test_note_insert_before(app):
 
 def test_node_removed(app):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -560,8 +535,7 @@ def test_node_removed(app):
                         text = loop_item
                 Li:
                     text = '6'
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -603,8 +577,7 @@ def test_node_removed(app):
 
 def test_node_moved(app):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -623,8 +596,7 @@ def test_node_moved(app):
                         text = loop_item
                 Li:
                     text = '6'
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -667,8 +639,7 @@ def test_node_moved(app):
 
 def test_node_moved_with_pattern(app):
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -691,8 +662,7 @@ def test_node_moved_with_pattern(app):
                         text = loop_item
                 Li:
                     text = '5'
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -730,8 +700,7 @@ def test_node_moved_with_pattern(app):
 def test_node_destroy(app):
     """Test that calling destroy on a node removes it"""
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     enamldef Page(Html): view:
         Head:
@@ -740,8 +709,7 @@ def test_node_destroy(app):
         Body:
             P:
                 text = "Bye!"
-    """
-        ),
+    """),
         "Page",
     )
 

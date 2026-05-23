@@ -6,8 +6,7 @@ from conftest import compile_source
 def test_block(app):
     # Test that a block's content is replaced
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -26,8 +25,7 @@ def test_block(app):
             H2:
                 text = "It worked!"
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -38,8 +36,7 @@ def test_block(app):
 def test_block_unused(app):
     # Test that an unused block retains it's default content
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -56,8 +53,7 @@ def test_block_unused(app):
     enamldef Page(Template):
         pass
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -68,8 +64,7 @@ def test_block_unused(app):
 def test_block_replace(app):
     # Test that a used a block's content is replaced in 'replace' mode
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -91,8 +86,7 @@ def test_block_replace(app):
             H2:
                 text = "It worked!"
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -106,8 +100,7 @@ def test_block_append(app):
     # Test that a block's content is retained and new content is appended in
     # append mode
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -128,8 +121,7 @@ def test_block_append(app):
             H1:
                 text = "Appended"
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -144,8 +136,7 @@ def test_block_prepend(app):
     # Test that a block's content is retained and new content is inserted
     # before the default content in prepend mode.
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -166,8 +157,7 @@ def test_block_prepend(app):
             H1:
                 text = "Prepended"
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -181,8 +171,7 @@ def test_block_prepend(app):
 def test_block_replace_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -205,8 +194,7 @@ def test_block_replace_changed(app):
                 H2:
                     text = loop_item
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -231,8 +219,7 @@ def test_block_inserting_into_another_block(app, mode):
     # IDK why this would ever happen
     # Should just use the target block directly
     CustomPage = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -264,10 +251,7 @@ def test_block_inserting_into_another_block(app, mode):
                 H3:
                     text = loop_item
 
-    """.format(
-                mode=mode
-            )
-        ),
+    """.format(mode=mode)),
         "CustomPage",
     )
     view = CustomPage()
@@ -294,8 +278,7 @@ def test_block_inserting_into_another_block(app, mode):
 def test_block_append_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -319,8 +302,7 @@ def test_block_append_changed(app):
                 H1:
                     text = loop_item
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -349,8 +331,7 @@ def test_block_append_changed(app):
 def test_block_prepend_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -374,8 +355,7 @@ def test_block_prepend_changed(app):
                 H1:
                     text = loop_item
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -404,8 +384,7 @@ def test_block_prepend_changed(app):
 def test_block_mode_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -427,8 +406,7 @@ def test_block_mode_changed(app):
             H1:
                 text = 'Mode'
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()
@@ -445,8 +423,7 @@ def test_block_mode_changed(app):
 def test_block_ref_changed(app):
     # Test that a block's content is updated when the blocks content is updated
     Page = compile_source(
-        dedent(
-            """
+        dedent("""
     from web.components.api import *
     from web.core.api import *
 
@@ -473,8 +450,7 @@ def test_block_ref_changed(app):
             H1:
                 text = 'Added'
 
-    """
-        ),
+    """),
         "Page",
     )
     view = Page()

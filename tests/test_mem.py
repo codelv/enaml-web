@@ -1,6 +1,11 @@
+import sys
 import time
+import tracemalloc
+import linecache
 import pytest
 from subprocess import Popen, PIPE, STDOUT
+from textwrap import dedent
+from conftest import compile_source
 
 try:
     import requests
@@ -47,6 +52,113 @@ def test_mem_usage():
     finally:
         proc.kill()
         print(proc.stdout.read())
+
+
+def diff_stats(snapshot1, snapshot2, label: str, limit: int = 20):
+    top_stats = snapshot2.compare_to(snapshot1, "lineno")
+
+    print(f"------- Top {limit} differences {label} -------")
+    for stat in top_stats[:limit]:
+        print(stat)
+
+
+def display_top(snapshot, key_type="lineno", limit=20):
+    snapshot = snapshot.filter_traces(
+        (
+            tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+            tracemalloc.Filter(False, "<unknown>"),
+        )
+    )
+    top_stats = snapshot.statistics(key_type)
+
+    print("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        print(
+            "#%s: %s:%s: %.1f KiB (%i)"
+            % (index, frame.filename, frame.lineno, stat.size / 1024, stat.count)
+        )
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            print("    %s" % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        print("%s other: %.1f KiB" % (len(other), size / 1024))
+    total = sum(stat.size for stat in top_stats)
+    print("Total allocated size: %.1f KiB" % (total / 1024))
+    return total
+
+
+def snap_and_show_stats(snapshots, label):
+    snapshots.append(tracemalloc.take_snapshot())
+    total = display_top(snapshots[-1])
+    diff_stats(snapshots[-2], snapshots[-1], "after construct")
+    return total
+
+
+@pytest.fixture
+def tmalloc():
+    tracemalloc.start()
+    try:
+        yield
+    finally:
+        tracemalloc.stop()
+
+
+def test_html_size(tmalloc, app):
+    Page = compile_source(
+        dedent("""
+    from web.components.api import *
+    from web.core.api import *
+    enamldef Page(Html): view:
+        Head:
+            Title:
+                text = "Table"
+        Body:
+            Table:
+                TBody:
+                    Looper:
+                        iterable = range(1000)
+                        Tr:
+                            Td:
+                                text = f"{loop.index}"
+                            Looper:
+                                iterable = range(99)
+                                Td:
+                                    text = f"{loop.item}"
+
+    """),
+        "Page",
+    )
+    snapshots = []
+    snapshots.append(tracemalloc.take_snapshot())
+    display_top(snapshots[-1])
+
+    t0 = time.time()
+    view = Page()
+
+    print(f"\n\n\nConstruct took {time.time()-t0}")
+    snap_and_show_stats(snapshots, "after construct")
+
+    t0 = time.time()
+    view.initialize()
+    print(f"\n\n\nInit took {time.time()-t0}")
+    snap_and_show_stats(snapshots, "after init")
+
+    t0 = time.time()
+    view.activate_proxy()
+    print(f"\n\n\nActivate took {time.time()-t0}")
+    snap_and_show_stats(snapshots, "after activate")
+
+    t0 = time.time()
+    content = view.render()
+    print(f"\n\n\nRender took {time.time()-t0}")
+    total_mem_used = snap_and_show_stats(snapshots, "after render")
+
+    assert len(content) < 3_000_000
+    assert total_mem_used < 80_000_000
 
 
 if __name__ == "__main__":
